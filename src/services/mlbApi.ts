@@ -148,3 +148,55 @@ export function getPlayerHeadshotUrl(personId: number): string {
 export function getTeamLogoUrl(teamId: number): string {
   return `https://www.mlbstatic.com/team-logos/${teamId}.svg`;
 }
+
+/**
+ * Fetch MLB League Leaderboards
+ */
+export async function getLeaderboards(params: {
+  statGroup: 'hitting' | 'pitching';
+  categories?: string[];
+  leagueId?: number;
+  season?: number;
+  limit?: number;
+}) {
+  const { statGroup, categories, leagueId, season = 2026, limit = 5 } = params;
+  const cats =
+    categories && categories.length > 0
+      ? categories
+      : statGroup === 'hitting'
+      ? [
+          'battingAverage',
+          'homeRuns',
+          'runsBattedIn',
+          'onBasePlusSlugging',
+          'hits',
+          'stolenBases',
+          'onBasePercentage',
+          'sluggingPercentage',
+        ]
+      : [
+          'earnedRunAverage',
+          'wins',
+          'strikeouts',
+          'walksAndHitsPerInningPitched',
+          'saves',
+          'holds',
+          'strikeoutsPer9Inn',
+          'inningsPitched',
+        ];
+
+  const queryParams: Record<string, string | number> = {
+    leaderCategories: cats.join(','),
+    statGroup,
+    season,
+    limit,
+    sportId: 1,
+    hydrate: 'person,team',
+  };
+
+  if (leagueId) {
+    queryParams.leagueId = leagueId;
+  }
+
+  return fetchMlb<import('../types/leaderboards').LeaderboardsResponse>('/stats/leaders', queryParams);
+}

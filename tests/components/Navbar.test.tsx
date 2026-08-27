@@ -22,6 +22,7 @@ describe('Navbar component', () => {
     );
 
     expect(screen.getByText(/Plate/i)).toBeInTheDocument();
+    expect(screen.getByText('數據排行')).toBeInTheDocument();
     expect(screen.getByText('分區榜')).toBeInTheDocument();
     expect(screen.getByText('繁中')).toBeInTheDocument();
     expect(screen.getByLabelText(/Toggle theme mode/i)).toBeInTheDocument();

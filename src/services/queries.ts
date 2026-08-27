@@ -8,6 +8,7 @@ import {
   getGameBoxscore,
   getPlayerDetail,
   searchPeople,
+  getLeaderboards,
 } from './mlbApi';
 import { formatApiDate } from '../utils/timezone';
 
@@ -85,5 +86,20 @@ export function usePeopleSearchQuery(query: string) {
     queryFn: () => searchPeople(query),
     enabled: query.trim().length >= 2,
     staleTime: 1000 * 60 * 30, // 30 minutes
+  });
+}
+
+export function useLeaderboardsQuery(params: {
+  statGroup: 'hitting' | 'pitching';
+  categories?: string[];
+  leagueId?: number;
+  season?: number;
+  limit?: number;
+}) {
+  const { statGroup, categories, leagueId, season, limit } = params;
+  return useQuery({
+    queryKey: ['leaderboards', statGroup, categories, leagueId, season, limit],
+    queryFn: () => getLeaderboards(params),
+    staleTime: 1000 * 60 * 10, // 10 minutes
   });
 }

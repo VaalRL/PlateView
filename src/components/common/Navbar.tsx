@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Compass, Coffee } from 'lucide-react';
+import { Search, Compass, Coffee, Trophy } from 'lucide-react';
 import { ThemeSelector } from './ThemeSelector';
 import { SearchModal } from './SearchModal';
 import { PlateViewLogo } from './PlateViewLogo';
@@ -70,6 +70,20 @@ export const Navbar: React.FC = () => {
             >
               <Search className="w-5 h-5" />
             </button>
+
+            {/* Leaderboards Page Link */}
+            <Link
+              to="/leaders"
+              className={`flex items-center gap-1 text-sm font-medium transition-colors px-2 py-1 rounded-lg hover:bg-card-hover ${
+                location.pathname === '/leaders'
+                  ? 'text-team-primary bg-team-primary/10 font-bold'
+                  : 'text-muted hover:text-main'
+              }`}
+              title={t('nav.leaders')}
+            >
+              <Trophy className="w-4 h-4 text-amber-500" />
+              <span className="hidden sm:inline">{t('nav.leaders')}</span>
+            </Link>
 
             {/* Standings Quick Scroll Button */}
             <button

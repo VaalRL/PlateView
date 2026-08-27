@@ -8,6 +8,7 @@ import { OfflineBanner } from './components/common/OfflineBanner';
 import { HomePage } from './pages/HomePage';
 import { TeamDetailPage } from './pages/TeamDetailPage';
 import { PlayerDetailPage } from './pages/PlayerDetailPage';
+import { LeaderboardsPage } from './pages/LeaderboardsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +31,7 @@ export const App: React.FC = () => {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/teams/:teamId" element={<TeamDetailPage />} />
                 <Route path="/players/:personId" element={<PlayerDetailPage />} />
+                <Route path="/leaders" element={<LeaderboardsPage />} />
               </Routes>
             </main>
             <Footer />

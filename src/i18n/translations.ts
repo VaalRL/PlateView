@@ -6,7 +6,20 @@ export const translations = {
     'nav.badge': 'MLB 即時數據',
     'nav.search_placeholder': '快速搜尋球員、球隊...',
     'nav.standings': '分區榜',
+    'nav.leaders': '數據排行',
     'nav.sponsor': '☕ 贊助本專案',
+
+    // Leaderboards
+    'leaders.title': 'MLB 數據領先榜 (Leaderboards)',
+    'leaders.subtitle': '2026 賽季大聯盟打擊與投球官方數據即時排行',
+    'leaders.tab_hitting': '🏏 打擊排行 (Batting)',
+    'leaders.tab_pitching': '⚾ 投球排行 (Pitching)',
+    'leaders.filter_all': '全大聯盟 (MLB)',
+    'leaders.filter_al': '美國聯盟 (AL)',
+    'leaders.filter_nl': '國家聯盟 (NL)',
+    'leaders.loading': '正在載入最新大聯盟排行榜...',
+    'leaders.empty': '目前暫無該項目的排行榜數據。',
+    'leaders.view_player': '查看球員詳情',
 
     // Theme & Lang
     'theme.label': '顯示色系',
@@ -193,7 +206,20 @@ export const translations = {
     'nav.badge': 'MLB Live Stats',
     'nav.search_placeholder': 'Search players, teams...',
     'nav.standings': 'Standings',
+    'nav.leaders': 'Leaderboards',
     'nav.sponsor': '☕ Buy Me a Coffee',
+
+    // Leaderboards
+    'leaders.title': 'MLB Stat Leaderboards',
+    'leaders.subtitle': '2026 MLB Regular Season Official Stat Leaders',
+    'leaders.tab_hitting': '🏏 Batting Leaders',
+    'leaders.tab_pitching': '⚾ Pitching Leaders',
+    'leaders.filter_all': 'All MLB',
+    'leaders.filter_al': 'American League (AL)',
+    'leaders.filter_nl': 'National League (NL)',
+    'leaders.loading': 'Loading MLB leaderboards...',
+    'leaders.empty': 'No leaderboards data available for this category.',
+    'leaders.view_player': 'View Player Profile',
 
     // Theme & Lang
     'theme.label': 'Theme',
