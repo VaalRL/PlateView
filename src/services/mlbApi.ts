@@ -136,6 +136,16 @@ export async function searchPeople(name: string) {
 }
 
 /**
+ * Get multiple people batch by IDs via official MLB API
+ */
+export async function getPeopleBatch(personIds: number[]) {
+  if (personIds.length === 0) return { people: [] };
+  return fetchMlb<{ people: any[] }>('/people', {
+    personIds: personIds.join(','),
+  });
+}
+
+/**
  * Get MLB official player headshot image URL
  */
 export function getPlayerHeadshotUrl(personId: number): string {

@@ -637,5 +637,20 @@
     ],
     "team": "BAL",
     "teamId": 110
+  },
+  {
+    "id": 678906,
+    "nameEn": "Kai-Wei Teng",
+    "nameZh": "鄧愷威",
+    "nicknames": [
+      "鄧愷威",
+      "愷威",
+      "Kai-Wei Teng",
+      "太空人台將",
+      "巨人台將",
+      "台灣投手"
+    ],
+    "team": "HOU",
+    "teamId": 117
   }
 ]

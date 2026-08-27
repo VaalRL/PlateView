@@ -9,6 +9,7 @@ import {
   getPlayerDetail,
   searchPeople,
   getLeaderboards,
+  getPeopleBatch,
 } from './mlbApi';
 import { formatApiDate } from '../utils/timezone';
 
@@ -101,5 +102,14 @@ export function useLeaderboardsQuery(params: {
     queryKey: ['leaderboards', statGroup, categories, leagueId, season, limit],
     queryFn: () => getLeaderboards(params),
     staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+}
+
+export function usePeopleBatchQuery(personIds: number[]) {
+  return useQuery({
+    queryKey: ['people-batch', personIds.slice().sort().join(',')],
+    queryFn: () => getPeopleBatch(personIds),
+    enabled: personIds.length > 0,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
   });
 }

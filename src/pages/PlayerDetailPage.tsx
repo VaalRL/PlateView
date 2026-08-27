@@ -294,7 +294,12 @@ export const PlayerDetailPage: React.FC = () => {
 
         {/* Favorite Button */}
         <button
-          onClick={() => toggleFavoritePlayer(idNum)}
+          onClick={() =>
+            toggleFavoritePlayer(idNum, {
+              nameZh: zhPlayerMeta?.nameZh,
+              nameEn: person?.fullName,
+            })
+          }
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
             isFav
               ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 shadow-sm'

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useLanguage } from '../../hooks/useLanguage';
+import { usePeopleBatchQuery } from '../../services/queries';
 import { GameSchedule } from '../../types/mlb';
 import teamsData from '../../data/teams.json';
 import playersData from '../../data/players-zh-tw.json';
@@ -12,11 +13,53 @@ interface FavoritesBarProps {
 }
 
 export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [] }) => {
-  const { favoriteTeams, favoritePlayers } = useFavorites();
+  const { favoriteTeams, favoritePlayers, favoritePlayersMeta } = useFavorites();
   const { lang, t } = useLanguage();
 
   const favTeams = teamsData.filter((t) => favoriteTeams.includes(t.id));
-  const favPlayers = playersData.filter((p) => favoritePlayers.includes(p.id));
+
+  // Determine which favorited player IDs are not found in the static seed json or local meta
+  const unseededIds = favoritePlayers.filter(
+    (id) => !playersData.some((p) => p.id === id) && !favoritePlayersMeta[id]?.nameEn
+  );
+
+  const { data: batchPeopleData } = usePeopleBatchQuery(unseededIds);
+
+  // Construct full list of favorite players ensuring EVERY favorite player is rendered
+  const favPlayers = favoritePlayers.map((id) => {
+    const local = playersData.find((p) => p.id === id);
+    if (local) {
+      return {
+        id,
+        nameZh: local.nameZh,
+        nameEn: local.nameEn,
+      };
+    }
+
+    const cached = favoritePlayersMeta[id];
+    if (cached?.nameEn) {
+      return {
+        id,
+        nameZh: cached.nameZh || cached.nameEn,
+        nameEn: cached.nameEn,
+      };
+    }
+
+    const remote = batchPeopleData?.people?.find((p: any) => p.id === id);
+    if (remote) {
+      return {
+        id,
+        nameZh: remote.fullName,
+        nameEn: remote.fullName,
+      };
+    }
+
+    return {
+      id,
+      nameZh: `Player #${id}`,
+      nameEn: `Player #${id}`,
+    };
+  });
 
   if (favTeams.length === 0 && favPlayers.length === 0) {
     return null;
