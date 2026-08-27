@@ -56,7 +56,7 @@ export const StandingsTable: React.FC = () => {
   const nlWildCard = getLeagueWildCardTeams('NL');
 
   return (
-    <section id="standings" className="mt-12 space-y-6">
+    <section id="standings" className="mt-12 space-y-6 scroll-mt-20">
       {/* Header and Filter Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-3">
         <div>

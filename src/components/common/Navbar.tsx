@@ -1,14 +1,33 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Compass } from 'lucide-react';
 import { ThemeSelector } from './ThemeSelector';
-import { LanguageSelector } from './LanguageSelector';
 import { SearchModal } from './SearchModal';
 import { useLanguage } from '../../hooks/useLanguage';
 
 export const Navbar: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleStandingsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const el = document.getElementById('standings');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 150);
+    } else {
+      const el = document.getElementById('standings');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
 
   return (
     <>
@@ -53,17 +72,16 @@ export const Navbar: React.FC = () => {
               <Search className="w-5 h-5" />
             </button>
 
-            <Link
-              to="/#standings"
-              className="hidden sm:flex items-center gap-1 text-sm font-medium text-muted hover:text-main transition-colors"
+            {/* Standings Quick Scroll Button */}
+            <button
+              onClick={handleStandingsClick}
+              className="flex items-center gap-1 text-sm font-medium text-muted hover:text-main transition-colors px-2 py-1 rounded-lg hover:bg-card-hover"
             >
-              <Compass className="w-4 h-4" />
+              <Compass className="w-4 h-4 text-team-primary" />
               <span>{t('nav.standings')}</span>
-            </Link>
+            </button>
 
             <div className="h-4 w-px bg-border hidden sm:block" />
-
-            <LanguageSelector />
 
             <ThemeSelector />
           </div>

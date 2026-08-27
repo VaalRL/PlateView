@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useLanguage } from '../../hooks/useLanguage';
+import { LanguageSelector } from './LanguageSelector';
 import teamsData from '../../data/teams.json';
 
 type TeamItem = (typeof teamsData)[number];
@@ -70,19 +71,24 @@ export const ThemeSelector: React.FC = () => {
         </select>
       </div>
 
-      {/* Dark / Light Toggle */}
-      <button
-        onClick={toggleMode}
-        aria-label="Toggle theme mode"
-        className="p-2 rounded-lg border border-border hover:bg-card-hover text-muted hover:text-main transition-colors"
-        title={mode === 'dark' ? translate('theme.toggle_light') : translate('theme.toggle_dark')}
-      >
-        {mode === 'dark' ? (
-          <Sun className="w-4 h-4 text-amber-400" />
-        ) : (
-          <Moon className="w-4 h-4 text-slate-700" />
-        )}
-      </button>
+      {/* Control Group: Language Toggle & Dark/Light Toggle side by side */}
+      <div className="flex items-center gap-1.5">
+        <LanguageSelector />
+
+        {/* Dark / Light Toggle */}
+        <button
+          onClick={toggleMode}
+          aria-label="Toggle theme mode"
+          className="p-2 rounded-lg border border-border hover:bg-card-hover text-muted hover:text-main transition-colors"
+          title={mode === 'dark' ? translate('theme.toggle_light') : translate('theme.toggle_dark')}
+        >
+          {mode === 'dark' ? (
+            <Sun className="w-4 h-4 text-amber-400" />
+          ) : (
+            <Moon className="w-4 h-4 text-slate-700" />
+          )}
+        </button>
+      </div>
     </div>
   );
 };
