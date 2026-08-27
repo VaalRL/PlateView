@@ -3,7 +3,7 @@
 > **PlateView**（取自 Home Plate 本壘板 ＋ View 視野）是一個專為棒球迷、數據愛好者與台灣球迷打造的**現代化、極簡、零延遲、純開源的 MLB 大聯盟數據查詢與即時比分服務**。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Deploy to GitHub Pages](https://github.com/username/plateview/actions/workflows/deploy.yml/badge.svg)](https://github.com/username/plateview/actions/workflows/deploy.yml)
+[![Deploy to GitHub Pages](https://github.com/VaalRL/PlateView/actions/workflows/deploy.yml/badge.svg)](https://github.com/VaalRL/PlateView/actions/workflows/deploy.yml)
 
 ---
 
@@ -40,8 +40,8 @@
 ### 安裝與啟動
 ```bash
 # 1. 複製儲存庫
-git clone https://github.com/username/plateview.git
-cd plateview
+git clone https://github.com/VaalRL/PlateView.git
+cd PlateView
 
 # 2. 安裝相依套件
 npm install
