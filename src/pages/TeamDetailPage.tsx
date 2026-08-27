@@ -667,7 +667,12 @@ export const TeamDetailPage: React.FC = () => {
 
                 <div className="divide-y divide-border/40 max-h-[700px] overflow-y-auto">
                   {pitchers.map((item: any) => {
-                    const seasonPitching = item.person?.stats?.[0]?.splits?.[0]?.stat;
+                    const statsList = item.person?.stats || [];
+                    const pitchingGroup =
+                      statsList.find(
+                        (s: any) => s.group?.displayName === 'pitching' && s.type?.displayName === 'season'
+                      ) || statsList.find((s: any) => s.group?.displayName === 'pitching');
+                    const seasonPitching = pitchingGroup?.splits?.[0]?.stat;
                     const starterInfo = probableStartersMap.get(item.person.id);
                     const zhPlayerMeta = playersData.find((p) => p.id === item.person.id);
                     const displayName =
@@ -774,7 +779,12 @@ export const TeamDetailPage: React.FC = () => {
 
                 <div className="divide-y divide-border/40 max-h-[700px] overflow-y-auto">
                   {positionPlayers.map((item: any) => {
-                    const seasonHitting = item.person?.stats?.[0]?.splits?.[0]?.stat;
+                    const statsList = item.person?.stats || [];
+                    const hittingGroup =
+                      statsList.find(
+                        (s: any) => s.group?.displayName === 'hitting' && s.type?.displayName === 'season'
+                      ) || statsList.find((s: any) => s.group?.displayName === 'hitting');
+                    const seasonHitting = hittingGroup?.splits?.[0]?.stat;
                     const zhPlayerMeta = playersData.find((p) => p.id === item.person.id);
                     const displayName =
                       lang === 'zh' ? zhPlayerMeta?.nameZh || item.person.fullName : item.person.fullName;
