@@ -80,17 +80,25 @@ export const Navbar: React.FC = () => {
               <span>{t('nav.standings')}</span>
             </button>
 
-            {/* Sponsor Button */}
-            <a
-              href="https://buymeacoffee.com/whoami885"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-black transition-all shadow-sm"
-              title="Buy Me a Coffee (whoami885@gmail.com)"
-            >
-              <Coffee className="w-3.5 h-3.5" />
-              <span>{t('nav.sponsor')}</span>
-            </a>
+            {/* Sponsor Icon Button with Hover Tooltip */}
+            <div className="relative group inline-flex items-center justify-center">
+              <a
+                href="https://buymeacoffee.com/whoami885"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t('nav.sponsor')}
+                title={t('nav.sponsor')}
+                className="p-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black transition-all shadow-sm flex items-center justify-center"
+              >
+                <Coffee className="w-4 h-4" />
+              </a>
+
+              {/* Hover Tooltip */}
+              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-main text-page text-[11px] font-medium rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none whitespace-nowrap z-50">
+                <span>{t('nav.sponsor')}</span>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-main" />
+              </div>
+            </div>
 
             <div className="h-4 w-px bg-border hidden sm:block" />
 

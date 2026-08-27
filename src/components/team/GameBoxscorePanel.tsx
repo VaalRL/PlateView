@@ -1,6 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useGameBoxscoreQuery } from '../../services/queries';
 import { useLanguage } from '../../hooks/useLanguage';
+import playersData from '../../data/players-zh-tw.json';
 import { Loader2 } from 'lucide-react';
 
 interface GameBoxscorePanelProps {
@@ -57,19 +59,30 @@ export const GameBoxscorePanel: React.FC<GameBoxscorePanelProps> = ({ gamePk }) 
               </tr>
             </thead>
             <tbody className="divide-y divide-border/20">
-              {batterIds.slice(0, 10).map((bId) => {
+              {batterIds.slice(0, 12).map((bId) => {
                 const p = players['ID' + bId];
                 if (!p) return null;
                 const s = p.stats?.batting;
                 if (!s || s.atBats === undefined) return null;
 
+                const personId = p.person?.id || bId;
+                const zhPlayerMeta = playersData.find((item) => item.id === personId);
+                const displayName =
+                  lang === 'zh' ? zhPlayerMeta?.nameZh || p.person?.fullName : p.person?.fullName;
+
                 return (
-                  <tr key={bId} className="hover:bg-card-hover/40">
-                    <td className="py-1 font-sans font-medium text-main truncate max-w-[120px]">
-                      {p.person?.fullName}
-                      <span className="text-[9px] text-muted ml-1 font-mono">
-                        {p.position?.abbreviation}
-                      </span>
+                  <tr key={bId} className="hover:bg-card-hover/40 group">
+                    <td className="py-1 font-sans font-medium text-main truncate max-w-[130px]">
+                      <Link
+                        to={`/players/${personId}`}
+                        className="hover:text-team-primary hover:underline transition-colors inline-flex items-center gap-1 group-hover:text-team-primary"
+                        title={p.person?.fullName}
+                      >
+                        <span className="truncate">{displayName}</span>
+                        <span className="text-[9px] text-muted font-mono">
+                          {p.position?.abbreviation}
+                        </span>
+                      </Link>
                     </td>
                     <td className="py-1 text-center">{s.atBats}</td>
                     <td className="py-1 text-center">{s.runs}</td>
@@ -121,10 +134,21 @@ export const GameBoxscorePanel: React.FC<GameBoxscorePanelProps> = ({ gamePk }) 
                 const s = p.stats?.pitching;
                 if (!s || s.inningsPitched === undefined) return null;
 
+                const personId = p.person?.id || pId;
+                const zhPlayerMeta = playersData.find((item) => item.id === personId);
+                const displayName =
+                  lang === 'zh' ? zhPlayerMeta?.nameZh || p.person?.fullName : p.person?.fullName;
+
                 return (
-                  <tr key={pId} className="hover:bg-card-hover/40">
-                    <td className="py-1 font-sans font-medium text-main truncate max-w-[120px]">
-                      {p.person?.fullName}
+                  <tr key={pId} className="hover:bg-card-hover/40 group">
+                    <td className="py-1 font-sans font-medium text-main truncate max-w-[130px]">
+                      <Link
+                        to={`/players/${personId}`}
+                        className="hover:text-team-primary hover:underline transition-colors block truncate group-hover:text-team-primary"
+                        title={p.person?.fullName}
+                      >
+                        {displayName}
+                      </Link>
                     </td>
                     <td className="py-1 text-center font-semibold">{s.inningsPitched}</td>
                     <td className="py-1 text-center">{s.hits}</td>

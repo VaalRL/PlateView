@@ -313,19 +313,49 @@ export const TeamDetailPage: React.FC = () => {
                           {g.decisions.winner && (
                             <span>
                               <strong className="text-emerald-500 font-bold">W:</strong>{' '}
-                              {g.decisions.winner.fullName}
+                              {g.decisions.winner.id ? (
+                                <Link
+                                  to={`/players/${g.decisions.winner.id}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="hover:underline hover:text-team-primary text-main"
+                                >
+                                  {g.decisions.winner.fullName}
+                                </Link>
+                              ) : (
+                                <span>{g.decisions.winner.fullName}</span>
+                              )}
                             </span>
                           )}
                           {g.decisions.loser && (
                             <span>
                               <strong className="text-rose-500 font-bold">L:</strong>{' '}
-                              {g.decisions.loser.fullName}
+                              {g.decisions.loser.id ? (
+                                <Link
+                                  to={`/players/${g.decisions.loser.id}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="hover:underline hover:text-team-primary text-main"
+                                >
+                                  {g.decisions.loser.fullName}
+                                </Link>
+                              ) : (
+                                <span>{g.decisions.loser.fullName}</span>
+                              )}
                             </span>
                           )}
                           {g.decisions.save && (
                             <span>
                               <strong className="text-amber-500 font-bold">SV:</strong>{' '}
-                              {g.decisions.save.fullName}
+                              {g.decisions.save.id ? (
+                                <Link
+                                  to={`/players/${g.decisions.save.id}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="hover:underline hover:text-team-primary text-main"
+                                >
+                                  {g.decisions.save.fullName}
+                                </Link>
+                              ) : (
+                                <span>{g.decisions.save.fullName}</span>
+                              )}
                             </span>
                           )}
                         </div>
@@ -335,12 +365,32 @@ export const TeamDetailPage: React.FC = () => {
                         <div className="hidden md:flex items-center gap-2 text-xs text-muted font-sans">
                           <span className="font-semibold text-main">
                             <span className="text-muted font-normal">{t('sb.sp_away')}:</span>{' '}
-                            {g.teams?.away?.probablePitcher?.fullName || t('sb.tbd')}
+                            {g.teams?.away?.probablePitcher?.id ? (
+                              <Link
+                                to={`/players/${g.teams.away.probablePitcher.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="hover:underline hover:text-team-primary text-main"
+                              >
+                                {g.teams.away.probablePitcher.fullName}
+                              </Link>
+                            ) : (
+                              <span className="text-main font-medium">{g.teams?.away?.probablePitcher?.fullName || t('sb.tbd')}</span>
+                            )}
                           </span>
                           <span className="text-muted/40">&bull;</span>
                           <span className="font-semibold text-main">
                             <span className="text-muted font-normal">{t('sb.sp_home')}:</span>{' '}
-                            {g.teams?.home?.probablePitcher?.fullName || t('sb.tbd')}
+                            {g.teams?.home?.probablePitcher?.id ? (
+                              <Link
+                                to={`/players/${g.teams.home.probablePitcher.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="hover:underline hover:text-team-primary text-main"
+                              >
+                                {g.teams.home.probablePitcher.fullName}
+                              </Link>
+                            ) : (
+                              <span className="text-main font-medium">{g.teams?.home?.probablePitcher?.fullName || t('sb.tbd')}</span>
+                            )}
                           </span>
                         </div>
                       )}
@@ -400,15 +450,33 @@ export const TeamDetailPage: React.FC = () => {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div className="bg-card p-3 rounded-lg border border-border/60">
                                 <span className="text-muted block text-[11px] font-semibold">{g.teams.away.team.name} ({t('sb.sp_away')})</span>
-                                <span className="text-main font-bold text-sm block mt-0.5">
-                                  {g.teams?.away?.probablePitcher?.fullName || t('sb.tbd')}
-                                </span>
+                                {g.teams?.away?.probablePitcher?.id ? (
+                                  <Link
+                                    to={`/players/${g.teams.away.probablePitcher.id}`}
+                                    className="text-main font-bold text-sm block mt-0.5 hover:text-team-primary hover:underline"
+                                  >
+                                    {g.teams.away.probablePitcher.fullName}
+                                  </Link>
+                                ) : (
+                                  <span className="text-main font-bold text-sm block mt-0.5">
+                                    {g.teams?.away?.probablePitcher?.fullName || t('sb.tbd')}
+                                  </span>
+                                )}
                               </div>
                               <div className="bg-card p-3 rounded-lg border border-border/60">
                                 <span className="text-muted block text-[11px] font-semibold">{g.teams.home.team.name} ({t('sb.sp_home')})</span>
-                                <span className="text-main font-bold text-sm block mt-0.5">
-                                  {g.teams?.home?.probablePitcher?.fullName || t('sb.tbd')}
-                                </span>
+                                {g.teams?.home?.probablePitcher?.id ? (
+                                  <Link
+                                    to={`/players/${g.teams.home.probablePitcher.id}`}
+                                    className="text-main font-bold text-sm block mt-0.5 hover:text-team-primary hover:underline"
+                                  >
+                                    {g.teams.home.probablePitcher.fullName}
+                                  </Link>
+                                ) : (
+                                  <span className="text-main font-bold text-sm block mt-0.5">
+                                    {g.teams?.home?.probablePitcher?.fullName || t('sb.tbd')}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>

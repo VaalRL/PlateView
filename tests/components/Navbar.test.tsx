@@ -25,6 +25,7 @@ describe('Navbar component', () => {
     expect(screen.getByText('分區榜')).toBeInTheDocument();
     expect(screen.getByText('繁中')).toBeInTheDocument();
     expect(screen.getByLabelText(/Toggle theme mode/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('☕ 贊助本專案')).toHaveAttribute('href', 'https://buymeacoffee.com/whoami885');
   });
 
   it('triggers scrollIntoView when clicking Standings button', () => {
