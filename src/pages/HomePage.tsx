@@ -14,7 +14,7 @@ export const HomePage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Pinned Favorites Bar */}
-      <FavoritesBar games={games} />
+      <FavoritesBar games={games} currentDate={dateStr} />
 
       {/* Main Scoreboard */}
       <ScoreboardGrid

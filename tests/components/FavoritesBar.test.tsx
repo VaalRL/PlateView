@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { LanguageProvider } from '../../src/hooks/useLanguage';
 import { FavoritesBar } from '../../src/components/favorite/FavoritesBar';
 
 const queryClient = new QueryClient({
@@ -19,9 +20,11 @@ describe('FavoritesBar component', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <FavoritesBar />
-        </MemoryRouter>
+        <LanguageProvider>
+          <MemoryRouter>
+            <FavoritesBar />
+          </MemoryRouter>
+        </LanguageProvider>
       </QueryClientProvider>
     );
 
@@ -30,6 +33,33 @@ describe('FavoritesBar component', () => {
     expect(screen.getByText('紐約洋基')).toBeInTheDocument();
     expect(screen.getByText(/大谷翔平/)).toBeInTheDocument();
     expect(screen.getByText(/鄧愷威/)).toBeInTheDocument();
+    expect(screen.getByText('今日愛將戰報')).toBeInTheDocument();
+    expect(screen.getByText('備份 / 匯入')).toBeInTheDocument();
+  });
+
+  it('toggles summary drawer and opens backup modal', () => {
+    localStorage.setItem('plateview_fav_teams', JSON.stringify([119]));
+    localStorage.setItem('plateview_fav_players', JSON.stringify([660271]));
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <MemoryRouter>
+            <FavoritesBar />
+          </MemoryRouter>
+        </LanguageProvider>
+      </QueryClientProvider>
+    );
+
+    // Toggle Summary Drawer
+    const summaryBtn = screen.getByText('今日愛將戰報');
+    fireEvent.click(summaryBtn);
+    expect(screen.getByText('收合戰報')).toBeInTheDocument();
+
+    // Open Backup Modal
+    const backupBtn = screen.getByText('備份 / 匯入');
+    fireEvent.click(backupBtn);
+    expect(screen.getByText(/我的最愛管理與資料備份/i)).toBeInTheDocument();
   });
 
   it('renders unseeded favorite player with cached metadata gracefully', () => {
@@ -41,9 +71,11 @@ describe('FavoritesBar component', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <FavoritesBar />
-        </MemoryRouter>
+        <LanguageProvider>
+          <MemoryRouter>
+            <FavoritesBar />
+          </MemoryRouter>
+        </LanguageProvider>
       </QueryClientProvider>
     );
 

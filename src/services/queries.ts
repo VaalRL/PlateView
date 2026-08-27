@@ -10,6 +10,7 @@ import {
   searchPeople,
   getLeaderboards,
   getPeopleBatch,
+  getFavoritePlayersGameLog,
 } from './mlbApi';
 import { formatApiDate } from '../utils/timezone';
 
@@ -111,5 +112,15 @@ export function usePeopleBatchQuery(personIds: number[]) {
     queryFn: () => getPeopleBatch(personIds),
     enabled: personIds.length > 0,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
+}
+
+export function useFavoritePlayersGameLogQuery(personIds: number[]) {
+  return useQuery({
+    queryKey: ['fav-players-gamelog', personIds.slice().sort().join(',')],
+    queryFn: () => getFavoritePlayersGameLog(personIds),
+    enabled: personIds.length > 0,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    refetchInterval: 1000 * 60 * 5, // 5 minutes background auto refresh
   });
 }

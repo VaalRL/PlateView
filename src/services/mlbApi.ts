@@ -146,6 +146,17 @@ export async function getPeopleBatch(personIds: number[]) {
 }
 
 /**
+ * Fetch batch player profiles with gameLogs for daily favorite summary
+ */
+export async function getFavoritePlayersGameLog(personIds: number[]) {
+  if (personIds.length === 0) return { people: [] };
+  return fetchMlb<{ people: any[] }>('/people', {
+    personIds: personIds.join(','),
+    hydrate: 'stats(group=[hitting,pitching],type=[gameLog],season=2026)',
+  });
+}
+
+/**
  * Get MLB official player headshot image URL
  */
 export function getPlayerHeadshotUrl(personId: number): string {

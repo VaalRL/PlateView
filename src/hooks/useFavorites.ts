@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const FAV_TEAMS_KEY = 'plateview_fav_teams';
 const FAV_PLAYERS_KEY = 'plateview_fav_players';
@@ -37,28 +37,46 @@ export function useFavorites() {
     }
   });
 
+  const reloadFromStorage = useCallback(() => {
+    try {
+      const teams = localStorage.getItem(FAV_TEAMS_KEY);
+      if (teams) setFavoriteTeams(JSON.parse(teams));
+
+      const players = localStorage.getItem(FAV_PLAYERS_KEY);
+      if (players) setFavoritePlayers(JSON.parse(players));
+
+      const meta = localStorage.getItem(FAV_PLAYERS_META_KEY);
+      if (meta) setFavoritePlayersMeta(JSON.parse(meta));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const handleStorageChange = () => reloadFromStorage();
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('plateview_favorites_updated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('plateview_favorites_updated', handleStorageChange);
+    };
+  }, [reloadFromStorage]);
+
   useEffect(() => {
     try {
       localStorage.setItem(FAV_TEAMS_KEY, JSON.stringify(favoriteTeams));
-    } catch {
-      // Ignore
-    }
+    } catch {}
   }, [favoriteTeams]);
 
   useEffect(() => {
     try {
       localStorage.setItem(FAV_PLAYERS_KEY, JSON.stringify(favoritePlayers));
-    } catch {
-      // Ignore
-    }
+    } catch {}
   }, [favoritePlayers]);
 
   useEffect(() => {
     try {
       localStorage.setItem(FAV_PLAYERS_META_KEY, JSON.stringify(favoritePlayersMeta));
-    } catch {
-      // Ignore
-    }
+    } catch {}
   }, [favoritePlayersMeta]);
 
   const toggleFavoriteTeam = (teamId: number) => {
@@ -96,5 +114,6 @@ export function useFavorites() {
     isFavoriteTeam,
     toggleFavoritePlayer,
     isFavoritePlayer,
+    reloadFromStorage,
   };
 }
