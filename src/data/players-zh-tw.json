@@ -1,50 +1,641 @@
 [
-  { "id": 660271, "nameEn": "Shohei Ohtani", "nameZh": "大谷翔平", "nicknames": ["大谷", "翔平", "Shohei", "Ohtani", "Shotime", "打者翔平", "投手大谷", "二刀流"], "team": "LAD", "teamId": 119 },
-  { "id": 694973, "nameEn": "Paul Skenes", "nameZh": "保羅·斯肯斯", "nicknames": ["斯肯斯", "Skenes", "海盜狀元", "怪物狀元", "火球狀元"], "team": "PIT", "teamId": 134 },
-  { "id": 669203, "nameEn": "Yoshinobu Yamamoto", "nameZh": "山本由伸", "nicknames": ["山本", "由伸", "Yamamoto", "日本最強投"], "team": "LAD", "teamId": 119 },
-  { "id": 592450, "nameEn": "Aaron Judge", "nameZh": "亞倫·賈吉", "nicknames": ["法官", "賈吉", "Judge", "Aaron Judge", "洋基隊長", "全壘打王"], "team": "NYY", "teamId": 147 },
-  { "id": 665742, "nameEn": "Juan Soto", "nameZh": "胡安·索托", "nicknames": ["索托", "Soto", "Juan Soto", "索托曳步", "神童"], "team": "NYM", "teamId": 121 },
-  { "id": 605141, "nameEn": "Mookie Betts", "nameZh": "穆奇·貝茲", "nicknames": ["貝茲", "Betts", "Mookie", "木屐"], "team": "LAD", "teamId": 119 },
-  { "id": 608337, "nameEn": "Freddie Freeman", "nameZh": "佛萊迪·弗里曼", "nicknames": ["弗里曼", "Freeman", "Freddie", "自由人"], "team": "LAD", "teamId": 119 },
-  { "id": 665487, "nameEn": "Fernando Tatis Jr.", "nameZh": "費南多·塔提斯", "nicknames": ["小塔提斯", "塔提斯", "Tatis", "小帝士"], "team": "SD", "teamId": 135 },
-  { "id": 665489, "nameEn": "Vladimir Guerrero Jr.", "nameZh": "小弗拉迪米爾·葛雷諾", "nicknames": ["小葛雷諾", "小V葛", "Guerrero", "Vlad Jr"], "team": "TOR", "teamId": 141 },
-  { "id": 673490, "nameEn": "Gunnar Henderson", "nameZh": "岡納·亨德森", "nicknames": ["亨德森", "Gunnar", "Henderson", "金鶯新星"], "team": "BAL", "teamId": 110 },
-  { "id": 677951, "nameEn": "Bobby Witt Jr.", "nameZh": "小鮑比·威特", "nicknames": ["小威特", "Witt", "Bobby Witt", "皇家少主", "美聯安打王"], "team": "KC", "teamId": 118 },
-  { "id": 547180, "nameEn": "Bryce Harper", "nameZh": "布萊斯·哈波", "nicknames": ["哈波", "Harper", "強打少年", "費城之王"], "team": "PHI", "teamId": 143 },
-  { "id": 669373, "nameEn": "Trea Turner", "nameZh": "崔·特納", "nicknames": ["特納", "Turner", "Trea", "快腿特納"], "team": "PHI", "teamId": 143 },
-  { "id": 592518, "nameEn": "Manny Machado", "nameZh": "曼尼·馬查多", "nicknames": ["馬查多", "Machado", "教士隊長"], "team": "SD", "teamId": 135 },
-  { "id": 701538, "nameEn": "Jackson Merrill", "nameZh": "傑克森·梅瑞爾", "nicknames": ["梅瑞爾", "Merrill", "教士新人王"], "team": "SD", "teamId": 135 },
-  { "id": 678888, "nameEn": "Corbin Carroll", "nameZh": "柯賓·卡洛爾", "nicknames": ["卡洛爾", "Carroll", "台美混血大物", "響尾蛇快腿"], "team": "ARI", "teamId": 109 },
-  { "id": 682829, "nameEn": "Elly De La Cruz", "nameZh": "艾利·迪拉克魯茲", "nicknames": ["迪拉克魯茲", "EDLC", "怪力男", "紅人超新星", "盜壘王"], "team": "CIN", "teamId": 113 },
-  { "id": 660670, "nameEn": "Ronald Acuña Jr.", "nameZh": "小羅納德·阿庫尼亞", "nicknames": ["阿庫尼亞", "Acuna", "小阿庫", "勇士MVP"], "team": "ATL", "teamId": 144 },
-  { "id": 596019, "nameEn": "Francisco Lindor", "nameZh": "法蘭西斯科·林多爾", "nicknames": ["林多", "Lindor", "大都會游擊手", "微笑先生"], "team": "NYM", "teamId": 121 },
-  { "id": 624413, "nameEn": "Pete Alonso", "nameZh": "彼得·阿隆索", "nicknames": ["阿隆索", "Alonso", "北極熊", "大都會重砲"], "team": "NYM", "teamId": 121 },
-  { "id": 677594, "nameEn": "Julio Rodríguez", "nameZh": "胡立歐·羅德里奎茲", "nicknames": ["J-Rod", "羅德里奎茲", "水手少主"], "team": "SEA", "teamId": 136 },
-  { "id": 668942, "nameEn": "Adley Rutschman", "nameZh": "艾德利·拉契曼", "nicknames": ["拉契曼", "Rutschman", "金鶯主戰捕手"], "team": "BAL", "teamId": 110 },
-  { "id": 668227, "nameEn": "Tarik Skubal", "nameZh": "塔里克·史庫柏", "nicknames": ["史庫柏", "Skubal", "老虎賽揚", "美聯三冠王"], "team": "DET", "teamId": 116 },
-  { "id": 669160, "nameEn": "Corbin Burnes", "nameZh": "柯賓·伯恩斯", "nicknames": ["伯恩斯", "Burnes", "賽揚強投"], "team": "BAL", "teamId": 110 },
-  { "id": 554430, "nameEn": "Zack Wheeler", "nameZh": "扎克·惠勒", "nicknames": ["惠勒", "Wheeler", "費城王牌"], "team": "PHI", "teamId": 143 },
-  { "id": 668472, "nameEn": "Cole Ragans", "nameZh": "柯爾·雷根斯", "nicknames": ["雷根斯", "Ragans", "皇家左投王牌"], "team": "KC", "teamId": 118 },
-  { "id": 665660, "nameEn": "Tanner Houck", "nameZh": "坦納·霍克", "nicknames": ["霍克", "Houck", "紅襪王牌"], "team": "BOS", "teamId": 111 },
-  { "id": 664747, "nameEn": "Logan Gilbert", "nameZh": "羅根·吉爾伯特", "nicknames": ["吉爾伯特", "Gilbert", "水手右腕"], "team": "SEA", "teamId": 136 },
-  { "id": 669211, "nameEn": "Emmanuel Clase", "nameZh": "伊曼紐·克拉賽", "nicknames": ["克拉賽", "Clase", "守護者終結者", "百哩卡特球"], "team": "CLE", "teamId": 114 },
-  { "id": 695243, "nameEn": "Mason Miller", "nameZh": "梅森·米勒", "nicknames": ["米勒", "Mason Miller", "104哩火球男", "運動家火球守護神"], "team": "ATH", "teamId": 133 },
-  { "id": 670950, "nameEn": "Shota Imanaga", "nameZh": "今永昇太", "nicknames": ["今永", "昇太", "Imanaga", "投球哲學家", "小熊左投"], "team": "CHC", "teamId": 112 },
-  { "id": 506433, "nameEn": "Yu Darvish", "nameZh": "達比修有", "nicknames": ["達比修", "達比修有", "Darvish", "混血王子"], "team": "SD", "teamId": 135 },
-  { "id": 663556, "nameEn": "Tyler Glasnow", "nameZh": "泰勒·格拉斯諾", "nicknames": ["格拉斯諾", "Glasnow", "大魔王", "道奇長人王牌"], "team": "LAD", "teamId": 119 },
-  { "id": 673357, "nameEn": "Luis Arraez", "nameZh": "路易斯·厄萊茲", "nicknames": ["厄萊茲", "安打製造機", "Arraez", "打擊王"], "team": "SD", "teamId": 135 },
-  { "id": 660821, "nameEn": "Seiya Suzuki", "nameZh": "鈴木誠也", "nicknames": ["鈴木誠也", "誠也", "Suzuki", "小熊強打"], "team": "CHC", "teamId": 112 },
-  { "id": 807799, "nameEn": "Masataka Yoshida", "nameZh": "吉田正尚", "nicknames": ["吉田正尚", "吉田", "Yoshida", "紅襪強打"], "team": "BOS", "teamId": 111 },
-  { "id": 663903, "nameEn": "Steven Kwan", "nameZh": "史蒂芬·關", "nicknames": ["史蒂芬關", "關", "Kwan", "台美混血神眼", "金手套"], "team": "CLE", "teamId": 114 },
-  { "id": 670541, "nameEn": "Tsung-Che Cheng", "nameZh": "鄭宗哲", "nicknames": ["鄭宗哲", "宗哲", "Cheng", "海盜台將", "台灣游擊手"], "team": "PIT", "teamId": 134 },
-  { "id": 694363, "nameEn": "Chen-Wei Lin", "nameZh": "林振瑋", "nicknames": ["林振瑋", "火球男", "Chen-Wei Lin", "紅雀火球男", "郭泓志外甥"], "team": "STL", "teamId": 138 },
-  { "id": 694380, "nameEn": "Hao-Yu Lee", "nameZh": "李灝宇", "nicknames": ["李灝宇", "怪力男", "Hao-Yu Lee", "老虎台將"], "team": "DET", "teamId": 116 },
-  { "id": 694386, "nameEn": "Wen-Hui Pan", "nameZh": "潘文輝", "nicknames": ["潘文輝", "火球投手", "Wen-Hui Pan", "費城人台將"], "team": "PHI", "teamId": 143 },
-  { "id": 694392, "nameEn": "Jon-Chun-Ao Chuang-Chen", "nameZh": "莊陳仲敖", "nicknames": ["莊陳仲敖", "運動家台將"], "team": "ATH", "teamId": 133 },
-  { "id": 694401, "nameEn": "Tzu-Chen Sha", "nameZh": "沙子宸", "nicknames": ["沙子宸", "運動家沙子宸"], "team": "ATH", "teamId": 133 },
-  { "id": 673540, "nameEn": "Yu-Cheng Chang", "nameZh": "張育成", "nicknames": ["張育成", "國防部長", "Yu Chang", "部長"], "team": "TBD", "teamId": 0 },
-  { "id": 680694, "nameEn": "Tzu-Wei Lin", "nameZh": "林子偉", "nicknames": ["林子偉", "子偉", "Tzu-Wei Lin", "主委"], "team": "TBD", "teamId": 0 },
-  { "id": 425786, "nameEn": "Chien-Ming Wang", "nameZh": "王建民", "nicknames": ["王建民", "建仔", "滾地球王子", "洋基王牌", "台灣之光"], "team": "NYY", "teamId": 147 },
-  { "id": 434661, "nameEn": "Hong-Chih Kuo", "nameZh": "郭泓志", "nicknames": ["郭泓志", "不死鳥", "小小郭", "道奇不死鳥"], "team": "LAD", "teamId": 119 },
-  { "id": 612672, "nameEn": "Wei-Yin Chen", "nameZh": "陳偉殷", "nicknames": ["陳偉殷", "殷仔", "金鶯左投", "陳偉殷大聯盟"], "team": "BAL", "teamId": 110 }
+  {
+    "id": 660271,
+    "nameEn": "Shohei Ohtani",
+    "nameZh": "大谷翔平",
+    "nicknames": [
+      "大谷",
+      "翔平",
+      "Shohei",
+      "Ohtani",
+      "Shotime",
+      "打者翔平",
+      "投手大谷",
+      "二刀流"
+    ],
+    "team": "LAD",
+    "teamId": 119
+  },
+  {
+    "id": 694973,
+    "nameEn": "Paul Skenes",
+    "nameZh": "保羅·斯肯斯",
+    "nicknames": [
+      "斯肯斯",
+      "Skenes",
+      "海盜狀元",
+      "怪物狀元",
+      "火球狀元"
+    ],
+    "team": "PIT",
+    "teamId": 134
+  },
+  {
+    "id": 808967,
+    "nameEn": "Yoshinobu Yamamoto",
+    "nameZh": "山本由伸",
+    "nicknames": [
+      "山本",
+      "由伸",
+      "Yamamoto",
+      "日本最強投"
+    ],
+    "team": "LAD",
+    "teamId": 119
+  },
+  {
+    "id": 592450,
+    "nameEn": "Aaron Judge",
+    "nameZh": "亞倫·賈吉",
+    "nicknames": [
+      "法官",
+      "賈吉",
+      "Judge",
+      "Aaron Judge",
+      "洋基隊長",
+      "全壘打王"
+    ],
+    "team": "NYY",
+    "teamId": 147
+  },
+  {
+    "id": 665742,
+    "nameEn": "Juan Soto",
+    "nameZh": "胡安·索托",
+    "nicknames": [
+      "索托",
+      "Soto",
+      "Juan Soto",
+      "索托曳步",
+      "神童"
+    ],
+    "team": "NYM",
+    "teamId": 121
+  },
+  {
+    "id": 605141,
+    "nameEn": "Mookie Betts",
+    "nameZh": "穆奇·貝茲",
+    "nicknames": [
+      "貝茲",
+      "Betts",
+      "Mookie",
+      "木屐"
+    ],
+    "team": "LAD",
+    "teamId": 119
+  },
+  {
+    "id": 518692,
+    "nameEn": "Freddie Freeman",
+    "nameZh": "佛萊迪·弗里曼",
+    "nicknames": [
+      "弗里曼",
+      "Freeman",
+      "Freddie",
+      "自由人"
+    ],
+    "team": "LAD",
+    "teamId": 119
+  },
+  {
+    "id": 665487,
+    "nameEn": "Fernando Tatis Jr.",
+    "nameZh": "費南多·塔提斯",
+    "nicknames": [
+      "小塔提斯",
+      "塔提斯",
+      "Tatis",
+      "小帝士"
+    ],
+    "team": "SD",
+    "teamId": 135
+  },
+  {
+    "id": 665489,
+    "nameEn": "Vladimir Guerrero Jr.",
+    "nameZh": "小弗拉迪米爾·葛雷諾",
+    "nicknames": [
+      "小葛雷諾",
+      "小V葛",
+      "Guerrero",
+      "Vlad Jr"
+    ],
+    "team": "TOR",
+    "teamId": 141
+  },
+  {
+    "id": 683002,
+    "nameEn": "Gunnar Henderson",
+    "nameZh": "岡納·亨德森",
+    "nicknames": [
+      "亨德森",
+      "Gunnar",
+      "Henderson",
+      "金鶯新星"
+    ],
+    "team": "BAL",
+    "teamId": 110
+  },
+  {
+    "id": 677951,
+    "nameEn": "Bobby Witt Jr.",
+    "nameZh": "小鮑比·威特",
+    "nicknames": [
+      "小威特",
+      "Witt",
+      "Bobby Witt",
+      "皇家少主",
+      "美聯安打王"
+    ],
+    "team": "KC",
+    "teamId": 118
+  },
+  {
+    "id": 547180,
+    "nameEn": "Bryce Harper",
+    "nameZh": "布萊斯·哈波",
+    "nicknames": [
+      "哈波",
+      "Harper",
+      "強打少年",
+      "費城之王"
+    ],
+    "team": "PHI",
+    "teamId": 143
+  },
+  {
+    "id": 607208,
+    "nameEn": "Trea Turner",
+    "nameZh": "崔·特納",
+    "nicknames": [
+      "特納",
+      "Turner",
+      "Trea",
+      "快腿特納"
+    ],
+    "team": "PHI",
+    "teamId": 143
+  },
+  {
+    "id": 592518,
+    "nameEn": "Manny Machado",
+    "nameZh": "曼尼·馬查多",
+    "nicknames": [
+      "馬查多",
+      "Machado",
+      "教士隊長"
+    ],
+    "team": "SD",
+    "teamId": 135
+  },
+  {
+    "id": 701538,
+    "nameEn": "Jackson Merrill",
+    "nameZh": "傑克森·梅瑞爾",
+    "nicknames": [
+      "梅瑞爾",
+      "Merrill",
+      "教士新人王"
+    ],
+    "team": "SD",
+    "teamId": 135
+  },
+  {
+    "id": 682998,
+    "nameEn": "Corbin Carroll",
+    "nameZh": "柯賓·卡洛爾",
+    "nicknames": [
+      "卡洛爾",
+      "Carroll",
+      "台美混血大物",
+      "響尾蛇快腿"
+    ],
+    "team": "ARI",
+    "teamId": 109
+  },
+  {
+    "id": 682829,
+    "nameEn": "Elly De La Cruz",
+    "nameZh": "艾利·迪拉克魯茲",
+    "nicknames": [
+      "迪拉克魯茲",
+      "EDLC",
+      "怪力男",
+      "紅人超新星",
+      "盜壘王"
+    ],
+    "team": "CIN",
+    "teamId": 113
+  },
+  {
+    "id": 660670,
+    "nameEn": "Ronald Acuña Jr.",
+    "nameZh": "小羅納德·阿庫尼亞",
+    "nicknames": [
+      "阿庫尼亞",
+      "Acuna",
+      "小阿庫",
+      "勇士MVP"
+    ],
+    "team": "ATL",
+    "teamId": 144
+  },
+  {
+    "id": 596019,
+    "nameEn": "Francisco Lindor",
+    "nameZh": "法蘭西斯科·林多爾",
+    "nicknames": [
+      "林多",
+      "Lindor",
+      "大都會游擊手",
+      "微笑先生"
+    ],
+    "team": "NYM",
+    "teamId": 121
+  },
+  {
+    "id": 624413,
+    "nameEn": "Pete Alonso",
+    "nameZh": "彼得·阿隆索",
+    "nicknames": [
+      "阿隆索",
+      "Alonso",
+      "北極熊",
+      "大都會重砲"
+    ],
+    "team": "NYM",
+    "teamId": 121
+  },
+  {
+    "id": 677594,
+    "nameEn": "Julio Rodríguez",
+    "nameZh": "胡立歐·羅德里奎茲",
+    "nicknames": [
+      "J-Rod",
+      "羅德里奎茲",
+      "水手少主"
+    ],
+    "team": "SEA",
+    "teamId": 136
+  },
+  {
+    "id": 668939,
+    "nameEn": "Adley Rutschman",
+    "nameZh": "艾德利·拉契曼",
+    "nicknames": [
+      "拉契曼",
+      "Rutschman",
+      "金鶯主戰捕手"
+    ],
+    "team": "BAL",
+    "teamId": 110
+  },
+  {
+    "id": 669373,
+    "nameEn": "Tarik Skubal",
+    "nameZh": "塔里克·史庫柏",
+    "nicknames": [
+      "史庫柏",
+      "Skubal",
+      "老虎賽揚",
+      "美聯三冠王"
+    ],
+    "team": "DET",
+    "teamId": 116
+  },
+  {
+    "id": 669203,
+    "nameEn": "Corbin Burnes",
+    "nameZh": "柯賓·伯恩斯",
+    "nicknames": [
+      "伯恩斯",
+      "Burnes",
+      "賽揚強投"
+    ],
+    "team": "BAL",
+    "teamId": 110
+  },
+  {
+    "id": 554430,
+    "nameEn": "Zack Wheeler",
+    "nameZh": "扎克·惠勒",
+    "nicknames": [
+      "惠勒",
+      "Wheeler",
+      "費城王牌"
+    ],
+    "team": "PHI",
+    "teamId": 143
+  },
+  {
+    "id": 666142,
+    "nameEn": "Cole Ragans",
+    "nameZh": "柯爾·雷根斯",
+    "nicknames": [
+      "雷根斯",
+      "Ragans",
+      "皇家左投王牌"
+    ],
+    "team": "KC",
+    "teamId": 118
+  },
+  {
+    "id": 656557,
+    "nameEn": "Tanner Houck",
+    "nameZh": "坦納·霍克",
+    "nicknames": [
+      "霍克",
+      "Houck",
+      "紅襪王牌"
+    ],
+    "team": "BOS",
+    "teamId": 111
+  },
+  {
+    "id": 669302,
+    "nameEn": "Logan Gilbert",
+    "nameZh": "羅根·吉爾伯特",
+    "nicknames": [
+      "吉爾伯特",
+      "Gilbert",
+      "水手右腕"
+    ],
+    "team": "SEA",
+    "teamId": 136
+  },
+  {
+    "id": 661403,
+    "nameEn": "Emmanuel Clase",
+    "nameZh": "伊曼紐·克拉賽",
+    "nicknames": [
+      "克拉賽",
+      "Clase",
+      "守護者終結者",
+      "百哩卡特球"
+    ],
+    "team": "CLE",
+    "teamId": 114
+  },
+  {
+    "id": 695243,
+    "nameEn": "Mason Miller",
+    "nameZh": "梅森·米勒",
+    "nicknames": [
+      "米勒",
+      "Mason Miller",
+      "104哩火球男",
+      "運動家火球守護神"
+    ],
+    "team": "ATH",
+    "teamId": 133
+  },
+  {
+    "id": 684007,
+    "nameEn": "Shota Imanaga",
+    "nameZh": "今永昇太",
+    "nicknames": [
+      "今永",
+      "昇太",
+      "Imanaga",
+      "投球哲學家",
+      "小熊左投"
+    ],
+    "team": "CHC",
+    "teamId": 112
+  },
+  {
+    "id": 506433,
+    "nameEn": "Yu Darvish",
+    "nameZh": "達比修有",
+    "nicknames": [
+      "達比修",
+      "達比修有",
+      "Darvish",
+      "混血王子"
+    ],
+    "team": "SD",
+    "teamId": 135
+  },
+  {
+    "id": 607192,
+    "nameEn": "Tyler Glasnow",
+    "nameZh": "泰勒·格拉斯諾",
+    "nicknames": [
+      "格拉斯諾",
+      "Glasnow",
+      "大魔王",
+      "道奇長人王牌"
+    ],
+    "team": "LAD",
+    "teamId": 119
+  },
+  {
+    "id": 650333,
+    "nameEn": "Luis Arraez",
+    "nameZh": "路易斯·厄萊茲",
+    "nicknames": [
+      "厄萊茲",
+      "安打製造機",
+      "Arraez",
+      "打擊王"
+    ],
+    "team": "SD",
+    "teamId": 135
+  },
+  {
+    "id": 673548,
+    "nameEn": "Seiya Suzuki",
+    "nameZh": "鈴木誠也",
+    "nicknames": [
+      "鈴木誠也",
+      "誠也",
+      "Suzuki",
+      "小熊強打"
+    ],
+    "team": "CHC",
+    "teamId": 112
+  },
+  {
+    "id": 807799,
+    "nameEn": "Masataka Yoshida",
+    "nameZh": "吉田正尚",
+    "nicknames": [
+      "吉田正尚",
+      "吉田",
+      "Yoshida",
+      "紅襪強打"
+    ],
+    "team": "BOS",
+    "teamId": 111
+  },
+  {
+    "id": 680757,
+    "nameEn": "Steven Kwan",
+    "nameZh": "史蒂芬·關",
+    "nicknames": [
+      "史蒂芬關",
+      "關",
+      "Kwan",
+      "台美混血神眼",
+      "金手套"
+    ],
+    "team": "CLE",
+    "teamId": 114
+  },
+  {
+    "id": 691907,
+    "nameEn": "Tsung-Che Cheng",
+    "nameZh": "鄭宗哲",
+    "nicknames": [
+      "鄭宗哲",
+      "宗哲",
+      "Cheng",
+      "海盜台將",
+      "台灣游擊手"
+    ],
+    "team": "PIT",
+    "teamId": 134
+  },
+  {
+    "id": 813820,
+    "nameEn": "Chen-Wei Lin",
+    "nameZh": "林振瑋",
+    "nicknames": [
+      "林振瑋",
+      "火球男",
+      "Chen-Wei Lin",
+      "紅雀火球男",
+      "郭泓志外甥"
+    ],
+    "team": "STL",
+    "teamId": 138
+  },
+  {
+    "id": 701678,
+    "nameEn": "Hao-Yu Lee",
+    "nameZh": "李灝宇",
+    "nicknames": [
+      "李灝宇",
+      "怪力男",
+      "Hao-Yu Lee",
+      "老虎台將"
+    ],
+    "team": "DET",
+    "teamId": 116
+  },
+  {
+    "id": 801179,
+    "nameEn": "Yu-Min Lin",
+    "nameZh": "林昱珉",
+    "nicknames": [
+      "林昱珉",
+      "玉米",
+      "響尾蛇左投",
+      "Yu-Min Lin"
+    ],
+    "team": "ARI",
+    "teamId": 109
+  },
+  {
+    "id": 808207,
+    "nameEn": "Wen-Hui Pan",
+    "nameZh": "潘文輝",
+    "nicknames": [
+      "潘文輝",
+      "火球投手",
+      "Wen-Hui Pan",
+      "費城人台將"
+    ],
+    "team": "PHI",
+    "teamId": 143
+  },
+  {
+    "id": 800018,
+    "nameEn": "Chen Zhong-Ao Zhuang",
+    "nameZh": "莊陳仲敖",
+    "nicknames": [
+      "莊陳仲敖",
+      "運動家台將"
+    ],
+    "team": "ATH",
+    "teamId": 133
+  },
+  {
+    "id": 809223,
+    "nameEn": "Tzu-Chen Sha",
+    "nameZh": "沙子宸",
+    "nicknames": [
+      "沙子宸",
+      "運動家沙子宸"
+    ],
+    "team": "ATH",
+    "teamId": 133
+  },
+  {
+    "id": 644374,
+    "nameEn": "Yu Chang",
+    "nameZh": "張育成",
+    "nicknames": [
+      "張育成",
+      "國防部長",
+      "Yu Chang",
+      "部長"
+    ],
+    "team": "TBD",
+    "teamId": 0
+  },
+  {
+    "id": 624407,
+    "nameEn": "Tzu-Wei Lin",
+    "nameZh": "林子偉",
+    "nicknames": [
+      "林子偉",
+      "子偉",
+      "Tzu-Wei Lin",
+      "主委"
+    ],
+    "team": "TBD",
+    "teamId": 0
+  },
+  {
+    "id": 425426,
+    "nameEn": "Chien-Ming Wang",
+    "nameZh": "王建民",
+    "nicknames": [
+      "王建民",
+      "建仔",
+      "滾地球王子",
+      "洋基王牌",
+      "台灣之光"
+    ],
+    "team": "NYY",
+    "teamId": 147
+  },
+  {
+    "id": 425539,
+    "nameEn": "Hung-Chih Kuo",
+    "nameZh": "郭泓志",
+    "nicknames": [
+      "郭泓志",
+      "不死鳥",
+      "小小郭",
+      "道奇不死鳥"
+    ],
+    "team": "LAD",
+    "teamId": 119
+  },
+  {
+    "id": 612672,
+    "nameEn": "Wei-Yin Chen",
+    "nameZh": "陳偉殷",
+    "nicknames": [
+      "陳偉殷",
+      "殷仔",
+      "金鶯左投",
+      "陳偉殷大聯盟"
+    ],
+    "team": "BAL",
+    "teamId": 110
+  }
 ]

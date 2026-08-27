@@ -149,20 +149,53 @@ export const PlayerDetailPage: React.FC = () => {
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-3 text-xs text-muted">
               {person?.currentTeam ? (
-                <Link
-                  to={`/teams/${person.currentTeam.id}`}
-                  className="flex items-center gap-1.5 font-semibold text-main hover:text-team-primary"
-                >
-                  <img
-                    src={getTeamLogoUrl(person.currentTeam.id)}
-                    alt={person.currentTeam.name}
-                    className="w-4 h-4 object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                  <span>{person.currentTeam.name}</span>
-                </Link>
+                (() => {
+                  const mlbTeam = teamsData.find((t) => t.id === person.currentTeam.id);
+                  const parentOrgMlbTeam = person.currentTeam.parentOrgId
+                    ? teamsData.find((t) => t.id === person.currentTeam.parentOrgId)
+                    : null;
+
+                  if (mlbTeam) {
+                    return (
+                      <Link
+                        to={`/teams/${person.currentTeam.id}`}
+                        className="flex items-center gap-1.5 font-semibold text-main hover:text-team-primary"
+                      >
+                        <img
+                          src={getTeamLogoUrl(person.currentTeam.id)}
+                          alt={person.currentTeam.name}
+                          className="w-4 h-4 object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                        <span>{lang === 'zh' ? mlbTeam.nameZh : mlbTeam.name}</span>
+                      </Link>
+                    );
+                  }
+
+                  // Minor league or affiliate team
+                  return (
+                    <span className="flex flex-wrap items-center gap-1.5 font-medium text-main">
+                      <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 text-[10px] font-bold">
+                        {person.currentTeam.sport?.name || 'MiLB'}
+                      </span>
+                      <span>{person.currentTeam.name}</span>
+                      {parentOrgMlbTeam && (
+                        <span className="text-muted text-xs">
+                          (
+                          <Link
+                            to={`/teams/${parentOrgMlbTeam.id}`}
+                            className="text-team-primary hover:underline font-semibold"
+                          >
+                            {lang === 'zh' ? parentOrgMlbTeam.nameZh : parentOrgMlbTeam.name}
+                          </Link>
+                          {lang === 'zh' ? ' 旗下' : ' affiliate'})
+                        </span>
+                      )}
+                    </span>
+                  );
+                })()
               ) : zhPlayerMeta?.team ? (
                 <span className="font-semibold text-team-primary">{zhPlayerMeta.team}</span>
               ) : null}
@@ -230,6 +263,11 @@ export const PlayerDetailPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-team-primary" />
               <h2 className="text-lg font-bold text-main">{t('player.stats_title')}</h2>
+              {person?.currentTeam?.sport?.name && person?.currentTeam?.sport?.id !== 1 && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-500 font-bold border border-amber-500/30 shadow-sm">
+                  {person.currentTeam.sport.name}
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-3">
@@ -412,6 +450,21 @@ export const PlayerDetailPage: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* If no hitting or pitching stats exist */}
+            {!activeHittingStats && !activePitchingStats && (
+              <div className="bg-card border border-border rounded-2xl p-8 text-center space-y-3 shadow-sm">
+                <div className="text-4xl">🌱</div>
+                <h3 className="text-base font-bold text-main">
+                  {lang === 'zh' ? '尚無出賽數據' : 'No Statistics Available'}
+                </h3>
+                <p className="text-xs text-muted max-w-md mx-auto leading-relaxed">
+                  {lang === 'zh'
+                    ? `${primaryName} 目前尚未記錄到常規賽統計數據。`
+                    : `No regular season statistics have been recorded for ${primaryName} yet.`}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Game Logs Section */}
@@ -468,13 +521,13 @@ export const PlayerDetailPage: React.FC = () => {
                       <tr key={idx} className="hover:bg-card-hover/50 transition-colors">
                         <td className="py-2.5 px-4 text-main font-semibold">{log.date}</td>
                         <td className="py-2.5 px-3">
-                          {log.opponent?.id ? (
+                          {oppTeam ? (
                             <Link
-                              to={`/teams/${log.opponent.id}`}
+                              to={`/teams/${oppTeam.id}`}
                               className="inline-flex items-center gap-1.5 hover:text-team-primary hover:underline font-semibold text-main transition-colors group"
                             >
                               <img
-                                src={getTeamLogoUrl(log.opponent.id)}
+                                src={getTeamLogoUrl(oppTeam.id)}
                                 alt={oppDisplayName}
                                 className="w-4 h-4 object-contain shrink-0 group-hover:scale-110 transition-transform"
                                 onError={(e) => {
@@ -484,7 +537,9 @@ export const PlayerDetailPage: React.FC = () => {
                               <span className="truncate max-w-[110px] sm:max-w-none">{oppDisplayName}</span>
                             </Link>
                           ) : (
-                            <span className="text-muted">{oppDisplayName}</span>
+                            <span className="text-muted font-medium truncate max-w-[110px] sm:max-w-none">
+                              {oppDisplayName}
+                            </span>
                           )}
                         </td>
                         {effectiveRole === 'pitching' ? (

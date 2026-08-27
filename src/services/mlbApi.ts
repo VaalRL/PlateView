@@ -86,9 +86,42 @@ export async function getGameBoxscore(gamePk: number) {
  * Fetch detailed player info, season stats, career stats, and game logs
  */
 export async function getPlayerDetail(personId: number) {
-  return fetchMlb<any>(`/people/${personId}`, {
-    hydrate: 'currentTeam,team,stats(group=[hitting,pitching],type=[season,career,gameLog])',
+  const data = await fetchMlb<any>(`/people/${personId}`, {
+    hydrate: 'currentTeam(league,sport,parentOrg),team,stats(group=[hitting,pitching],type=[season,career,gameLog])',
   });
+
+  const person = data?.people?.[0];
+  if (!person) return data;
+
+  const hasStats = person.stats && person.stats.some((s: any) => s.splits && s.splits.length > 0);
+
+  // If no stats found with default MLB sportId=1, check if player has a currentTeam with a minor league sportId
+  if (!hasStats && person.currentTeam) {
+    let teamSportId = person.currentTeam.sport?.id;
+    if (!teamSportId) {
+      try {
+        const teamRes = await fetchMlb<any>(`/teams/${person.currentTeam.id}`);
+        teamSportId = teamRes?.teams?.[0]?.sport?.id;
+      } catch {
+        // ignore fallback errors
+      }
+    }
+
+    if (teamSportId && teamSportId !== 1) {
+      try {
+        const milbData = await fetchMlb<any>(`/people/${personId}`, {
+          hydrate: `currentTeam(league,sport,parentOrg),team,stats(group=[hitting,pitching],type=[season,career,gameLog],sportId=${teamSportId})`,
+        });
+        if (milbData?.people?.[0]?.stats && milbData.people[0].stats.length > 0) {
+          person.stats = milbData.people[0].stats;
+        }
+      } catch {
+        // ignore fallback errors
+      }
+    }
+  }
+
+  return data;
 }
 
 /**

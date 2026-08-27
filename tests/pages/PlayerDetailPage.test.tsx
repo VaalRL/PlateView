@@ -22,6 +22,36 @@ describe('PlayerDetailPage component', () => {
 
     expect(screen.getByText('大谷翔平')).toBeInTheDocument();
     expect(screen.getByText(/Shohei Ohtani/)).toBeInTheDocument();
-    expect(screen.getByText(/收藏球星/)).toBeInTheDocument();
+    expect(screen.getByText('已收藏球星')).toBeInTheDocument();
+  });
+
+  it('renders Hao-Yu Lee profile correctly with ID 701678', () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/701678']}>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(screen.getByText('李灝宇')).toBeInTheDocument();
+    expect(screen.getByText(/Hao-Yu Lee/)).toBeInTheDocument();
+    expect(screen.getByText('收藏此球星')).toBeInTheDocument();
+  });
+
+  it('renders unknown or unseeded player page gracefully', () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/694380']}>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(screen.getByText('收藏此球星')).toBeInTheDocument();
   });
 });
