@@ -4,7 +4,7 @@ import { LanguageProvider } from '../../src/hooks/useLanguage';
 import { Footer } from '../../src/components/common/Footer';
 
 describe('Footer component', () => {
-  it('renders brand, sponsor button, disclaimer and GitHub icon link with tooltip', () => {
+  it('renders brand, official sponsor image badge, disclaimer and GitHub icon link with tooltip', () => {
     render(
       <LanguageProvider>
         <Footer />
@@ -23,7 +23,12 @@ describe('Footer component', () => {
     // Verify tooltip text
     expect(screen.getByText('GitHub 專案原始碼')).toBeInTheDocument();
 
-    // Verify sponsor button
-    expect(screen.getByText(/請我喝杯咖啡/i)).toBeInTheDocument();
+    // Verify official Buy Me a Coffee image button
+    const coffeeImg = screen.getByAltText('Buy Me A Coffee');
+    expect(coffeeImg).toBeInTheDocument();
+    expect(coffeeImg).toHaveAttribute(
+      'src',
+      'https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png'
+    );
   });
 });

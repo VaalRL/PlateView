@@ -1,5 +1,5 @@
 import React from 'react';
-import { Coffee, Heart, Github } from 'lucide-react';
+import { Heart, Github } from 'lucide-react';
 import { PlateViewLogo } from './PlateViewLogo';
 import { useLanguage } from '../../hooks/useLanguage';
 
@@ -40,8 +40,8 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Buy Me a Coffee Section */}
-        <div className="max-w-md mx-auto bg-card border border-border p-4 rounded-2xl shadow-sm space-y-3">
+        {/* Buy Me a Coffee Section (Official Badge Image) */}
+        <div className="max-w-md mx-auto bg-card border border-border p-5 rounded-2xl shadow-sm space-y-3">
           <div className="flex items-center justify-center gap-2 text-sm font-bold text-main">
             <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
             <span>{t('footer.sponsor_title')}</span>
@@ -49,15 +49,21 @@ export const Footer: React.FC = () => {
           <p className="text-xs text-muted leading-relaxed">
             {t('footer.sponsor_desc')}
           </p>
-          <a
-            href="https://buymeacoffee.com/whoami885"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs shadow transition-all hover:scale-105"
-          >
-            <Coffee className="w-4 h-4" />
-            <span>{t('footer.sponsor_btn')}</span>
-          </a>
+          <div className="pt-1">
+            <a
+              href="https://buymeacoffee.com/whoami885"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Buy Me a Coffee"
+              className="inline-block transition-transform hover:scale-105 active:scale-95"
+            >
+              <img
+                src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+                alt="Buy Me A Coffee"
+                className="h-11 w-auto mx-auto rounded-xl shadow-sm hover:shadow-md transition-shadow"
+              />
+            </a>
+          </div>
         </div>
 
         {/* Legal Disclaimer */}
