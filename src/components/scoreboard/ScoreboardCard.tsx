@@ -5,6 +5,7 @@ import { formatBilingualGameTime } from '../../utils/timezone';
 import { getTeamLogoUrl } from '../../services/mlbApi';
 import { BasesDiamond } from './BasesDiamond';
 import { CountDisplay } from './CountDisplay';
+import { GameBoxscorePanel } from '../team/GameBoxscorePanel';
 import { useLanguage } from '../../hooks/useLanguage';
 import teamsData from '../../data/teams.json';
 import playersData from '../../data/players-zh-tw.json';
@@ -68,11 +69,22 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
     return person.fullName;
   };
 
+  const isClickable = isFinal || (linescore?.innings && linescore.innings.length > 0);
+
+  const handleCardClick = () => {
+    if (isClickable) {
+      setShowLinescore((prev) => !prev);
+    }
+  };
+
   return (
     <div
-      className={`bg-card border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between ${
+      onClick={handleCardClick}
+      className={`bg-card border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group/card ${
         isLive
           ? 'border-red-500/60 shadow-[0_0_16px_rgba(239,68,68,0.12)] ring-1 ring-red-500/30'
+          : isFinal
+          ? 'border-border hover:border-team-primary/60 cursor-pointer'
           : 'border-border'
       }`}
     >
@@ -117,21 +129,36 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
           </div>
         )}
 
-        {/* Right side of Header: Bases Diamond if Live or Venue Name */}
-        {isLive ? (
-          <BasesDiamond
-            hasFirst={hasFirstBase}
-            hasSecond={hasSecondBase}
-            hasThird={hasThirdBase}
-          />
-        ) : (
-          <span
-            className="text-muted text-[11px] truncate max-w-[140px] text-right font-sans opacity-80"
-            title={game.venue?.name}
-          >
-            {game.venue?.name}
-          </span>
-        )}
+        {/* Right side of Header: Bases Diamond if Live or Venue Name + Expand Indicator */}
+        <div className="flex items-center gap-2">
+          {isLive ? (
+            <BasesDiamond
+              hasFirst={hasFirstBase}
+              hasSecond={hasSecondBase}
+              hasThird={hasThirdBase}
+            />
+          ) : (
+            <span
+              className="text-muted text-[11px] truncate max-w-[140px] text-right font-sans opacity-80"
+              title={game.venue?.name}
+            >
+              {game.venue?.name}
+            </span>
+          )}
+
+          {isFinal && (
+            <span
+              className="text-muted group-hover/card:text-team-primary transition-colors p-0.5"
+              title={showLinescore ? t('team.hide_boxscore') : t('team.view_boxscore')}
+            >
+              {showLinescore ? (
+                <ChevronUp className="w-3.5 h-3.5 text-team-primary" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5 opacity-60 group-hover/card:opacity-100" />
+              )}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* 2. Main Scoreboard: 2 Rows with R / H / E table header (MLB.com official style) */}
@@ -151,6 +178,7 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
               <td className="py-2 pl-1">
                 <Link
                   to={`/teams/${teams.away.team.id}`}
+                  onClick={(e) => e.stopPropagation()}
                   className="flex items-center gap-2.5 hover:text-team-primary transition-colors"
                 >
                   <img
@@ -209,6 +237,7 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
               <td className="py-2 pl-1">
                 <Link
                   to={`/teams/${teams.home.team.id}`}
+                  onClick={(e) => e.stopPropagation()}
                   className="flex items-center gap-2.5 hover:text-team-primary transition-colors"
                 >
                   <img
@@ -275,6 +304,7 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             {linescore.defense?.pitcher?.id ? (
               <Link
                 to={`/players/${linescore.defense.pitcher.id}`}
+                onClick={(e) => e.stopPropagation()}
                 className="font-semibold text-main hover:text-team-primary hover:underline transition-colors"
                 title={linescore.defense.pitcher.fullName}
               >
@@ -293,6 +323,7 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             {linescore.offense?.batter?.id ? (
               <Link
                 to={`/players/${linescore.offense.batter.id}`}
+                onClick={(e) => e.stopPropagation()}
                 className="font-semibold text-main hover:text-team-primary hover:underline transition-colors"
                 title={linescore.offense.batter.fullName}
               >
@@ -314,6 +345,7 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             {teams.away.probablePitcher?.id ? (
               <Link
                 to={`/players/${teams.away.probablePitcher.id}`}
+                onClick={(e) => e.stopPropagation()}
                 className="font-medium text-main hover:text-team-primary hover:underline transition-colors"
                 title={teams.away.probablePitcher.fullName}
               >
@@ -330,6 +362,7 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             {teams.home.probablePitcher?.id ? (
               <Link
                 to={`/players/${teams.home.probablePitcher.id}`}
+                onClick={(e) => e.stopPropagation()}
                 className="font-medium text-main hover:text-team-primary hover:underline transition-colors"
                 title={teams.home.probablePitcher.fullName}
               >
@@ -352,7 +385,9 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
               {game.decisions.winner.id ? (
                 <Link
                   to={`/players/${game.decisions.winner.id}`}
+                  onClick={(e) => e.stopPropagation()}
                   className="text-main hover:text-team-primary hover:underline transition-colors font-medium"
+                  title={game.decisions.winner.fullName}
                 >
                   {getPlayerDisplayName(game.decisions.winner)}
                 </Link>
@@ -367,7 +402,9 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
               {game.decisions.loser.id ? (
                 <Link
                   to={`/players/${game.decisions.loser.id}`}
+                  onClick={(e) => e.stopPropagation()}
                   className="text-main hover:text-team-primary hover:underline transition-colors font-medium"
+                  title={game.decisions.loser.fullName}
                 >
                   {getPlayerDisplayName(game.decisions.loser)}
                 </Link>
@@ -382,7 +419,9 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
               {game.decisions.save.id ? (
                 <Link
                   to={`/players/${game.decisions.save.id}`}
+                  onClick={(e) => e.stopPropagation()}
                   className="text-main hover:text-team-primary hover:underline transition-colors font-medium"
+                  title={game.decisions.save.fullName}
                 >
                   {getPlayerDisplayName(game.decisions.save)}
                 </Link>
@@ -394,81 +433,100 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
         </div>
       )}
 
-      {/* 4. Expandable Linescore (Box score 1~9+ innings) */}
-      {linescore && linescore.innings && linescore.innings.length > 0 && (
+      {/* 4. Expandable Linescore & Box Score Panel */}
+      {isClickable && (
         <div className="pt-2 mt-2 border-t border-border">
           <button
-            onClick={() => setShowLinescore(!showLinescore)}
-            className="w-full flex items-center justify-center gap-1 text-[11px] text-muted hover:text-main transition-colors py-0.5"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowLinescore(!showLinescore);
+            }}
+            className="w-full flex items-center justify-center gap-1.5 text-[11px] text-muted hover:text-team-primary transition-colors py-1 font-medium group"
           >
-            <span>{showLinescore ? t('sb.collapse_linescore') : t('sb.expand_linescore')}</span>
-            {showLinescore ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            <span>{showLinescore ? t('team.hide_boxscore') : t('team.view_boxscore')}</span>
+            {showLinescore ? (
+              <ChevronUp className="w-3.5 h-3.5 text-team-primary" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
+            )}
           </button>
 
           {showLinescore && (
-            <div className="mt-2 overflow-x-auto pb-1 bg-page/40 p-2 rounded-xl">
-              <table className="w-full text-center text-xs font-mono">
-                <thead>
-                  <tr className="text-muted border-b border-border/50 text-[10px]">
-                    <th className="text-left font-normal py-1 pr-2">{t('sb.team')}</th>
-                    {linescore.innings.map((inn) => (
-                      <th
-                        key={inn.num}
-                        className={`font-normal px-1.5 py-1 ${
-                          isLive && inn.num === linescore.currentInning
-                            ? 'text-red-400 font-bold'
-                            : ''
-                        }`}
-                      >
-                        {inn.num}
-                      </th>
-                    ))}
-                    <th className="font-bold px-2 py-1 text-main border-l border-border/30">R</th>
-                    <th className="font-normal px-1.5 py-1">H</th>
-                    <th className="font-normal px-1.5 py-1">E</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/30 text-[11px]">
-                  <tr>
-                    <td className="text-left py-1 pr-2 font-semibold text-muted">
-                      {awayTeamMeta?.abbrev || 'AWAY'}
-                    </td>
-                    {linescore.innings.map((inn) => (
-                      <td key={inn.num} className="px-1.5 py-1">
-                        {inn.away.runs ?? '-'}
-                      </td>
-                    ))}
-                    <td className="font-bold px-2 py-1 text-main border-l border-border/30">
-                      {linescore.teams?.away.runs ?? teams.away.score ?? 0}
-                    </td>
-                    <td className="px-1.5 py-1 text-muted">
-                      {linescore.teams?.away.hits ?? '-'}
-                    </td>
-                    <td className="px-1.5 py-1 text-muted">
-                      {linescore.teams?.away.errors ?? '-'}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-left py-1 pr-2 font-semibold text-muted">
-                      {homeTeamMeta?.abbrev || 'HOME'}
-                    </td>
-                    {linescore.innings.map((inn) => (
-                      <td key={inn.num} className="px-1.5 py-1">
-                        {inn.home.runs ?? '-'}
-                      </td>
-                    ))}
-                    <td className="font-bold px-2 py-1 text-main border-l border-border/30">
-                      {linescore.teams?.home.runs ?? teams.home.score ?? 0}
-                    </td>
-                    <td className="px-1.5 py-1 text-muted">
-                      {linescore.teams?.home.hits ?? '-'}
-                    </td>
-                    <td className="px-1.5 py-1 text-muted">
-                      {linescore.teams?.home.errors ?? '-'}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div
+              className="mt-3 space-y-4 animate-in fade-in duration-200 cursor-default"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Inning-by-Inning Linescore Table */}
+              {linescore && linescore.innings && linescore.innings.length > 0 && (
+                <div className="overflow-x-auto pb-1 bg-page/40 p-2.5 rounded-xl border border-border/40">
+                  <table className="w-full text-center text-xs font-mono">
+                    <thead>
+                      <tr className="text-muted border-b border-border/50 text-[10px]">
+                        <th className="text-left font-normal py-1 pr-2">{t('sb.team')}</th>
+                        {linescore.innings.map((inn) => (
+                          <th
+                            key={inn.num}
+                            className={`font-normal px-1.5 py-1 ${
+                              isLive && inn.num === linescore.currentInning
+                                ? 'text-red-400 font-bold'
+                                : ''
+                            }`}
+                          >
+                            {inn.num}
+                          </th>
+                        ))}
+                        <th className="font-bold px-2 py-1 text-main border-l border-border/30">R</th>
+                        <th className="font-normal px-1.5 py-1">H</th>
+                        <th className="font-normal px-1.5 py-1">E</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/30 text-[11px]">
+                      <tr>
+                        <td className="text-left py-1 pr-2 font-semibold text-muted">
+                          {awayTeamMeta?.abbrev || 'AWAY'}
+                        </td>
+                        {linescore.innings.map((inn) => (
+                          <td key={inn.num} className="px-1.5 py-1">
+                            {inn.away.runs ?? '-'}
+                          </td>
+                        ))}
+                        <td className="font-bold px-2 py-1 text-main border-l border-border/30">
+                          {linescore.teams?.away.runs ?? teams.away.score ?? 0}
+                        </td>
+                        <td className="px-1.5 py-1 text-muted">
+                          {linescore.teams?.away.hits ?? '-'}
+                        </td>
+                        <td className="px-1.5 py-1 text-muted">
+                          {linescore.teams?.away.errors ?? '-'}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="text-left py-1 pr-2 font-semibold text-muted">
+                          {homeTeamMeta?.abbrev || 'HOME'}
+                        </td>
+                        {linescore.innings.map((inn) => (
+                          <td key={inn.num} className="px-1.5 py-1">
+                            {inn.home.runs ?? '-'}
+                          </td>
+                        ))}
+                        <td className="font-bold px-2 py-1 text-main border-l border-border/30">
+                          {linescore.teams?.home.runs ?? teams.home.score ?? 0}
+                        </td>
+                        <td className="px-1.5 py-1 text-muted">
+                          {linescore.teams?.home.hits ?? '-'}
+                        </td>
+                        <td className="px-1.5 py-1 text-muted">
+                          {linescore.teams?.home.errors ?? '-'}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Detailed Boxscore Panel (Batters & Pitchers) */}
+              <GameBoxscorePanel gamePk={game.gamePk} />
             </div>
           )}
         </div>

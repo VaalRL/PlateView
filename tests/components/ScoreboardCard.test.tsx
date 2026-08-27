@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ScoreboardCard } from '../../src/components/scoreboard/ScoreboardCard';
 import { GameSchedule } from '../../src/types/mlb';
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false } },
+});
 
 const mockLiveGame: GameSchedule = {
   gamePk: 123456,
@@ -47,16 +52,38 @@ const mockLiveGame: GameSchedule = {
       away: { runs: 5, hits: 8, errors: 0 },
       home: { runs: 3, hits: 5, errors: 1 },
     },
+    innings: [
+      { num: 1, ordinalNum: '1st', away: { runs: 1 }, home: { runs: 0 } },
+      { num: 2, ordinalNum: '2nd', away: { runs: 0 }, home: { runs: 2 } },
+    ],
   },
   venue: { id: 1, name: 'PNC Park', link: '' },
+};
+
+const mockFinalGame: GameSchedule = {
+  ...mockLiveGame,
+  gamePk: 789101,
+  status: {
+    abstractGameState: 'Final',
+    codedGameState: 'F',
+    detailedState: 'Final',
+    statusCode: 'F',
+    abstractGameCode: 'F',
+  },
+  decisions: {
+    winner: { id: 605483, fullName: 'Blake Snell', link: '' },
+    loser: { id: 694973, fullName: 'Paul Skenes', link: '' },
+  },
 };
 
 describe('ScoreboardCard component', () => {
   it('renders live game state with MLB.com R/H/E columns, scores, teams, count and inning', () => {
     render(
-      <MemoryRouter>
-        <ScoreboardCard game={mockLiveGame} />
-      </MemoryRouter>
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <ScoreboardCard game={mockLiveGame} />
+        </MemoryRouter>
+      </QueryClientProvider>
     );
 
     // Verify team names (Chinese translated)
@@ -64,9 +91,9 @@ describe('ScoreboardCard component', () => {
     expect(screen.getByText('匹茲堡海盜')).toBeInTheDocument();
 
     // Verify MLB.com R/H/E table headers
-    expect(screen.getByText('R')).toBeInTheDocument();
-    expect(screen.getByText('H')).toBeInTheDocument();
-    expect(screen.getByText('E')).toBeInTheDocument();
+    expect(screen.getAllByText('R').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('H').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('E').length).toBeGreaterThan(0);
 
     // Verify scores (5 and 3)
     expect(screen.getAllByText('5').length).toBeGreaterThan(0);
@@ -92,11 +119,32 @@ describe('ScoreboardCard component', () => {
     };
 
     render(
-      <MemoryRouter>
-        <ScoreboardCard game={postponedGame} />
-      </MemoryRouter>
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <ScoreboardCard game={postponedGame} />
+        </MemoryRouter>
+      </QueryClientProvider>
     );
 
     expect(screen.getByText(/Postponed/)).toBeInTheDocument();
+  });
+
+  it('expands linescore and boxscore when clicking completed game card', () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <ScoreboardCard game={mockFinalGame} />
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    // Initial state: not expanded
+    expect(screen.getByText('展開比賽 Box')).toBeInTheDocument();
+
+    // Click card container to expand
+    fireEvent.click(screen.getByText(/已結束/i));
+
+    // Expanded state
+    expect(screen.getByText('收合比賽 Box')).toBeInTheDocument();
   });
 });
