@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Default Light Mode */
+  --bg-page: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --border-color: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+
+  /* Default Team: MLB Classic Blue */
+  --team-primary: #005A9C;
+  --team-secondary: #EF3E42;
+}
+
+.dark, [data-mode="dark"] {
+  /* Default Dark Mode */
+  --bg-page: #090d16;
+  --bg-card: #131b2e;
+  --bg-card-hover: #1c2742;
+  --border-color: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+}
+
+/* 30 Team Theme Injections */
+[data-team="lad"] { --team-primary: #005A9C; --team-secondary: #EF3E42; } /* LA Dodgers */
+[data-team="nyy"] { --team-primary: #003087; --team-secondary: #E4002C; } /* NY Yankees */
+[data-team="sd"]  { --team-primary: #2F241D; --team-secondary: #FFC425; } /* SD Padres */
+[data-team="pit"] { --team-primary: #FDB827; --team-secondary: #000000; } /* PIT Pirates */
+[data-team="bos"] { --team-primary: #BD3039; --team-secondary: #0C2340; } /* BOS Red Sox */
+[data-team="sf"]  { --team-primary: #FD5A1E; --team-secondary: #27251F; } /* SF Giants */
+[data-team="bal"] { --team-primary: #DF4601; --team-secondary: #000000; } /* BAL Orioles */
+[data-team="tb"]  { --team-primary: #092C5C; --team-secondary: #8FBCE6; } /* TB Rays */
+[data-team="tor"] { --team-primary: #134A8E; --team-secondary: #E8291C; } /* TOR Blue Jays */
+[data-team="cws"] { --team-primary: #27251F; --team-secondary: #C4CED4; } /* CWS White Sox */
+[data-team="cle"] { --team-primary: #E31937; --team-secondary: #002B5C; } /* CLE Guardians */
+[data-team="det"] { --team-primary: #0C2340; --team-secondary: #FA4616; } /* DET Tigers */
+[data-team="kc"]  { --team-primary: #004687; --team-secondary: #BD9B60; } /* KC Royals */
+[data-team="min"] { --team-primary: #002B5C; --team-secondary: #D31145; } /* MIN Twins */
+[data-team="hou"] { --team-primary: #002D62; --team-secondary: #EB6E1F; } /* HOU Astros */
+[data-team="laa"] { --team-primary: #BA0021; --team-secondary: #003263; } /* LAA Angels */
+[data-team="oak"] { --team-primary: #003831; --team-secondary: #EFB21E; } /* OAK Athletics */
+[data-team="sea"] { --team-primary: #0C2340; --team-secondary: #005C5C; } /* SEA Mariners */
+[data-team="tex"] { --team-primary: #003278; --team-secondary: #C0111F; } /* TEX Rangers */
+[data-team="atl"] { --team-primary: #CE1141; --team-secondary: #13274F; } /* ATL Braves */
+[data-team="mia"] { --team-primary: #00A3E0; --team-secondary: #EF3340; } /* MIA Marlins */
+[data-team="nym"] { --team-primary: #002D72; --team-secondary: #FF5910; } /* NY Mets */
+[data-team="phi"] { --team-primary: #E81828; --team-secondary: #002D72; } /* PHI Phillies */
+[data-team="wsh"] { --team-primary: #AB0003; --team-secondary: #142238; } /* WSH Nationals */
+[data-team="chc"] { --team-primary: #0E3386; --team-secondary: #CC3433; } /* CHC Cubs */
+[data-team="cin"] { --team-primary: #C6011F; --team-secondary: #000000; } /* CIN Reds */
+[data-team="mil"] { --team-primary: #12284C; --team-secondary: #FFC52F; } /* MIL Brewers */
+[data-team="stl"] { --team-primary: #C41E3A; --team-secondary: #0C2340; } /* STL Cardinals */
+[data-team="ari"] { --team-primary: #A71930; --team-secondary: #E3D4AD; } /* ARI Diamondbacks */
+[data-team="col"] { --team-primary: #33006F; --team-secondary: #C4CED4; } /* COL Rockies */
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
