@@ -17,7 +17,7 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
   const [showLinescore, setShowLinescore] = useState(false);
   const { lang, t } = useLanguage();
   const { status, teams, linescore } = game;
-  
+
   const isLive = status.abstractGameState === 'Live';
   const isFinal = status.abstractGameState === 'Final';
   const isPostponed =
@@ -28,8 +28,8 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
     status.statusCode === 'DR';
   const isPreview = status.abstractGameState === 'Preview' && !isPostponed;
 
-  const awayTeamMeta = teamsData.find((t) => t.id === teams.away.team.id);
-  const homeTeamMeta = teamsData.find((t) => t.id === teams.home.team.id);
+  const awayTeamMeta = teamsData.find((tItem) => tItem.id === teams.away.team.id);
+  const homeTeamMeta = teamsData.find((tItem) => tItem.id === teams.home.team.id);
 
   const awayName =
     lang === 'zh'
@@ -44,26 +44,39 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
   const hasSecondBase = !!linescore?.offense?.second;
   const hasThirdBase = !!linescore?.offense?.third;
 
-  const isAwayWinning = (teams.away.score ?? 0) > (teams.home.score ?? 0);
-  const isHomeWinning = (teams.home.score ?? 0) > (teams.away.score ?? 0);
+  const awayScore = teams.away.score;
+  const homeScore = teams.home.score;
+
+  const isAwayWinner = isFinal && (teams.away.isWinner || (awayScore ?? 0) > (homeScore ?? 0));
+  const isHomeWinner = isFinal && (teams.home.isWinner || (homeScore ?? 0) > (awayScore ?? 0));
+
+  const awayHits = linescore?.teams?.away.hits;
+  const homeHits = linescore?.teams?.home.hits;
+  const awayErrors = linescore?.teams?.away.errors;
+  const homeErrors = linescore?.teams?.home.errors;
+
+  const totalInnings = linescore?.innings?.length || 9;
+  const isExtraInnings = isFinal && totalInnings > 9;
 
   return (
-    <div className={`bg-card border rounded-xl p-4 shadow-sm hover:shadow-md transition-all ${
-      isLive ? 'border-red-500/50 shadow-[0_0_12px_rgba(239,68,68,0.1)]' : 'border-border'
-    }`}>
-      {/* Header / Status Bar */}
-      <div className="flex items-center justify-between pb-3 border-b border-border text-xs">
+    <div
+      className={`bg-card border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between ${
+        isLive
+          ? 'border-red-500/60 shadow-[0_0_16px_rgba(239,68,68,0.12)] ring-1 ring-red-500/30'
+          : 'border-border'
+      }`}
+    >
+      {/* 1. Header Bar: Game Status + Venue (MLB.com layout) */}
+      <div className="flex items-center justify-between pb-2.5 border-b border-border text-xs">
         {isLive && (
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-red-500 font-bold animate-pulse">
+          <div className="flex items-center gap-2.5">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-500/15 text-red-500 font-black tracking-wider text-[11px] animate-pulse">
               <span className="w-2 h-2 rounded-full bg-red-500" />
-              <span>
-                {linescore?.inningHalf === 'Top' ? '▲' : '▼'}{' '}
-                {linescore?.currentInningOrdinal || `${linescore?.currentInning || ''}${lang === 'zh' ? '局' : ''}`}
-              </span>
-            </div>
+              {linescore?.inningHalf === 'Top' ? '▲' : '▼'}{' '}
+              {linescore?.currentInningOrdinal || `${linescore?.currentInning || ''}${lang === 'zh' ? '局' : ''}`}
+            </span>
 
-            {/* Live Count Display */}
+            {/* Live Count */}
             <CountDisplay
               balls={linescore?.balls ?? 0}
               strikes={linescore?.strikes ?? 0}
@@ -73,25 +86,28 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
         )}
 
         {isPostponed && (
-          <div className="flex items-center gap-1 text-amber-500 font-semibold">
+          <div className="flex items-center gap-1 text-amber-500 font-bold">
             <AlertCircle className="w-3.5 h-3.5" />
             <span>{status.detailedState || t('sb.postponed')}</span>
           </div>
         )}
 
         {isFinal && (
-          <span className="font-semibold text-muted">
-            {status.detailedState || t('sb.final')}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-muted uppercase tracking-wider text-[11px]">
+              {isExtraInnings ? `${t('sb.final')} / ${totalInnings}` : t('sb.final')}
+            </span>
+          </div>
         )}
 
         {isPreview && (
-          <span className="font-semibold text-team-primary">
-            {formatGameTime(game.gameDate)} ({t('sb.scheduled')})
-          </span>
+          <div className="flex items-center gap-1.5 font-bold text-team-primary text-[11px]">
+            <span>{formatGameTime(game.gameDate)}</span>
+            <span className="text-muted font-normal">({t('sb.scheduled')})</span>
+          </div>
         )}
 
-        {/* Live Diamond indicator or Venue */}
+        {/* Right side of Header: Bases Diamond if Live or Venue Name */}
         {isLive ? (
           <BasesDiamond
             hasFirst={hasFirstBase}
@@ -99,94 +115,161 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             hasThird={hasThirdBase}
           />
         ) : (
-          <span className="text-muted text-[11px] truncate max-w-[130px]" title={game.venue?.name}>
+          <span
+            className="text-muted text-[11px] truncate max-w-[140px] text-right font-sans opacity-80"
+            title={game.venue?.name}
+          >
             {game.venue?.name}
           </span>
         )}
       </div>
 
-      {/* Teams and Scores */}
-      <div className="py-3 space-y-2.5">
-        {/* Away Team */}
-        <div className="flex items-center justify-between">
-          <Link
-            to={`/teams/${teams.away.team.id}`}
-            className="flex items-center gap-2.5 hover:text-team-primary transition-colors flex-1"
-          >
-            <img
-              src={getTeamLogoUrl(teams.away.team.id)}
-              alt={awayName}
-              className="w-6 h-6 object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-            <span className={`text-sm ${isFinal && isAwayWinning ? 'font-black text-main' : 'font-semibold text-main'}`}>
-              {awayName}
-            </span>
-            <span className="text-[11px] text-muted font-mono">
-              ({teams.away.leagueRecord.wins}-{teams.away.leagueRecord.losses})
-            </span>
-          </Link>
-          <span
-            className={`text-lg font-mono px-2 ${
-              isFinal && isAwayWinning
-                ? 'font-black text-main'
-                : isLive
-                ? 'font-black text-main'
-                : 'font-semibold text-muted'
-            }`}
-          >
-            {teams.away.score !== undefined ? teams.away.score : '-'}
-          </span>
-        </div>
+      {/* 2. Main Scoreboard: 2 Rows with R / H / E table header (MLB.com official style) */}
+      <div className="py-3">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="text-[10px] font-mono text-muted uppercase tracking-wider">
+              <th className="text-left font-medium pb-1.5 pl-1">{t('sb.team')}</th>
+              <th className="w-8 text-center font-bold text-main pb-1.5">{t('sb.runs_col')}</th>
+              <th className="w-8 text-center font-medium text-muted pb-1.5">{t('sb.hits_col')}</th>
+              <th className="w-8 text-center font-medium text-muted pb-1.5 pr-1">{t('sb.errors_col')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/20 text-sm">
+            {/* Away Team Row */}
+            <tr className="group">
+              <td className="py-2 pl-1">
+                <Link
+                  to={`/teams/${teams.away.team.id}`}
+                  className="flex items-center gap-2.5 hover:text-team-primary transition-colors"
+                >
+                  <img
+                    src={getTeamLogoUrl(teams.away.team.id)}
+                    alt={awayName}
+                    className="w-6 h-6 object-contain shrink-0 drop-shadow-sm group-hover:scale-105 transition-transform"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                  <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2">
+                    <span
+                      className={`text-sm ${
+                        isAwayWinner
+                          ? 'font-black text-main'
+                          : isFinal
+                          ? 'font-medium text-muted'
+                          : 'font-bold text-main'
+                      }`}
+                    >
+                      {awayName}
+                    </span>
+                    <span className="text-[10px] text-muted font-mono">
+                      ({teams.away.leagueRecord.wins}-{teams.away.leagueRecord.losses})
+                    </span>
+                  </div>
+                </Link>
+              </td>
 
-        {/* Home Team */}
-        <div className="flex items-center justify-between">
-          <Link
-            to={`/teams/${teams.home.team.id}`}
-            className="flex items-center gap-2.5 hover:text-team-primary transition-colors flex-1"
-          >
-            <img
-              src={getTeamLogoUrl(teams.home.team.id)}
-              alt={homeName}
-              className="w-6 h-6 object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-            <span className={`text-sm ${isFinal && isHomeWinning ? 'font-black text-main' : 'font-semibold text-main'}`}>
-              {homeName}
-            </span>
-            <span className="text-[11px] text-muted font-mono">
-              ({teams.home.leagueRecord.wins}-{teams.home.leagueRecord.losses})
-            </span>
-          </Link>
-          <span
-            className={`text-lg font-mono px-2 ${
-              isFinal && isHomeWinning
-                ? 'font-black text-main'
-                : isLive
-                ? 'font-black text-main'
-                : 'font-semibold text-muted'
-            }`}
-          >
-            {teams.home.score !== undefined ? teams.home.score : '-'}
-          </span>
-        </div>
+              {/* Away Runs */}
+              <td
+                className={`text-center font-mono text-lg ${
+                  isAwayWinner || (isLive && (awayScore ?? 0) > (homeScore ?? 0))
+                    ? 'font-black text-main'
+                    : isFinal
+                    ? 'font-semibold text-muted'
+                    : 'font-bold text-main'
+                }`}
+              >
+                {awayScore !== undefined ? awayScore : '-'}
+              </td>
+
+              {/* Away Hits */}
+              <td className="text-center font-mono text-xs text-muted">
+                {awayHits !== undefined ? awayHits : '-'}
+              </td>
+
+              {/* Away Errors */}
+              <td className="text-center font-mono text-xs text-muted pr-1">
+                {awayErrors !== undefined ? awayErrors : '-'}
+              </td>
+            </tr>
+
+            {/* Home Team Row */}
+            <tr className="group">
+              <td className="py-2 pl-1">
+                <Link
+                  to={`/teams/${teams.home.team.id}`}
+                  className="flex items-center gap-2.5 hover:text-team-primary transition-colors"
+                >
+                  <img
+                    src={getTeamLogoUrl(teams.home.team.id)}
+                    alt={homeName}
+                    className="w-6 h-6 object-contain shrink-0 drop-shadow-sm group-hover:scale-105 transition-transform"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                  <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2">
+                    <span
+                      className={`text-sm ${
+                        isHomeWinner
+                          ? 'font-black text-main'
+                          : isFinal
+                          ? 'font-medium text-muted'
+                          : 'font-bold text-main'
+                      }`}
+                    >
+                      {homeName}
+                    </span>
+                    <span className="text-[10px] text-muted font-mono">
+                      ({teams.home.leagueRecord.wins}-{teams.home.leagueRecord.losses})
+                    </span>
+                  </div>
+                </Link>
+              </td>
+
+              {/* Home Runs */}
+              <td
+                className={`text-center font-mono text-lg ${
+                  isHomeWinner || (isLive && (homeScore ?? 0) > (awayScore ?? 0))
+                    ? 'font-black text-main'
+                    : isFinal
+                    ? 'font-semibold text-muted'
+                    : 'font-bold text-main'
+                }`}
+              >
+                {homeScore !== undefined ? homeScore : '-'}
+              </td>
+
+              {/* Home Hits */}
+              <td className="text-center font-mono text-xs text-muted">
+                {homeHits !== undefined ? homeHits : '-'}
+              </td>
+
+              {/* Home Errors */}
+              <td className="text-center font-mono text-xs text-muted pr-1">
+                {homeErrors !== undefined ? homeErrors : '-'}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      {/* Live Batter / Pitcher Matchup */}
+      {/* 3. Bottom Pitcher / Batter Decision Strip (MLB.com signature strip) */}
       {isLive && (linescore?.defense?.pitcher || linescore?.offense?.batter) && (
-        <div className="pt-2 border-t border-border text-[11px] text-muted grid grid-cols-2 gap-2 bg-page/40 p-2 rounded-lg my-1">
+        <div className="pt-2 border-t border-border text-[11px] text-muted grid grid-cols-2 gap-2 bg-page/50 p-2 rounded-xl">
           <div className="truncate">
-            <span className="opacity-75">{t('sb.pitcher_short')}: </span>
+            <span className="text-[10px] font-bold text-team-primary uppercase mr-1">
+              {t('sb.pitcher_short')}:
+            </span>
             <span className="font-semibold text-main">
               {linescore.defense?.pitcher?.fullName || 'Pitcher'}
             </span>
           </div>
           <div className="truncate text-right">
-            <span className="opacity-75">{t('sb.batter_short')}: </span>
+            <span className="text-[10px] font-bold text-team-primary uppercase mr-1">
+              {t('sb.batter_short')}:
+            </span>
             <span className="font-semibold text-main">
               {linescore.offense?.batter?.fullName || 'Batter'}
             </span>
@@ -194,9 +277,8 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
         </div>
       )}
 
-      {/* Pitcher Preview */}
       {isPreview && (
-        <div className="pt-2 border-t border-border text-[11px] text-muted grid grid-cols-2 gap-2">
+        <div className="pt-2 border-t border-border text-[11px] text-muted grid grid-cols-2 gap-2 bg-page/30 p-2 rounded-xl">
           <div className="truncate">
             <span className="opacity-75">{t('sb.sp_away')}: </span>
             <span className="font-medium text-main">
@@ -212,40 +294,42 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
         </div>
       )}
 
-      {/* Final Decision Pitchers */}
       {isFinal && game.decisions && (
-        <div className="pt-2 border-t border-border text-[11px] text-muted flex flex-wrap gap-x-3 gap-y-1">
+        <div className="pt-2 border-t border-border text-[11px] text-muted flex flex-wrap items-center gap-x-3 gap-y-1 bg-page/30 p-2 rounded-xl">
           {game.decisions.winner && (
             <span>
-              <strong className="text-emerald-500 font-bold">{t('sb.win_short')}:</strong> {game.decisions.winner.fullName}
+              <strong className="text-emerald-500 font-bold">{t('sb.win_short')}:</strong>{' '}
+              {game.decisions.winner.fullName}
             </span>
           )}
           {game.decisions.loser && (
             <span>
-              <strong className="text-rose-500 font-bold">{t('sb.loss_short')}:</strong> {game.decisions.loser.fullName}
+              <strong className="text-rose-500 font-bold">{t('sb.loss_short')}:</strong>{' '}
+              {game.decisions.loser.fullName}
             </span>
           )}
           {game.decisions.save && (
             <span>
-              <strong className="text-amber-500 font-bold">{t('sb.save_short')}:</strong> {game.decisions.save.fullName}
+              <strong className="text-amber-500 font-bold">{t('sb.save_short')}:</strong>{' '}
+              {game.decisions.save.fullName}
             </span>
           )}
         </div>
       )}
 
-      {/* Linescore Collapse / Expand */}
+      {/* 4. Expandable Linescore (Box score 1~9+ innings) */}
       {linescore && linescore.innings && linescore.innings.length > 0 && (
         <div className="pt-2 mt-2 border-t border-border">
           <button
             onClick={() => setShowLinescore(!showLinescore)}
-            className="w-full flex items-center justify-center gap-1 text-[11px] text-muted hover:text-main transition-colors"
+            className="w-full flex items-center justify-center gap-1 text-[11px] text-muted hover:text-main transition-colors py-0.5"
           >
             <span>{showLinescore ? t('sb.collapse_linescore') : t('sb.expand_linescore')}</span>
-            {showLinescore ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            {showLinescore ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
 
           {showLinescore && (
-            <div className="mt-2 overflow-x-auto pb-1">
+            <div className="mt-2 overflow-x-auto pb-1 bg-page/40 p-2 rounded-xl">
               <table className="w-full text-center text-xs font-mono">
                 <thead>
                   <tr className="text-muted border-b border-border/50 text-[10px]">

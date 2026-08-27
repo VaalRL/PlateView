@@ -4,6 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Deploy to GitHub Pages](https://github.com/VaalRL/PlateView/actions/workflows/deploy.yml/badge.svg)](https://github.com/VaalRL/PlateView/actions/workflows/deploy.yml)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-whoami885-orange.svg?style=flat&logo=buy-me-a-coffee&logoColor=white)](https://buymeacoffee.com/whoami885)
 
 ---
 
@@ -101,6 +102,19 @@ plateview/
 
 ### English Disclaimer
 > *"PlateView is an open-source, non-commercial baseball statistics explorer designed for personal research and educational purposes. All MLB trademarks, logos, team names, player photos, and statistical data are the intellectual property of Major League Baseball and its clubs. This project is not affiliated with, endorsed by, or sponsored by Major League Baseball."*
+
+---
+
+## ☕ 支持與贊助本專案 (Support & Sponsor)
+
+如果您喜歡 **PlateView**，覺得這個專案對您的日常看球與數據查詢有所幫助，歡迎請開發者喝杯咖啡支持持續維護！
+
+<a href="https://buymeacoffee.com/whoami885" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 180px !important;" />
+</a>
+
+- **Buy Me a Coffee**: [https://buymeacoffee.com/whoami885](https://buymeacoffee.com/whoami885)
+- **聯絡與贊助 Email**: `whoami885@gmail.com`
 
 ---
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Compass } from 'lucide-react';
+import { Search, Compass, Coffee } from 'lucide-react';
 import { ThemeSelector } from './ThemeSelector';
 import { SearchModal } from './SearchModal';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -75,11 +75,23 @@ export const Navbar: React.FC = () => {
             {/* Standings Quick Scroll Button */}
             <button
               onClick={handleStandingsClick}
-              className="flex items-center gap-1 text-sm font-medium text-muted hover:text-main transition-colors px-2 py-1 rounded-lg hover:bg-card-hover"
+              className="hidden sm:flex items-center gap-1 text-sm font-medium text-muted hover:text-main transition-colors px-2 py-1 rounded-lg hover:bg-card-hover"
             >
               <Compass className="w-4 h-4 text-team-primary" />
               <span>{t('nav.standings')}</span>
             </button>
+
+            {/* Sponsor Button */}
+            <a
+              href="https://buymeacoffee.com/whoami885"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-black transition-all shadow-sm"
+              title="Buy Me a Coffee (whoami885@gmail.com)"
+            >
+              <Coffee className="w-3.5 h-3.5" />
+              <span>{t('nav.sponsor')}</span>
+            </a>
 
             <div className="h-4 w-px bg-border hidden sm:block" />
 

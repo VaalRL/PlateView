@@ -63,6 +63,19 @@ export async function getTeamDetail(teamId: number) {
 }
 
 /**
+ * Fetch team schedule and game results
+ */
+export async function getTeamSchedule(teamId: number, startDate: string, endDate: string) {
+  return fetchMlb<any>('/schedule', {
+    sportId: 1,
+    teamId,
+    startDate,
+    endDate,
+    hydrate: 'linescore,decisions,team',
+  });
+}
+
+/**
  * Fetch detailed player info, season stats, career stats, and game logs
  */
 export async function getPlayerDetail(personId: number) {

@@ -6,6 +6,7 @@ export const translations = {
     'nav.badge': 'MLB 即時數據',
     'nav.search_placeholder': '快速搜尋球員、球隊...',
     'nav.standings': '分區榜',
+    'nav.sponsor': '☕ 贊助本專案',
 
     // Theme & Lang
     'theme.toggle_light': '切換為明亮模式',
@@ -44,6 +45,12 @@ export const translations = {
     'sb.expand_linescore': '展開每局比分 (Linescore)',
     'sb.collapse_linescore': '收合每局比分',
     'sb.team': '隊伍',
+    'sb.hits_col': 'H',
+    'sb.errors_col': 'E',
+    'sb.runs_col': 'R',
+    'sb.live_dot': 'LIVE',
+    'sb.at_bat': '打擊中',
+    'sb.pitching': '投球中',
 
     // Standings & Wild Card
     'standings.title': '🏆 戰績與外卡爭霸榜 (Standings & Wild Card)',
@@ -72,7 +79,10 @@ export const translations = {
     'team.fav_active': '已收藏球隊',
     'team.stadium': '主場',
     'team.division_rank': '分區第 {rank} 名',
+    'team.tab_view_roster': '👥 陣容名單 (Roster)',
+    'team.tab_view_schedule': '📅 近期戰績與逐場賽事 (Recent Games)',
     'team.roster_title': '陣容名單 (Roster & Depth)',
+    'team.recent_games_title': '近期 30 天逐場比賽紀錄',
     'team.tab_active': '26 人現役名單',
     'team.tab_40man': '40 人名單',
     'team.tab_il': '傷兵名單 (IL)',
@@ -83,6 +93,11 @@ export const translations = {
     'team.persons_count': '{count} 人',
     'team.empty_roster': '無名單資料',
     'team.load_error': '球員名單載入失敗，請稍後再試。',
+    'team.matchup_at': '客場 @',
+    'team.matchup_vs': '主場 vs',
+    'team.win_badge': '勝 (W)',
+    'team.loss_badge': '敗 (L)',
+    'team.no_schedule': '近期尚無已結束或預定之出賽日程。',
 
     // Player Detail
     'player.back': '返回首頁比分',
@@ -144,7 +159,10 @@ export const translations = {
     'offline.offline': '目前處於離線狀態，正顯示本地快取數據。',
     'offline.online': '網路已連線，已恢復 MLB 即時數據同步。',
 
-    // Footer
+    // Footer & Sponsor
+    'footer.sponsor_title': '喜歡 PlateView 嗎？',
+    'footer.sponsor_desc': '若本工具對您看球與數據查詢有所幫助，歡迎請開發者喝杯咖啡支持持續維護！',
+    'footer.sponsor_btn': '☕ 請我喝杯咖啡 (Buy Me a Coffee)',
     'footer.disclaimer':
       '本專案（PlateView）為開源非商業之棒球數據查詢工具，僅供個人學習、數據研究與球迷交流使用。本網站所引用之所有賽事比分、數據、球員肖像與球隊商標版權，均歸 Major League Baseball (MLB) 及其相關所屬實體所有。本專案與 Major League Baseball 無任何官方隸屬、授權或背書關係。',
   },
@@ -153,6 +171,7 @@ export const translations = {
     'nav.badge': 'MLB Live Stats',
     'nav.search_placeholder': 'Search players, teams...',
     'nav.standings': 'Standings',
+    'nav.sponsor': '☕ Buy Me a Coffee',
 
     // Theme & Lang
     'theme.toggle_light': 'Switch to Light Mode',
@@ -191,6 +210,12 @@ export const translations = {
     'sb.expand_linescore': 'Expand Linescore',
     'sb.collapse_linescore': 'Collapse Linescore',
     'sb.team': 'Team',
+    'sb.hits_col': 'H',
+    'sb.errors_col': 'E',
+    'sb.runs_col': 'R',
+    'sb.live_dot': 'LIVE',
+    'sb.at_bat': 'At Bat',
+    'sb.pitching': 'Pitching',
 
     // Standings & Wild Card
     'standings.title': '🏆 Standings & Wild Card Race',
@@ -219,7 +244,10 @@ export const translations = {
     'team.fav_active': 'Favorited',
     'team.stadium': 'Venue',
     'team.division_rank': '#{rank} in Division',
+    'team.tab_view_roster': '👥 Roster & Depth',
+    'team.tab_view_schedule': '📅 Recent Games & Scores',
     'team.roster_title': 'Roster & Depth Chart',
+    'team.recent_games_title': 'Recent 30-Day Matchups & Scores',
     'team.tab_active': 'Active 26-Man',
     'team.tab_40man': '40-Man Roster',
     'team.tab_il': 'Injured List (IL)',
@@ -230,6 +258,11 @@ export const translations = {
     'team.persons_count': '{count} Players',
     'team.empty_roster': 'No roster data available.',
     'team.load_error': 'Failed to load roster. Please try again later.',
+    'team.matchup_at': '@',
+    'team.matchup_vs': 'vs',
+    'team.win_badge': 'W',
+    'team.loss_badge': 'L',
+    'team.no_schedule': 'No recent completed or scheduled games found.',
 
     // Player Detail
     'player.back': 'Back to Scores',
@@ -291,7 +324,10 @@ export const translations = {
     'offline.offline': 'You are currently offline. Displaying cached data.',
     'offline.online': 'Back online. Live data sync restored.',
 
-    // Footer
+    // Footer & Sponsor
+    'footer.sponsor_title': 'Enjoying PlateView?',
+    'footer.sponsor_desc': 'If you find this baseball analytics tool helpful, consider supporting its maintenance with a cup of coffee!',
+    'footer.sponsor_btn': '☕ Buy Me a Coffee',
     'footer.disclaimer':
       'PlateView is an open-source, non-commercial baseball statistics explorer designed for personal research and educational purposes. All MLB trademarks, logos, team names, player photos, and statistical data are the intellectual property of Major League Baseball and its clubs. This project is not affiliated with, endorsed by, or sponsored by Major League Baseball.',
   },

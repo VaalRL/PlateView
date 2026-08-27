@@ -52,7 +52,7 @@ const mockLiveGame: GameSchedule = {
 };
 
 describe('ScoreboardCard component', () => {
-  it('renders live game state with scores, teams, count and inning', () => {
+  it('renders live game state with MLB.com R/H/E columns, scores, teams, count and inning', () => {
     render(
       <MemoryRouter>
         <ScoreboardCard game={mockLiveGame} />
@@ -63,9 +63,14 @@ describe('ScoreboardCard component', () => {
     expect(screen.getByText('洛杉磯道奇')).toBeInTheDocument();
     expect(screen.getByText('匹茲堡海盜')).toBeInTheDocument();
 
-    // Verify scores
-    expect(screen.getByText('5')).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument();
+    // Verify MLB.com R/H/E table headers
+    expect(screen.getByText('R')).toBeInTheDocument();
+    expect(screen.getByText('H')).toBeInTheDocument();
+    expect(screen.getByText('E')).toBeInTheDocument();
+
+    // Verify scores (5 and 3)
+    expect(screen.getAllByText('5').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('3').length).toBeGreaterThan(0);
 
     // Verify count 2-1
     expect(screen.getByText('2-1')).toBeInTheDocument();

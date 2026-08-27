@@ -1,5 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { getSchedule, getStandings, getTeamRoster, getTeamDetail, getPlayerDetail, searchPeople } from './mlbApi';
+import {
+  getSchedule,
+  getStandings,
+  getTeamRoster,
+  getTeamDetail,
+  getTeamSchedule,
+  getPlayerDetail,
+  searchPeople,
+} from './mlbApi';
+import { formatApiDate } from '../utils/timezone';
 
 export function useScheduleQuery(date: string, hasLiveGames: boolean = false) {
   return useQuery({
@@ -33,6 +42,21 @@ export function useTeamDetailQuery(teamId?: number) {
     queryFn: () => getTeamDetail(teamId!),
     enabled: !!teamId,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
+}
+
+export function useTeamScheduleQuery(teamId?: number) {
+  // Query 35 days in the past up to 2 days ahead
+  const pastDate = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000);
+  const futureDate = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+  const startDate = formatApiDate(pastDate);
+  const endDate = formatApiDate(futureDate);
+
+  return useQuery({
+    queryKey: ['team-schedule', teamId, startDate, endDate],
+    queryFn: () => getTeamSchedule(teamId!, startDate, endDate),
+    enabled: !!teamId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
 

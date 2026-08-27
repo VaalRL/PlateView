@@ -1,13 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useTeamRosterQuery, useTeamDetailQuery, useStandingsQuery } from '../services/queries';
+import {
+  useTeamRosterQuery,
+  useTeamDetailQuery,
+  useStandingsQuery,
+  useTeamScheduleQuery,
+} from '../services/queries';
 import { getTeamLogoUrl, getPlayerHeadshotUrl } from '../services/mlbApi';
 import { useFavorites } from '../hooks/useFavorites';
 import { useLanguage } from '../hooks/useLanguage';
 import { formatRateStat, formatEra, formatWhip } from '../utils/statsFormatters';
 import teamsData from '../data/teams.json';
-import { Star, ArrowLeft, Users, ShieldAlert, MapPin, Trophy } from 'lucide-react';
+import {
+  Star,
+  ArrowLeft,
+  Users,
+  ShieldAlert,
+  MapPin,
+  Trophy,
+  Calendar,
+  TrendingUp,
+} from 'lucide-react';
 
+type MainViewTab = 'roster' | 'schedule';
 type RosterTab = 'active' | '40Man' | 'il';
 
 export const TeamDetailPage: React.FC = () => {
@@ -15,13 +30,22 @@ export const TeamDetailPage: React.FC = () => {
   const idNum = parseInt(teamId || '0', 10);
   const teamMeta = teamsData.find((t) => t.id === idNum);
 
-  const [activeTab, setActiveTab] = useState<RosterTab>('active');
+  const [mainTab, setMainTab] = useState<MainViewTab>('schedule');
+  const [activeRosterTab, setActiveRosterTab] = useState<RosterTab>('active');
   const { lang, t } = useLanguage();
 
-  const { data: rosterData, isLoading: isRosterLoading, isError: isRosterError } = useTeamRosterQuery(
+  const {
+    data: rosterData,
+    isLoading: isRosterLoading,
+    isError: isRosterError,
+  } = useTeamRosterQuery(
     idNum,
-    activeTab === '40Man' ? '40Man' : 'active'
+    activeRosterTab === '40Man' ? '40Man' : 'active'
   );
+
+  const { data: scheduleData, isLoading: isScheduleLoading, isError: isScheduleError } =
+    useTeamScheduleQuery(idNum);
+
   const { data: teamDetail } = useTeamDetailQuery(idNum);
   const { data: standingsData } = useStandingsQuery();
 
@@ -38,10 +62,7 @@ export const TeamDetailPage: React.FC = () => {
       p.status?.description?.toLowerCase().includes('il')
   );
 
-  const displayRoster =
-    activeTab === 'il'
-      ? ilPlayers
-      : rawRoster;
+  const displayRoster = activeRosterTab === 'il' ? ilPlayers : rawRoster;
 
   const pitchers = displayRoster.filter((p: any) => p.position?.type === 'Pitcher');
   const positionPlayers = displayRoster.filter((p: any) => p.position?.type !== 'Pitcher');
@@ -57,6 +78,39 @@ export const TeamDetailPage: React.FC = () => {
   const teamTitle = lang === 'zh' ? teamMeta?.nameZh || 'MLB 球隊' : teamMeta?.name || 'MLB Team';
   const teamSubTitle = lang === 'zh' ? teamMeta?.name : teamMeta?.nameZh;
   const divisionText = lang === 'zh' ? teamMeta?.divisionZh : `${teamMeta?.league} ${teamMeta?.division}`;
+
+  // Parse and sort team recent schedule games
+  const recentGames = useMemo(() => {
+    if (!scheduleData?.dates) return [];
+    const list: any[] = [];
+    scheduleData.dates.forEach((d: any) => {
+      d.games?.forEach((g: any) => {
+        list.push({
+          ...g,
+          gameDateStr: d.date,
+        });
+      });
+    });
+    // Sort newest games first
+    return list.sort((a, b) => b.gameDateStr.localeCompare(a.gameDateStr));
+  }, [scheduleData]);
+
+  // Calculate recent 10-game win-loss
+  const recent10Stats = useMemo(() => {
+    const completed = recentGames.filter((g) => g.status?.abstractGameState === 'Final');
+    const last10 = completed.slice(0, 10);
+    let wins = 0;
+    let losses = 0;
+
+    last10.forEach((g) => {
+      const isHome = g.teams.home.team.id === idNum;
+      const isWinner = isHome ? g.teams.home.isWinner : g.teams.away.isWinner;
+      if (isWinner) wins++;
+      else losses++;
+    });
+
+    return { wins, losses, count: last10.length };
+  }, [recentGames, idNum]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
@@ -127,192 +181,384 @@ export const TeamDetailPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Roster Navigation Tabs */}
-      <div className="flex items-center justify-between border-b border-border pb-3">
-        <div className="flex items-center gap-2">
-          <Users className="w-5 h-5 text-team-primary" />
-          <h2 className="text-lg font-bold text-main">{t('team.roster_title')}</h2>
-        </div>
+      {/* Main View Switcher (Schedule vs Roster) */}
+      <div className="flex items-center gap-3 border-b border-border pb-3">
+        <button
+          onClick={() => setMainTab('schedule')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+            mainTab === 'schedule'
+              ? 'bg-team-primary text-white shadow-md'
+              : 'bg-card border border-border text-muted hover:text-main'
+          }`}
+        >
+          <Calendar className="w-4 h-4" />
+          <span>{t('team.tab_view_schedule')}</span>
+        </button>
 
-        <div className="flex items-center p-1 bg-card border border-border rounded-lg text-xs font-semibold">
-          <button
-            onClick={() => setActiveTab('active')}
-            className={`px-3 py-1.5 rounded-md transition-colors ${
-              activeTab === 'active' ? 'bg-team-primary text-white shadow-sm' : 'text-muted hover:text-main'
-            }`}
-          >
-            {t('team.tab_active')}
-          </button>
-          <button
-            onClick={() => setActiveTab('40Man')}
-            className={`px-3 py-1.5 rounded-md transition-colors ${
-              activeTab === '40Man' ? 'bg-team-primary text-white shadow-sm' : 'text-muted hover:text-main'
-            }`}
-          >
-            {t('team.tab_40man')}
-          </button>
-          <button
-            onClick={() => setActiveTab('il')}
-            className={`px-3 py-1.5 rounded-md transition-colors flex items-center gap-1 ${
-              activeTab === 'il' ? 'bg-team-primary text-white shadow-sm' : 'text-muted hover:text-main'
-            }`}
-          >
-            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-            <span>{t('team.tab_il')}</span>
-          </button>
-        </div>
+        <button
+          onClick={() => setMainTab('roster')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+            mainTab === 'roster'
+              ? 'bg-team-primary text-white shadow-md'
+              : 'bg-card border border-border text-muted hover:text-main'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>{t('team.tab_view_roster')}</span>
+        </button>
       </div>
 
-      {isRosterLoading && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-card border border-border rounded-xl p-6 h-72 animate-pulse" />
-          <div className="bg-card border border-border rounded-xl p-6 h-72 animate-pulse" />
-        </div>
-      )}
-
-      {isRosterError && (
-        <div className="bg-card border border-border rounded-xl p-8 text-center text-rose-500 text-sm">
-          {t('team.load_error')}
-        </div>
-      )}
-
-      {!isRosterLoading && !isRosterError && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Pitchers Column */}
-          <div className="bg-card border border-border rounded-xl p-4 shadow-sm space-y-3">
-            <div className="flex items-center justify-between border-b border-border pb-2">
-              <h3 className="font-bold text-sm text-team-primary flex items-center gap-1.5">
-                <span>{t('team.pitchers_group')}</span>
-                <span className="text-xs text-muted font-normal">
-                  ({t('team.persons_count', { count: pitchers.length })})
+      {/* VIEW 1: Recent Games & Matchup Scores */}
+      {mainTab === 'schedule' && (
+        <div className="space-y-4">
+          {/* Summary Widget */}
+          {recent10Stats.count > 0 && (
+            <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-2 text-sm font-bold text-main">
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
+                <span>
+                  {lang === 'zh'
+                    ? `近 ${recent10Stats.count} 場戰績：${recent10Stats.wins} 勝 ${recent10Stats.losses} 敗`
+                    : `Last ${recent10Stats.count} Games: ${recent10Stats.wins}W - ${recent10Stats.losses}L`}
                 </span>
-              </h3>
-              <span className="text-[11px] text-muted font-mono">{t('team.pitcher_header')}</span>
+              </div>
+              <span className="text-xs text-muted font-mono">
+                {lang === 'zh' ? '依比賽日期降序排列' : 'Sorted by date descending'}
+              </span>
             </div>
+          )}
 
-            <div className="divide-y divide-border/40 max-h-[700px] overflow-y-auto">
-              {pitchers.map((item: any) => {
-                const seasonPitching = item.person?.stats?.[0]?.splits?.[0]?.stat;
+          {isScheduleLoading && (
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <div key={n} className="bg-card border border-border rounded-xl p-4 h-20 animate-pulse" />
+              ))}
+            </div>
+          )}
+
+          {isScheduleError && (
+            <div className="bg-card border border-border rounded-xl p-8 text-center text-rose-500 text-sm">
+              {t('team.load_error')}
+            </div>
+          )}
+
+          {!isScheduleLoading && !isScheduleError && (
+            <div className="space-y-2.5">
+              {recentGames.map((g: any) => {
+                const isHome = g.teams.home.team.id === idNum;
+                const myScore = isHome ? g.teams.home.score : g.teams.away.score;
+                const oppScore = isHome ? g.teams.away.score : g.teams.home.score;
+                const oppTeamData = isHome ? g.teams.away.team : g.teams.home.team;
+                const oppMeta = teamsData.find((tItem) => tItem.id === oppTeamData.id);
+                const oppDisplayName =
+                  lang === 'zh'
+                    ? oppMeta?.nameZh || oppTeamData.name
+                    : oppMeta?.name || oppTeamData.name;
+
+                const isFinal = g.status?.abstractGameState === 'Final';
+                const isLive = g.status?.abstractGameState === 'Live';
+                const isPreview = g.status?.abstractGameState === 'Preview';
+
+                const isWinner = isHome ? g.teams.home.isWinner : g.teams.away.isWinner;
 
                 return (
-                  <Link
-                    key={item.person.id}
-                    to={`/players/${item.person.id}`}
-                    className="py-2.5 px-2 flex items-center justify-between hover:bg-card-hover/70 rounded-lg transition-colors group"
+                  <div
+                    key={g.gamePk}
+                    className="bg-card border border-border rounded-xl p-4 shadow-sm hover:border-team-primary/50 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                   >
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={getPlayerHeadshotUrl(item.person.id)}
-                        alt={item.person.fullName}
-                        className="w-9 h-9 rounded-full bg-page object-cover border border-border group-hover:scale-105 transition-transform"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="%2394a3b8" viewBox="0 0 16 16"%3E%3Cpath d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"%3E%3C/path%3E%3Cpath fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"%3E%3C/path%3E%3C/svg%3E';
-                        }}
-                      />
-                      <div>
-                        <div className="text-sm font-semibold text-main group-hover:text-team-primary flex items-center gap-1.5">
-                          <span>{item.person.fullName}</span>
-                          {item.status?.code?.includes('I') && (
-                            <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
-                              IL
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-muted">
-                          #{item.jerseyNumber || '--'} &bull; {item.position?.abbreviation} &bull; {item.person?.pitchHand?.code || 'R'}
-                        </div>
+                    {/* Left: Date, Matchup & Opponent */}
+                    <div className="flex items-center gap-3.5">
+                      <span className="text-xs font-mono text-muted w-20 shrink-0">
+                        {g.gameDateStr}
+                      </span>
+
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xs font-bold text-muted uppercase">
+                          {isHome ? t('team.matchup_vs') : t('team.matchup_at')}
+                        </span>
+                        <Link
+                          to={`/teams/${oppTeamData.id}`}
+                          className="flex items-center gap-2 font-bold text-sm text-main hover:text-team-primary transition-colors group"
+                        >
+                          <img
+                            src={getTeamLogoUrl(oppTeamData.id)}
+                            alt={oppDisplayName}
+                            className="w-6 h-6 object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                          <span className="group-hover:underline">{oppDisplayName}</span>
+                        </Link>
                       </div>
                     </div>
 
-                    <div className="text-right font-mono text-xs">
-                      {seasonPitching ? (
-                        <div>
-                          <span className="font-bold text-main">{formatEra(seasonPitching.era)} ERA</span>
-                          <span className="text-muted text-[11px] block">
-                            {seasonPitching.wins}-{seasonPitching.losses} &bull; {formatWhip(seasonPitching.whip)} WHIP
+                    {/* Middle: Decisions summary if Final */}
+                    {isFinal && g.decisions && (
+                      <div className="hidden lg:flex items-center gap-3 text-xs text-muted font-sans">
+                        {g.decisions.winner && (
+                          <span>
+                            <strong className="text-emerald-500 font-bold">W:</strong>{' '}
+                            {g.decisions.winner.fullName}
+                          </span>
+                        )}
+                        {g.decisions.loser && (
+                          <span>
+                            <strong className="text-rose-500 font-bold">L:</strong>{' '}
+                            {g.decisions.loser.fullName}
+                          </span>
+                        )}
+                        {g.decisions.save && (
+                          <span>
+                            <strong className="text-amber-500 font-bold">SV:</strong>{' '}
+                            {g.decisions.save.fullName}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Right: Score & Result Tag */}
+                    <div className="flex items-center gap-3 self-end sm:self-auto">
+                      {isFinal && (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-xs px-2.5 py-1 rounded-lg font-mono font-black border ${
+                              isWinner
+                                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                                : 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                            }`}
+                          >
+                            {isWinner ? t('team.win_badge') : t('team.loss_badge')}{' '}
+                            {myScore !== undefined ? `${myScore} - ${oppScore}` : ''}
                           </span>
                         </div>
-                      ) : (
-                        <span className="text-muted text-[11px]">{item.status?.description || 'Active'}</span>
+                      )}
+
+                      {isLive && (
+                        <span className="text-xs px-2.5 py-1 rounded-lg font-mono font-bold bg-red-500/20 border border-red-500/40 text-red-400 animate-pulse">
+                          🔴 LIVE {myScore} - {oppScore}
+                        </span>
+                      )}
+
+                      {isPreview && (
+                        <span className="text-xs px-2.5 py-1 rounded-lg font-mono font-semibold bg-page border border-border text-muted">
+                          {t('sb.scheduled')}
+                        </span>
                       )}
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
-              {pitchers.length === 0 && (
-                <div className="py-8 text-center text-xs text-muted">{t('team.empty_roster')}</div>
+
+              {recentGames.length === 0 && (
+                <div className="py-12 text-center text-muted text-sm bg-card border border-border rounded-xl">
+                  {t('team.no_schedule')}
+                </div>
               )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* VIEW 2: Roster List */}
+      {mainTab === 'roster' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b border-border pb-3">
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-team-primary" />
+              <h2 className="text-lg font-bold text-main">{t('team.roster_title')}</h2>
+            </div>
+
+            <div className="flex items-center p-1 bg-card border border-border rounded-lg text-xs font-semibold">
+              <button
+                onClick={() => setActiveRosterTab('active')}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  activeRosterTab === 'active'
+                    ? 'bg-team-primary text-white shadow-sm'
+                    : 'text-muted hover:text-main'
+                }`}
+              >
+                {t('team.tab_active')}
+              </button>
+              <button
+                onClick={() => setActiveRosterTab('40Man')}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  activeRosterTab === '40Man'
+                    ? 'bg-team-primary text-white shadow-sm'
+                    : 'text-muted hover:text-main'
+                }`}
+              >
+                {t('team.tab_40man')}
+              </button>
+              <button
+                onClick={() => setActiveRosterTab('il')}
+                className={`px-3 py-1.5 rounded-md transition-colors flex items-center gap-1 ${
+                  activeRosterTab === 'il'
+                    ? 'bg-team-primary text-white shadow-sm'
+                    : 'text-muted hover:text-main'
+                }`}
+              >
+                <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                <span>{t('team.tab_il')}</span>
+              </button>
             </div>
           </div>
 
-          {/* Position Players Column */}
-          <div className="bg-card border border-border rounded-xl p-4 shadow-sm space-y-3">
-            <div className="flex items-center justify-between border-b border-border pb-2">
-              <h3 className="font-bold text-sm text-team-primary flex items-center gap-1.5">
-                <span>{t('team.position_group')}</span>
-                <span className="text-xs text-muted font-normal">
-                  ({t('team.persons_count', { count: positionPlayers.length })})
-                </span>
-              </h3>
-              <span className="text-[11px] text-muted font-mono">{t('team.position_header')}</span>
+          {isRosterLoading && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-card border border-border rounded-xl p-6 h-72 animate-pulse" />
+              <div className="bg-card border border-border rounded-xl p-6 h-72 animate-pulse" />
             </div>
+          )}
 
-            <div className="divide-y divide-border/40 max-h-[700px] overflow-y-auto">
-              {positionPlayers.map((item: any) => {
-                const seasonHitting = item.person?.stats?.[0]?.splits?.[0]?.stat;
+          {isRosterError && (
+            <div className="bg-card border border-border rounded-xl p-8 text-center text-rose-500 text-sm">
+              {t('team.load_error')}
+            </div>
+          )}
 
-                return (
-                  <Link
-                    key={item.person.id}
-                    to={`/players/${item.person.id}`}
-                    className="py-2.5 px-2 flex items-center justify-between hover:bg-card-hover/70 rounded-lg transition-colors group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={getPlayerHeadshotUrl(item.person.id)}
-                        alt={item.person.fullName}
-                        className="w-9 h-9 rounded-full bg-page object-cover border border-border group-hover:scale-105 transition-transform"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="%2394a3b8" viewBox="0 0 16 16"%3E%3Cpath d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"%3E%3C/path%3E%3Cpath fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"%3E%3C/path%3E%3C/svg%3E';
-                        }}
-                      />
-                      <div>
-                        <div className="text-sm font-semibold text-main group-hover:text-team-primary flex items-center gap-1.5">
-                          <span>{item.person.fullName}</span>
-                          {item.status?.code?.includes('I') && (
-                            <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
-                              IL
-                            </span>
+          {!isRosterLoading && !isRosterError && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Pitchers Column */}
+              <div className="bg-card border border-border rounded-xl p-4 shadow-sm space-y-3">
+                <div className="flex items-center justify-between border-b border-border pb-2">
+                  <h3 className="font-bold text-sm text-team-primary flex items-center gap-1.5">
+                    <span>{t('team.pitchers_group')}</span>
+                    <span className="text-xs text-muted font-normal">
+                      ({t('team.persons_count', { count: pitchers.length })})
+                    </span>
+                  </h3>
+                  <span className="text-[11px] text-muted font-mono">{t('team.pitcher_header')}</span>
+                </div>
+
+                <div className="divide-y divide-border/40 max-h-[700px] overflow-y-auto">
+                  {pitchers.map((item: any) => {
+                    const seasonPitching = item.person?.stats?.[0]?.splits?.[0]?.stat;
+
+                    return (
+                      <Link
+                        key={item.person.id}
+                        to={`/players/${item.person.id}`}
+                        className="py-2.5 px-2 flex items-center justify-between hover:bg-card-hover/70 rounded-lg transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={getPlayerHeadshotUrl(item.person.id)}
+                            alt={item.person.fullName}
+                            className="w-9 h-9 rounded-full bg-page object-cover border border-border group-hover:scale-105 transition-transform"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src =
+                                'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="%2394a3b8" viewBox="0 0 16 16"%3E%3Cpath d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"%3E%3C/path%3E%3Cpath fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"%3E%3C/path%3E%3C/svg%3E';
+                            }}
+                          />
+                          <div>
+                            <div className="text-sm font-semibold text-main group-hover:text-team-primary flex items-center gap-1.5">
+                              <span>{item.person.fullName}</span>
+                              {item.status?.code?.includes('I') && (
+                                <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
+                                  IL
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted">
+                              #{item.jerseyNumber || '--'} &bull; {item.position?.abbreviation} &bull;{' '}
+                              {item.person?.pitchHand?.code || 'R'}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right font-mono text-xs">
+                          {seasonPitching ? (
+                            <div>
+                              <span className="font-bold text-main">{formatEra(seasonPitching.era)} ERA</span>
+                              <span className="text-muted text-[11px] block">
+                                {seasonPitching.wins}-{seasonPitching.losses} &bull;{' '}
+                                {formatWhip(seasonPitching.whip)} WHIP
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-muted text-[11px]">{item.status?.description || 'Active'}</span>
                           )}
                         </div>
-                        <div className="text-xs text-muted">
-                          #{item.jerseyNumber || '--'} &bull; {item.position?.abbreviation} &bull; {item.person?.batSide?.code || 'R'}
-                        </div>
-                      </div>
-                    </div>
+                      </Link>
+                    );
+                  })}
+                  {pitchers.length === 0 && (
+                    <div className="py-8 text-center text-xs text-muted">{t('team.empty_roster')}</div>
+                  )}
+                </div>
+              </div>
 
-                    <div className="text-right font-mono text-xs">
-                      {seasonHitting ? (
-                        <div>
-                          <span className="font-bold text-main">{formatRateStat(seasonHitting.avg)}</span>
-                          <span className="text-muted text-[11px] block">
-                            {seasonHitting.homeRuns} HR &bull; {formatRateStat(seasonHitting.ops)} OPS
-                          </span>
+              {/* Position Players Column */}
+              <div className="bg-card border border-border rounded-xl p-4 shadow-sm space-y-3">
+                <div className="flex items-center justify-between border-b border-border pb-2">
+                  <h3 className="font-bold text-sm text-team-primary flex items-center gap-1.5">
+                    <span>{t('team.position_group')}</span>
+                    <span className="text-xs text-muted font-normal">
+                      ({t('team.persons_count', { count: positionPlayers.length })})
+                    </span>
+                  </h3>
+                  <span className="text-[11px] text-muted font-mono">{t('team.position_header')}</span>
+                </div>
+
+                <div className="divide-y divide-border/40 max-h-[700px] overflow-y-auto">
+                  {positionPlayers.map((item: any) => {
+                    const seasonHitting = item.person?.stats?.[0]?.splits?.[0]?.stat;
+
+                    return (
+                      <Link
+                        key={item.person.id}
+                        to={`/players/${item.person.id}`}
+                        className="py-2.5 px-2 flex items-center justify-between hover:bg-card-hover/70 rounded-lg transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={getPlayerHeadshotUrl(item.person.id)}
+                            alt={item.person.fullName}
+                            className="w-9 h-9 rounded-full bg-page object-cover border border-border group-hover:scale-105 transition-transform"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src =
+                                'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="%2394a3b8" viewBox="0 0 16 16"%3E%3Cpath d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"%3E%3C/path%3E%3Cpath fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"%3E%3C/path%3E%3C/svg%3E';
+                            }}
+                          />
+                          <div>
+                            <div className="text-sm font-semibold text-main group-hover:text-team-primary flex items-center gap-1.5">
+                              <span>{item.person.fullName}</span>
+                              {item.status?.code?.includes('I') && (
+                                <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
+                                  IL
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted">
+                              #{item.jerseyNumber || '--'} &bull; {item.position?.abbreviation} &bull;{' '}
+                              {item.person?.batSide?.code || 'R'}
+                            </div>
+                          </div>
                         </div>
-                      ) : (
-                        <span className="text-muted text-[11px]">{item.status?.description || 'Active'}</span>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-              {positionPlayers.length === 0 && (
-                <div className="py-8 text-center text-xs text-muted">{t('team.empty_roster')}</div>
-              )}
+
+                        <div className="text-right font-mono text-xs">
+                          {seasonHitting ? (
+                            <div>
+                              <span className="font-bold text-main">{formatRateStat(seasonHitting.avg)}</span>
+                              <span className="text-muted text-[11px] block">
+                                {seasonHitting.homeRuns} HR &bull; {formatRateStat(seasonHitting.ops)} OPS
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-muted text-[11px]">{item.status?.description || 'Active'}</span>
+                          )}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                  {positionPlayers.length === 0 && (
+                    <div className="py-8 text-center text-xs text-muted">{t('team.empty_roster')}</div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
