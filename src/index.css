@@ -58,6 +58,16 @@
 [data-team="ari"] { --team-primary: #A71930; --team-secondary: #E3D4AD; } /* ARI Diamondbacks */
 [data-team="col"] { --team-primary: #33006F; --team-secondary: #C4CED4; } /* COL Rockies */
 
+/* Mobile & Touch Optimizations */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;

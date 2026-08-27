@@ -33,12 +33,12 @@ export const Navbar: React.FC = () => {
   return (
     <>
       <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-md border-b border-border transition-colors">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
           {/* Logo & Brand */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <PlateViewLogo className="w-9 h-9 shrink-0 drop-shadow-md group-hover:scale-105 transition-transform" />
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
+            <PlateViewLogo className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 drop-shadow-md group-hover:scale-105 transition-transform" />
             <div>
-              <span className="font-extrabold text-lg tracking-tight text-main">
+              <span className="font-extrabold text-base sm:text-lg tracking-tight text-main">
                 Plate<span className="text-team-primary">View</span>
               </span>
               <span className="hidden sm:inline-block ml-2 text-xs px-2 py-0.5 rounded-full bg-team-primary/10 text-team-primary font-medium">
@@ -62,7 +62,7 @@ export const Navbar: React.FC = () => {
           </button>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <button
               onClick={() => setIsSearchOpen(true)}
               className="md:hidden p-2 text-muted hover:text-main"

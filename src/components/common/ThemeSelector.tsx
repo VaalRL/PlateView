@@ -63,7 +63,7 @@ export const ThemeSelector: React.FC = () => {
             value={team}
             onChange={(e) => setTeam(e.target.value)}
             aria-label={translate('theme.team_color')}
-            className="text-xs md:text-sm bg-card border border-border text-main rounded-lg pl-7 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-team-primary cursor-pointer hover:border-team-primary transition-all font-medium"
+            className="text-xs md:text-sm bg-card border border-border text-main rounded-lg pl-6 pr-2 sm:pl-7 sm:pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-team-primary cursor-pointer hover:border-team-primary transition-all font-medium max-w-[76px] sm:max-w-none truncate"
           >
             {Object.entries(groupedTeams).map(([divName, list]) => (
               <optgroup key={divName} label={divName}>

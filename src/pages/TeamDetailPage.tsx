@@ -210,7 +210,7 @@ export const TeamDetailPage: React.FC = () => {
         {/* Favorite Button */}
         <button
           onClick={() => toggleFavoriteTeam(idNum)}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+          className={`w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
             isFav
               ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 shadow-sm'
               : 'bg-page border-border text-muted hover:text-main hover:border-team-primary'

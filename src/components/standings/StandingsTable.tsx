@@ -58,19 +58,19 @@ export const StandingsTable: React.FC = () => {
   return (
     <section id="standings" className="mt-12 space-y-6 scroll-mt-20">
       {/* Header and Filter Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-border pb-3">
         <div>
-          <h2 className="text-xl font-extrabold text-main tracking-tight">
+          <h2 className="text-lg sm:text-xl font-extrabold text-main tracking-tight">
             {t('standings.title')}
           </h2>
           <p className="text-xs text-muted mt-0.5">{t('standings.subtitle')}</p>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center p-1 bg-card border border-border rounded-lg text-xs font-semibold">
+        <div className="flex items-center p-1 bg-card border border-border rounded-xl text-xs font-semibold overflow-x-auto max-w-full">
           <button
             onClick={() => setActiveTab('ALL')}
-            className={`px-3 py-1 rounded-md transition-colors ${
+            className={`px-3 py-1 rounded-lg transition-colors shrink-0 ${
               activeTab === 'ALL' ? 'bg-team-primary text-white shadow-sm' : 'text-muted hover:text-main'
             }`}
           >
@@ -78,7 +78,7 @@ export const StandingsTable: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('AL')}
-            className={`px-3 py-1 rounded-md transition-colors ${
+            className={`px-3 py-1 rounded-lg transition-colors shrink-0 ${
               activeTab === 'AL' ? 'bg-team-primary text-white shadow-sm' : 'text-muted hover:text-main'
             }`}
           >
@@ -86,7 +86,7 @@ export const StandingsTable: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('NL')}
-            className={`px-3 py-1 rounded-md transition-colors ${
+            className={`px-3 py-1 rounded-lg transition-colors shrink-0 ${
               activeTab === 'NL' ? 'bg-team-primary text-white shadow-sm' : 'text-muted hover:text-main'
             }`}
           >
@@ -94,7 +94,7 @@ export const StandingsTable: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('WC')}
-            className={`px-3 py-1 rounded-md transition-colors ${
+            className={`px-3 py-1 rounded-lg transition-colors shrink-0 ${
               activeTab === 'WC' ? 'bg-team-primary text-white shadow-sm' : 'text-muted hover:text-main'
             }`}
           >

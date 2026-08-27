@@ -171,7 +171,7 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
           </div>
 
           {/* Right: Actions (Summary Drawer Toggle & Backup Modal Trigger) */}
-          <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
+          <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-border/30 shrink-0">
             {favoritePlayers.length > 0 && (
               <button
                 type="button"

@@ -26,30 +26,32 @@ export const ScoreboardGrid: React.FC<ScoreboardGridProps> = ({ selectedDate, on
   return (
     <section className="space-y-4">
       {/* Date Navigation Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-card border border-border rounded-xl p-3 shadow-sm">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => onDateChange(subDays(selectedDate, 1))}
-            className="p-1.5 rounded-lg border border-border hover:bg-card-hover text-muted hover:text-main transition-colors"
-            title={t('sb.prev_day')}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-2xl p-3 shadow-sm">
+        <div className="flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => onDateChange(subDays(selectedDate, 1))}
+              className="p-1.5 rounded-lg border border-border hover:bg-card-hover text-muted hover:text-main transition-colors"
+              title={t('sb.prev_day')}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
 
-          <button
-            onClick={() => onDateChange(new Date())}
-            className="px-3 py-1 text-xs font-semibold rounded-lg bg-page border border-border hover:border-team-primary text-main transition-colors"
-          >
-            {t('sb.today')}
-          </button>
+            <button
+              onClick={() => onDateChange(new Date())}
+              className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-page border border-border hover:border-team-primary text-main transition-colors"
+            >
+              {t('sb.today')}
+            </button>
 
-          <button
-            onClick={() => onDateChange(addDays(selectedDate, 1))}
-            className="p-1.5 rounded-lg border border-border hover:bg-card-hover text-muted hover:text-main transition-colors"
-            title={t('sb.next_day')}
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+            <button
+              onClick={() => onDateChange(addDays(selectedDate, 1))}
+              className="p-1.5 rounded-lg border border-border hover:bg-card-hover text-muted hover:text-main transition-colors"
+              title={t('sb.next_day')}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
 
           <input
             type="date"
@@ -60,11 +62,11 @@ export const ScoreboardGrid: React.FC<ScoreboardGridProps> = ({ selectedDate, on
                 onDateChange(new Date(parts[0], parts[1] - 1, parts[2]));
               }
             }}
-            className="text-xs bg-page border border-border text-main rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-team-primary"
+            className="text-xs bg-page border border-border text-main rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-team-primary font-mono max-w-[125px] sm:max-w-none text-center cursor-pointer"
           />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-border/30">
           <span className="text-xs text-muted font-medium">
             {formattedDateString} ({t('sb.games_count', { count: games.length })})
           </span>
