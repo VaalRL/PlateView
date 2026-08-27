@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { usePlayerDetailQuery } from '../services/queries';
 import { getPlayerHeadshotUrl, getTeamLogoUrl } from '../services/mlbApi';
@@ -6,6 +6,7 @@ import { useFavorites } from '../hooks/useFavorites';
 import { useLanguage } from '../hooks/useLanguage';
 import { formatRateStat, formatEra, formatWhip } from '../utils/statsFormatters';
 import playersData from '../data/players-zh-tw.json';
+import teamsData from '../data/teams.json';
 import { Star, ArrowLeft, Activity, Calendar, Award } from 'lucide-react';
 
 export const PlayerDetailPage: React.FC = () => {
@@ -52,9 +53,34 @@ export const PlayerDetailPage: React.FC = () => {
     (s: any) => s.group?.displayName === 'pitching' && s.type?.displayName === 'gameLog'
   )?.splits || [];
 
-  const hasHitting = !!(hittingSeasonStats || hittingCareerStats || hittingGameLogs.length > 0);
-  const hasPitching = !!(pitchingSeasonStats || pitchingCareerStats || pitchingGameLogs.length > 0);
-  const isTwoWay = hasHitting && hasPitching;
+  // Sort game logs by date descending (most recent games first)
+  const sortedPitchingGameLogs = useMemo(() => {
+    return [...pitchingGameLogs].sort((a: any, b: any) => {
+      const dateA = a.date || '';
+      const dateB = b.date || '';
+      return dateB.localeCompare(dateA);
+    });
+  }, [pitchingGameLogs]);
+
+  const sortedHittingGameLogs = useMemo(() => {
+    return [...hittingGameLogs].sort((a: any, b: any) => {
+      const dateA = a.date || '';
+      const dateB = b.date || '';
+      return dateB.localeCompare(dateA);
+    });
+  }, [hittingGameLogs]);
+
+  // True two-way player check (Ohtani or both significant hitting and pitching volume)
+  const isTwoWay = useMemo(() => {
+    if (idNum === 660271) return true; // Shohei Ohtani
+    if (person?.primaryPosition?.name?.toLowerCase().includes('two-way')) return true;
+    const atBats = (hittingSeasonStats?.atBats ?? 0) || (hittingCareerStats?.atBats ?? 0);
+    const ip = parseFloat(pitchingSeasonStats?.inningsPitched ?? '0') || parseFloat(pitchingCareerStats?.inningsPitched ?? '0');
+    return atBats >= 20 && ip >= 10;
+  }, [idNum, person, hittingSeasonStats, hittingCareerStats, pitchingSeasonStats, pitchingCareerStats]);
+
+  const hasHitting = !!(hittingSeasonStats || hittingCareerStats);
+  const hasPitching = !!(pitchingSeasonStats || pitchingCareerStats);
 
   const effectiveRole =
     roleTab !== 'auto'
@@ -71,6 +97,8 @@ export const PlayerDetailPage: React.FC = () => {
 
   const primaryName = lang === 'zh' ? displayNameZh : displayNameEn;
   const secondaryName = lang === 'zh' ? displayNameEn : displayNameZh;
+
+  const activeGameLogs = (effectiveRole === 'pitching' ? sortedPitchingGameLogs : sortedHittingGameLogs).slice(0, 10);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
@@ -432,12 +460,14 @@ export const PlayerDetailPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/30">
-                  {(effectiveRole === 'pitching' ? pitchingGameLogs : hittingGameLogs)
-                    .slice(0, 10)
-                    .map((log: any, idx: number) => (
+                  {activeGameLogs.map((log: any, idx: number) => {
+                    const oppTeam = teamsData.find((t) => t.id === log.opponent?.id);
+                    const oppDisplayName = lang === 'zh' ? oppTeam?.nameZh || log.opponent?.name : log.opponent?.name || 'MLB';
+
+                    return (
                       <tr key={idx} className="hover:bg-card-hover/50 transition-colors">
                         <td className="py-2.5 px-4 text-main font-semibold">{log.date}</td>
-                        <td className="py-2.5 px-3 text-muted">{log.opponent?.name || 'MLB'}</td>
+                        <td className="py-2.5 px-3 text-muted">{oppDisplayName}</td>
                         {effectiveRole === 'pitching' ? (
                           <>
                             <td className="py-2.5 px-2 text-center font-bold text-main">
@@ -472,8 +502,9 @@ export const PlayerDetailPage: React.FC = () => {
                           </>
                         )}
                       </tr>
-                    ))}
-                  {(effectiveRole === 'pitching' ? pitchingGameLogs : hittingGameLogs).length === 0 && (
+                    );
+                  })}
+                  {activeGameLogs.length === 0 && (
                     <tr>
                       <td colSpan={10} className="py-8 text-center text-muted font-sans">
                         {t('player.empty_logs')}
