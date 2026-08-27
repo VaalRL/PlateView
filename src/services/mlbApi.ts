@@ -87,7 +87,8 @@ export async function getGameBoxscore(gamePk: number) {
  */
 export async function getPlayerDetail(personId: number) {
   const data = await fetchMlb<any>(`/people/${personId}`, {
-    hydrate: 'currentTeam(league,sport,parentOrg),team,stats(group=[hitting,pitching],type=[season,career,gameLog])',
+    hydrate:
+      'currentTeam(league,sport,parentOrg),team,stats(group=[hitting,pitching],type=[season,career,gameLog,sabermetrics,seasonAdvanced])',
   });
 
   const person = data?.people?.[0];
@@ -110,7 +111,7 @@ export async function getPlayerDetail(personId: number) {
     if (teamSportId && teamSportId !== 1) {
       try {
         const milbData = await fetchMlb<any>(`/people/${personId}`, {
-          hydrate: `currentTeam(league,sport,parentOrg),team,stats(group=[hitting,pitching],type=[season,career,gameLog],sportId=${teamSportId})`,
+          hydrate: `currentTeam(league,sport,parentOrg),team,stats(group=[hitting,pitching],type=[season,career,gameLog,sabermetrics,seasonAdvanced],sportId=${teamSportId})`,
         });
         if (milbData?.people?.[0]?.stats && milbData.people[0].stats.length > 0) {
           person.stats = milbData.people[0].stats;

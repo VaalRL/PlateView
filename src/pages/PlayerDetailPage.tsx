@@ -4,10 +4,19 @@ import { usePlayerDetailQuery } from '../services/queries';
 import { getPlayerHeadshotUrl, getTeamLogoUrl } from '../services/mlbApi';
 import { useFavorites } from '../hooks/useFavorites';
 import { useLanguage } from '../hooks/useLanguage';
-import { formatRateStat, formatEra, formatWhip } from '../utils/statsFormatters';
+import {
+  formatRateStat,
+  formatEra,
+  formatWhip,
+  formatWar,
+  formatPlusStat,
+  formatFip,
+  formatWoba,
+  formatPer9,
+} from '../utils/statsFormatters';
 import playersData from '../data/players-zh-tw.json';
 import teamsData from '../data/teams.json';
-import { Star, ArrowLeft, Activity, Calendar, Award } from 'lucide-react';
+import { Star, ArrowLeft, Activity, Calendar, Award, Zap } from 'lucide-react';
 
 export const PlayerDetailPage: React.FC = () => {
   const { personId } = useParams<{ personId: string }>();
@@ -42,6 +51,23 @@ export const PlayerDetailPage: React.FC = () => {
 
   const pitchingCareerStats = statsGroups.find(
     (s: any) => s.group?.displayName === 'pitching' && s.type?.displayName === 'career'
+  )?.splits?.[0]?.stat;
+
+  // Sabermetrics & Advanced Stats
+  const hittingSabermetrics = statsGroups.find(
+    (s: any) => s.group?.displayName === 'hitting' && s.type?.displayName === 'sabermetrics'
+  )?.splits?.[0]?.stat;
+
+  const pitchingSabermetrics = statsGroups.find(
+    (s: any) => s.group?.displayName === 'pitching' && s.type?.displayName === 'sabermetrics'
+  )?.splits?.[0]?.stat;
+
+  const hittingAdvanced = statsGroups.find(
+    (s: any) => s.group?.displayName === 'hitting' && s.type?.displayName === 'seasonAdvanced'
+  )?.splits?.[0]?.stat;
+
+  const pitchingAdvanced = statsGroups.find(
+    (s: any) => s.group?.displayName === 'pitching' && s.type?.displayName === 'seasonAdvanced'
   )?.splits?.[0]?.stat;
 
   // Game Logs
@@ -91,6 +117,40 @@ export const PlayerDetailPage: React.FC = () => {
 
   const activeHittingStats = statTypeTab === 'season' ? hittingSeasonStats : hittingCareerStats;
   const activePitchingStats = statTypeTab === 'season' ? pitchingSeasonStats : pitchingCareerStats;
+
+  // Derived pitching stats (FIP / FIP+)
+  const derivedFip = useMemo(() => {
+    if (pitchingSabermetrics?.fip !== undefined) return pitchingSabermetrics.fip;
+    if (!activePitchingStats) return null;
+    const hr = activePitchingStats.homeRuns ?? 0;
+    const bb = activePitchingStats.baseOnBalls ?? 0;
+    const hbp = activePitchingStats.hitBatsmen ?? 0;
+    const k = activePitchingStats.strikeOuts ?? 0;
+    const ip = parseFloat(activePitchingStats.inningsPitched ?? '0');
+    if (!ip || ip <= 0) return null;
+    return (13 * hr + 3 * (bb + hbp) - 2 * k) / ip + 3.10;
+  }, [pitchingSabermetrics, activePitchingStats]);
+
+  const derivedFipPlus = useMemo(() => {
+    if (pitchingSabermetrics?.fipMinus !== undefined && pitchingSabermetrics.fipMinus > 0) {
+      return (100 / pitchingSabermetrics.fipMinus) * 100;
+    }
+    if (derivedFip && derivedFip > 0) {
+      return (4.15 / derivedFip) * 100;
+    }
+    return null;
+  }, [pitchingSabermetrics, derivedFip]);
+
+  // Derived hitting OPS+ / wRC+
+  const derivedOpsPlus = useMemo(() => {
+    if (hittingSabermetrics?.wRcPlus !== undefined) return hittingSabermetrics.wRcPlus;
+    if (!activeHittingStats) return null;
+    const obp = parseFloat(activeHittingStats.obp || '0');
+    const slg = parseFloat(activeHittingStats.slg || '0');
+    if (!obp && !slg) return null;
+    const val = 100 * (obp / 0.315 + slg / 0.400 - 1);
+    return Math.max(0, val);
+  }, [hittingSabermetrics, activeHittingStats]);
 
   const displayNameZh = zhPlayerMeta?.nameZh || person?.fullName || 'MLB 球星';
   const displayNameEn = person?.fullName || zhPlayerMeta?.nameEn || 'MLB Player';
@@ -385,6 +445,100 @@ export const PlayerDetailPage: React.FC = () => {
                     </span>
                   </div>
                 </div>
+
+                {/* Advanced Sabermetrics Panel */}
+                <div className="pt-3 border-t border-border/40 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-main">
+                      <Zap className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{t('player.advanced_stats_title')}</span>
+                    </div>
+                    <span className="text-[10px] text-muted flex items-center gap-1">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400/80" />
+                      {t('stat.league_avg_hint')}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+                    {/* WAR */}
+                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                      <span className="text-[10px] text-muted block font-medium">{t('stat.war')}</span>
+                      <span
+                        className={`text-xl font-mono font-black ${
+                          (hittingSabermetrics?.war ?? 0) >= 3.0
+                            ? 'text-amber-400'
+                            : (hittingSabermetrics?.war ?? 0) >= 1.5
+                            ? 'text-emerald-400'
+                            : 'text-main'
+                        }`}
+                      >
+                        {formatWar(hittingSabermetrics?.war)}
+                      </span>
+                    </div>
+
+                    {/* wRC+ / OPS+ */}
+                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                      <span className="text-[10px] text-muted block font-medium">{t('stat.wrc_plus')}</span>
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span
+                          className={`text-xl font-mono font-black ${
+                            (derivedOpsPlus ?? 0) >= 130
+                              ? 'text-emerald-400'
+                              : (derivedOpsPlus ?? 0) >= 100
+                              ? 'text-team-primary'
+                              : 'text-muted'
+                          }`}
+                        >
+                          {formatPlusStat(derivedOpsPlus)}
+                        </span>
+                        {derivedOpsPlus !== null && (
+                          <span className="text-[9px] font-mono text-muted">
+                            {derivedOpsPlus >= 100
+                              ? `+${Math.round(derivedOpsPlus - 100)}%`
+                              : `${Math.round(derivedOpsPlus - 100)}%`}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* OPS */}
+                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                      <span className="text-[10px] text-muted block font-medium">{t('stat.ops')}</span>
+                      <span className="text-xl font-mono font-black text-emerald-400">
+                        {activeHittingStats.ops ?? '---'}
+                      </span>
+                    </div>
+
+                    {/* wOBA */}
+                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                      <span className="text-[10px] text-muted block font-medium">{t('stat.woba')}</span>
+                      <span className="text-xl font-mono font-bold text-main">
+                        {formatWoba(hittingSabermetrics?.woba)}
+                      </span>
+                    </div>
+
+                    {/* BABIP */}
+                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                      <span className="text-[10px] text-muted block font-medium">{t('stat.babip')}</span>
+                      <span className="text-xl font-mono font-bold text-main">
+                        {formatRateStat(activeHittingStats.babip || hittingAdvanced?.babip)}
+                      </span>
+                    </div>
+
+                    {/* ISO */}
+                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                      <span className="text-[10px] text-muted block font-medium">{t('stat.iso')}</span>
+                      <span className="text-xl font-mono font-bold text-main">
+                        {formatRateStat(
+                          hittingAdvanced?.iso ||
+                            (activeHittingStats.slg && activeHittingStats.avg
+                              ? (parseFloat(activeHittingStats.slg) - parseFloat(activeHittingStats.avg)).toFixed(3)
+                              : undefined)
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -446,6 +600,95 @@ export const PlayerDetailPage: React.FC = () => {
                     <span className="text-2xl font-mono font-bold text-main">
                       {activePitchingStats.saves ?? 0}
                     </span>
+                  </div>
+                </div>
+
+                {/* Advanced Sabermetrics Panel */}
+                <div className="pt-3 border-t border-border/40 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-main">
+                      <Zap className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{t('player.advanced_stats_title')}</span>
+                    </div>
+                    <span className="text-[10px] text-muted flex items-center gap-1">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400/80" />
+                      {t('stat.league_avg_hint')}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+                    {/* WAR */}
+                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                      <span className="text-[10px] text-muted block font-medium">{t('stat.war')}</span>
+                      <span
+                        className={`text-xl font-mono font-black ${
+                          (pitchingSabermetrics?.war ?? 0) >= 3.0
+                            ? 'text-amber-400'
+                            : (pitchingSabermetrics?.war ?? 0) >= 1.5
+                            ? 'text-emerald-400'
+                            : 'text-main'
+                        }`}
+                      >
+                        {formatWar(pitchingSabermetrics?.war ?? pitchingSabermetrics?.ra9War)}
+                      </span>
+                    </div>
+
+                    {/* FIP */}
+                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                      <span className="text-[10px] text-muted block font-medium">{t('stat.fip')}</span>
+                      <span className="text-xl font-mono font-black text-team-primary">
+                        {formatFip(derivedFip)}
+                      </span>
+                    </div>
+
+                    {/* FIP+ */}
+                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                      <span className="text-[10px] text-muted block font-medium">{t('stat.fip_plus')}</span>
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span
+                          className={`text-xl font-mono font-black ${
+                            (derivedFipPlus ?? 0) >= 125
+                              ? 'text-emerald-400'
+                              : (derivedFipPlus ?? 0) >= 100
+                              ? 'text-team-primary'
+                              : 'text-muted'
+                          }`}
+                        >
+                          {formatPlusStat(derivedFipPlus)}
+                        </span>
+                        {derivedFipPlus !== null && (
+                          <span className="text-[9px] font-mono text-muted">
+                            {derivedFipPlus >= 100
+                              ? `+${Math.round(derivedFipPlus - 100)}%`
+                              : `${Math.round(derivedFipPlus - 100)}%`}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* xFIP */}
+                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                      <span className="text-[10px] text-muted block font-medium">{t('stat.xfip')}</span>
+                      <span className="text-xl font-mono font-bold text-main">
+                        {formatFip(pitchingSabermetrics?.xfip)}
+                      </span>
+                    </div>
+
+                    {/* K/9 */}
+                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                      <span className="text-[10px] text-muted block font-medium">{t('stat.k9')}</span>
+                      <span className="text-xl font-mono font-bold text-main">
+                        {formatPer9(activePitchingStats.strikeoutsPer9Inn || pitchingAdvanced?.strikeoutsPer9)}
+                      </span>
+                    </div>
+
+                    {/* BB/9 */}
+                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                      <span className="text-[10px] text-muted block font-medium">{t('stat.bb9')}</span>
+                      <span className="text-xl font-mono font-bold text-main">
+                        {formatPer9(activePitchingStats.walksPer9Inn || pitchingAdvanced?.baseOnBallsPer9)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

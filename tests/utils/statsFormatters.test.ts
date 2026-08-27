@@ -5,6 +5,11 @@ import {
   formatWhip,
   formatRecord,
   getOutDots,
+  formatWar,
+  formatPlusStat,
+  formatFip,
+  formatWoba,
+  formatPer9,
 } from '../../src/utils/statsFormatters';
 
 describe('statsFormatters utility tests', () => {
@@ -54,6 +59,35 @@ describe('statsFormatters utility tests', () => {
       expect(getOutDots(1)).toEqual([true, false, false]);
       expect(getOutDots(2)).toEqual([true, true, false]);
       expect(getOutDots(3)).toEqual([true, true, true]);
+    });
+  });
+
+  describe('formatWar, formatPlusStat, formatFip, formatWoba, formatPer9', () => {
+    it('formats WAR with one decimal place', () => {
+      expect(formatWar(4.24)).toBe('4.2');
+      expect(formatWar(-0.32)).toBe('-0.3');
+      expect(formatWar(undefined)).toBe('---');
+    });
+
+    it('formats plus stats rounded to integer', () => {
+      expect(formatPlusStat(149.578)).toBe('150');
+      expect(formatPlusStat(95.4)).toBe('95');
+      expect(formatPlusStat(undefined)).toBe('---');
+    });
+
+    it('formats FIP with two decimal places', () => {
+      expect(formatFip(2.959)).toBe('2.96');
+      expect(formatFip(undefined)).toBe('---');
+    });
+
+    it('formats wOBA with 3 decimal places without leading zero', () => {
+      expect(formatWoba(0.3854)).toBe('.385');
+      expect(formatWoba(undefined)).toBe('---');
+    });
+
+    it('formats Per9 with 2 decimal places', () => {
+      expect(formatPer9(10.864)).toBe('10.86');
+      expect(formatPer9(undefined)).toBe('---');
     });
   });
 });
