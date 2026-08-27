@@ -15,6 +15,61 @@ export function formatGameTime(utcDateString?: string, formatStr: string = 'hh:m
 }
 
 /**
+ * Format game time according to user language:
+ * - zh: Taipei Time (UTC+8, e.g. "07:15 (台北時間)" or "08/28 07:15 (台北時間)")
+ * - en: Eastern Time (US ET, e.g. "7:15 PM ET" or "08/28 7:15 PM ET")
+ */
+export function formatBilingualGameTime(
+  utcDateString?: string,
+  lang: string = 'zh',
+  includeDate: boolean = false
+): string {
+  if (!utcDateString) return 'TBD';
+  try {
+    const date = typeof utcDateString === 'string' ? parseISO(utcDateString) : utcDateString;
+    if (isNaN(date.getTime())) return 'TBD';
+
+    if (lang === 'zh') {
+      const timeStr = new Intl.DateTimeFormat('zh-TW', {
+        timeZone: 'Asia/Taipei',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).format(date);
+
+      if (includeDate) {
+        const dateStr = new Intl.DateTimeFormat('zh-TW', {
+          timeZone: 'Asia/Taipei',
+          month: '2-digit',
+          day: '2-digit',
+        }).format(date);
+        return `${dateStr} ${timeStr} (台北時間)`;
+      }
+      return `${timeStr} (台北時間)`;
+    } else {
+      const timeStr = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      }).format(date);
+
+      if (includeDate) {
+        const dateStr = new Intl.DateTimeFormat('en-US', {
+          timeZone: 'America/New_York',
+          month: '2-digit',
+          day: '2-digit',
+        }).format(date);
+        return `${dateStr} ${timeStr} ET`;
+      }
+      return `${timeStr} ET`;
+    }
+  } catch {
+    return 'TBD';
+  }
+}
+
+/**
  * Format date for MLB API query (YYYY-MM-DD)
  */
 export function formatApiDate(date: Date = new Date()): string {

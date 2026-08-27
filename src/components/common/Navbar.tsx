@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Compass, Coffee } from 'lucide-react';
 import { ThemeSelector } from './ThemeSelector';
 import { SearchModal } from './SearchModal';
+import { PlateViewLogo } from './PlateViewLogo';
 import { useLanguage } from '../../hooks/useLanguage';
 
 export const Navbar: React.FC = () => {
@@ -35,9 +36,7 @@ export const Navbar: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           {/* Logo & Brand */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-lg bg-team-primary flex items-center justify-center text-white font-black text-xl shadow-md group-hover:scale-105 transition-transform">
-              P
-            </div>
+            <PlateViewLogo className="w-9 h-9 shrink-0 drop-shadow-md group-hover:scale-105 transition-transform" />
             <div>
               <span className="font-extrabold text-lg tracking-tight text-main">
                 Plate<span className="text-team-primary">View</span>

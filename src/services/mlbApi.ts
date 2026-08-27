@@ -71,7 +71,7 @@ export async function getTeamSchedule(teamId: number, startDate: string, endDate
     teamId,
     startDate,
     endDate,
-    hydrate: 'linescore,decisions,team',
+    hydrate: 'linescore,decisions,team,probablePitcher',
   });
 }
 

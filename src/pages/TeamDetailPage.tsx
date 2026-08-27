@@ -11,6 +11,7 @@ import { useFavorites } from '../hooks/useFavorites';
 import { useLanguage } from '../hooks/useLanguage';
 import { GameBoxscorePanel } from '../components/team/GameBoxscorePanel';
 import { formatRateStat, formatEra, formatWhip } from '../utils/statsFormatters';
+import { formatBilingualGameTime } from '../utils/timezone';
 import teamsData from '../data/teams.json';
 import {
   Star,
@@ -306,7 +307,7 @@ export const TeamDetailPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Middle: Decisions summary if Final */}
+                      {/* Middle: Decisions summary if Final OR Probable Pitchers if Preview */}
                       {isFinal && g.decisions && (
                         <div className="hidden lg:flex items-center gap-3 text-xs text-muted font-sans">
                           {g.decisions.winner && (
@@ -327,6 +328,20 @@ export const TeamDetailPage: React.FC = () => {
                               {g.decisions.save.fullName}
                             </span>
                           )}
+                        </div>
+                      )}
+
+                      {isPreview && (g.teams?.away?.probablePitcher || g.teams?.home?.probablePitcher) && (
+                        <div className="hidden md:flex items-center gap-2 text-xs text-muted font-sans">
+                          <span className="font-semibold text-main">
+                            <span className="text-muted font-normal">{t('sb.sp_away')}:</span>{' '}
+                            {g.teams?.away?.probablePitcher?.fullName || t('sb.tbd')}
+                          </span>
+                          <span className="text-muted/40">&bull;</span>
+                          <span className="font-semibold text-main">
+                            <span className="text-muted font-normal">{t('sb.sp_home')}:</span>{' '}
+                            {g.teams?.home?.probablePitcher?.fullName || t('sb.tbd')}
+                          </span>
                         </div>
                       )}
 
@@ -354,8 +369,8 @@ export const TeamDetailPage: React.FC = () => {
                         )}
 
                         {isPreview && (
-                          <span className="text-xs px-2.5 py-1 rounded-lg font-mono font-semibold bg-page border border-border text-muted">
-                            {t('sb.scheduled')}
+                          <span className="text-xs px-2.5 py-1 rounded-lg font-mono font-bold bg-page border border-border text-team-primary shadow-sm">
+                            {formatBilingualGameTime(g.gameDate, lang)}
                           </span>
                         )}
 
@@ -373,72 +388,97 @@ export const TeamDetailPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* EXPANDED SECTION: Linescore & Box Score Panel */}
+                    {/* EXPANDED SECTION: Linescore & Box Score Panel or Preview SP Matchup */}
                     {isExpanded && (
                       <div className="mt-4 pt-3 border-t border-border space-y-4 animate-in fade-in duration-200">
-                        {/* 1. Inning-by-Inning Linescore Table */}
-                        {g.linescore?.innings && g.linescore.innings.length > 0 && (
-                          <div className="overflow-x-auto bg-page/60 p-3 rounded-xl">
-                            <table className="w-full text-center text-xs font-mono">
-                              <thead>
-                                <tr className="text-muted border-b border-border/50 text-[10px]">
-                                  <th className="text-left font-normal py-1 pr-2">{t('sb.team')}</th>
-                                  {g.linescore.innings.map((inn: any) => (
-                                    <th key={inn.num} className="font-normal px-1.5 py-1">
-                                      {inn.num}
-                                    </th>
-                                  ))}
-                                  <th className="font-bold px-2 py-1 text-main border-l border-border/30">R</th>
-                                  <th className="font-normal px-1.5 py-1">H</th>
-                                  <th className="font-normal px-1.5 py-1">E</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-border/30 text-[11px]">
-                                <tr>
-                                  <td className="text-left py-1 pr-2 font-semibold text-muted">
-                                    {awayTeamMeta?.abbrev || g.teams.away.team.name}
-                                  </td>
-                                  {g.linescore.innings.map((inn: any) => (
-                                    <td key={inn.num} className="px-1.5 py-1">
-                                      {inn.away?.runs ?? '-'}
-                                    </td>
-                                  ))}
-                                  <td className="font-bold px-2 py-1 text-main border-l border-border/30">
-                                    {g.linescore.teams?.away?.runs ?? g.teams.away.score ?? 0}
-                                  </td>
-                                  <td className="px-1.5 py-1 text-muted">
-                                    {g.linescore.teams?.away?.hits ?? '-'}
-                                  </td>
-                                  <td className="px-1.5 py-1 text-muted">
-                                    {g.linescore.teams?.away?.errors ?? '-'}
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td className="text-left py-1 pr-2 font-semibold text-muted">
-                                    {homeTeamMeta?.abbrev || g.teams.home.team.name}
-                                  </td>
-                                  {g.linescore.innings.map((inn: any) => (
-                                    <td key={inn.num} className="px-1.5 py-1">
-                                      {inn.home?.runs ?? '-'}
-                                    </td>
-                                  ))}
-                                  <td className="font-bold px-2 py-1 text-main border-l border-border/30">
-                                    {g.linescore.teams?.home?.runs ?? g.teams.home.score ?? 0}
-                                  </td>
-                                  <td className="px-1.5 py-1 text-muted">
-                                    {g.linescore.teams?.home?.hits ?? '-'}
-                                  </td>
-                                  <td className="px-1.5 py-1 text-muted">
-                                    {g.linescore.teams?.home?.errors ?? '-'}
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
+                        {isPreview ? (
+                          <div className="p-4 bg-page/60 rounded-xl border border-border/40 space-y-3 text-xs">
+                            <div className="flex items-center justify-between pb-2 border-b border-border/40 font-bold text-main">
+                              <span>⚾ {lang === 'zh' ? '預定先發投手對決' : 'Probable Pitchers Matchup'}</span>
+                              <span className="text-team-primary font-mono">{formatBilingualGameTime(g.gameDate, lang, true)}</span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="bg-card p-3 rounded-lg border border-border/60">
+                                <span className="text-muted block text-[11px] font-semibold">{g.teams.away.team.name} ({t('sb.sp_away')})</span>
+                                <span className="text-main font-bold text-sm block mt-0.5">
+                                  {g.teams?.away?.probablePitcher?.fullName || t('sb.tbd')}
+                                </span>
+                              </div>
+                              <div className="bg-card p-3 rounded-lg border border-border/60">
+                                <span className="text-muted block text-[11px] font-semibold">{g.teams.home.team.name} ({t('sb.sp_home')})</span>
+                                <span className="text-main font-bold text-sm block mt-0.5">
+                                  {g.teams?.home?.probablePitcher?.fullName || t('sb.tbd')}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                        )}
+                        ) : (
+                          <>
+                            {/* 1. Inning-by-Inning Linescore Table */}
+                            {g.linescore?.innings && g.linescore.innings.length > 0 && (
+                              <div className="overflow-x-auto bg-page/60 p-3 rounded-xl">
+                                <table className="w-full text-center text-xs font-mono">
+                                  <thead>
+                                    <tr className="text-muted border-b border-border/50 text-[10px]">
+                                      <th className="text-left font-normal py-1 pr-2">{t('sb.team')}</th>
+                                      {g.linescore.innings.map((inn: any) => (
+                                        <th key={inn.num} className="font-normal px-1.5 py-1">
+                                          {inn.num}
+                                        </th>
+                                      ))}
+                                      <th className="font-bold px-2 py-1 text-main border-l border-border/30">R</th>
+                                      <th className="font-normal px-1.5 py-1">H</th>
+                                      <th className="font-normal px-1.5 py-1">E</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-border/30 text-[11px]">
+                                    <tr>
+                                      <td className="text-left py-1 pr-2 font-semibold text-muted">
+                                        {awayTeamMeta?.abbrev || g.teams.away.team.name}
+                                      </td>
+                                      {g.linescore.innings.map((inn: any) => (
+                                        <td key={inn.num} className="px-1.5 py-1">
+                                          {inn.away?.runs ?? '-'}
+                                        </td>
+                                      ))}
+                                      <td className="font-bold px-2 py-1 text-main border-l border-border/30">
+                                        {g.linescore.teams?.away?.runs ?? g.teams.away.score ?? 0}
+                                      </td>
+                                      <td className="px-1.5 py-1 text-muted">
+                                        {g.linescore.teams?.away?.hits ?? '-'}
+                                      </td>
+                                      <td className="px-1.5 py-1 text-muted">
+                                        {g.linescore.teams?.away?.errors ?? '-'}
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td className="text-left py-1 pr-2 font-semibold text-muted">
+                                        {homeTeamMeta?.abbrev || g.teams.home.team.name}
+                                      </td>
+                                      {g.linescore.innings.map((inn: any) => (
+                                        <td key={inn.num} className="px-1.5 py-1">
+                                          {inn.home?.runs ?? '-'}
+                                        </td>
+                                      ))}
+                                      <td className="font-bold px-2 py-1 text-main border-l border-border/30">
+                                        {g.linescore.teams?.home?.runs ?? g.teams.home.score ?? 0}
+                                      </td>
+                                      <td className="px-1.5 py-1 text-muted">
+                                        {g.linescore.teams?.home?.hits ?? '-'}
+                                      </td>
+                                      <td className="px-1.5 py-1 text-muted">
+                                        {g.linescore.teams?.home?.errors ?? '-'}
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
 
-                        {/* 2. Detailed Boxscore Panel (Batters & Pitchers) */}
-                        <GameBoxscorePanel gamePk={g.gamePk} />
+                            {/* 2. Detailed Boxscore Panel (Batters & Pitchers) */}
+                            <GameBoxscorePanel gamePk={g.gamePk} />
+                          </>
+                        )}
                       </div>
                     )}
                   </div>

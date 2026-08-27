@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { GameSchedule } from '../../types/mlb';
-import { formatGameTime } from '../../utils/timezone';
+import { formatBilingualGameTime } from '../../utils/timezone';
 import { getTeamLogoUrl } from '../../services/mlbApi';
 import { BasesDiamond } from './BasesDiamond';
 import { CountDisplay } from './CountDisplay';
@@ -102,7 +102,7 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
 
         {isPreview && (
           <div className="flex items-center gap-1.5 font-bold text-team-primary text-[11px]">
-            <span>{formatGameTime(game.gameDate)}</span>
+            <span>{formatBilingualGameTime(game.gameDate, lang)}</span>
             <span className="text-muted font-normal">({t('sb.scheduled')})</span>
           </div>
         )}

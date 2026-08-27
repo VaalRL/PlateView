@@ -1,5 +1,5 @@
-import React from 'react';
 import { Coffee, Heart } from 'lucide-react';
+import { PlateViewLogo } from './PlateViewLogo';
 import { useLanguage } from '../../hooks/useLanguage';
 
 export const Footer: React.FC = () => {
@@ -10,9 +10,7 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 text-center space-y-6">
         {/* Brand & Version */}
         <div className="flex items-center justify-center gap-2">
-          <div className="w-5 h-5 rounded bg-team-primary flex items-center justify-center text-white font-bold text-xs">
-            P
-          </div>
+          <PlateViewLogo className="w-5 h-5 shrink-0" />
           <span className="font-bold text-main">PlateView ⚾</span>
           <span className="text-xs text-muted">v1.0.0</span>
         </div>
