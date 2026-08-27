@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Palette } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useLanguage } from '../../hooks/useLanguage';
 import { LanguageSelector } from './LanguageSelector';
@@ -46,29 +46,36 @@ export const ThemeSelector: React.FC = () => {
 
   return (
     <div className="flex items-center gap-2">
-      {/* 30-Team Theme Dropdown */}
-      <div className="relative flex items-center">
-        <div
-          className="w-3 h-3 rounded-full absolute left-2.5 pointer-events-none transition-colors border border-black/20"
-          style={{ backgroundColor: currentTeamMeta.primaryColor }}
-          title={`${teamDisplayName} ${translate('theme.team_color')}`}
-        />
-        <select
-          value={team}
-          onChange={(e) => setTeam(e.target.value)}
-          aria-label={translate('theme.team_color')}
-          className="text-xs md:text-sm bg-card border border-border text-main rounded-lg pl-7 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-team-primary cursor-pointer hover:border-team-primary transition-all font-medium"
-        >
-          {Object.entries(groupedTeams).map(([divName, list]) => (
-            <optgroup key={divName} label={divName}>
-              {list.map((item) => (
-                <option key={item.code} value={item.code}>
-                  {lang === 'zh' ? item.nameZh : item.name} ({item.abbrev})
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
+      {/* 30-Team Theme Dropdown with explicit label */}
+      <div className="flex items-center gap-1.5">
+        <span className="hidden xl:inline-flex items-center gap-1 text-xs font-bold text-muted shrink-0">
+          <Palette className="w-3.5 h-3.5 text-team-primary" />
+          <span>{translate('theme.label')}</span>
+        </span>
+
+        <div className="relative flex items-center">
+          <div
+            className="w-3 h-3 rounded-full absolute left-2.5 pointer-events-none transition-colors border border-black/20"
+            style={{ backgroundColor: currentTeamMeta.primaryColor }}
+            title={`${teamDisplayName} ${translate('theme.team_color')}`}
+          />
+          <select
+            value={team}
+            onChange={(e) => setTeam(e.target.value)}
+            aria-label={translate('theme.team_color')}
+            className="text-xs md:text-sm bg-card border border-border text-main rounded-lg pl-7 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-team-primary cursor-pointer hover:border-team-primary transition-all font-medium"
+          >
+            {Object.entries(groupedTeams).map(([divName, list]) => (
+              <optgroup key={divName} label={divName}>
+                {list.map((item) => (
+                  <option key={item.code} value={item.code}>
+                    {lang === 'zh' ? item.nameZh : item.name} ({item.abbrev})
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Control Group: Language Toggle & Dark/Light Toggle side by side */}

@@ -5,6 +5,7 @@ import {
   getTeamRoster,
   getTeamDetail,
   getTeamSchedule,
+  getGameBoxscore,
   getPlayerDetail,
   searchPeople,
 } from './mlbApi';
@@ -57,6 +58,15 @@ export function useTeamScheduleQuery(teamId?: number) {
     queryFn: () => getTeamSchedule(teamId!, startDate, endDate),
     enabled: !!teamId,
     staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
+export function useGameBoxscoreQuery(gamePk?: number) {
+  return useQuery({
+    queryKey: ['game-boxscore', gamePk],
+    queryFn: () => getGameBoxscore(gamePk!),
+    enabled: !!gamePk,
+    staleTime: 1000 * 60 * 30, // 30 minutes for completed games
   });
 }
 

@@ -76,6 +76,13 @@ export async function getTeamSchedule(teamId: number, startDate: string, endDate
 }
 
 /**
+ * Fetch detailed box score for a specific game
+ */
+export async function getGameBoxscore(gamePk: number) {
+  return fetchMlb<any>(`/game/${gamePk}/boxscore`);
+}
+
+/**
  * Fetch detailed player info, season stats, career stats, and game logs
  */
 export async function getPlayerDetail(personId: number) {

@@ -9,6 +9,7 @@ import {
 import { getTeamLogoUrl, getPlayerHeadshotUrl } from '../services/mlbApi';
 import { useFavorites } from '../hooks/useFavorites';
 import { useLanguage } from '../hooks/useLanguage';
+import { GameBoxscorePanel } from '../components/team/GameBoxscorePanel';
 import { formatRateStat, formatEra, formatWhip } from '../utils/statsFormatters';
 import teamsData from '../data/teams.json';
 import {
@@ -20,6 +21,8 @@ import {
   Trophy,
   Calendar,
   TrendingUp,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 type MainViewTab = 'roster' | 'schedule';
@@ -32,6 +35,7 @@ export const TeamDetailPage: React.FC = () => {
 
   const [mainTab, setMainTab] = useState<MainViewTab>('schedule');
   const [activeRosterTab, setActiveRosterTab] = useState<RosterTab>('active');
+  const [expandedGamePk, setExpandedGamePk] = useState<number | null>(null);
   const { lang, t } = useLanguage();
 
   const {
@@ -111,6 +115,10 @@ export const TeamDetailPage: React.FC = () => {
 
     return { wins, losses, count: last10.length };
   }, [recentGames, idNum]);
+
+  const toggleExpandGame = (gamePk: number) => {
+    setExpandedGamePk((prev) => (prev === gamePk ? null : gamePk));
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
@@ -223,7 +231,7 @@ export const TeamDetailPage: React.FC = () => {
                 </span>
               </div>
               <span className="text-xs text-muted font-mono">
-                {lang === 'zh' ? '依比賽日期降序排列' : 'Sorted by date descending'}
+                {lang === 'zh' ? '點擊任一場次可展開完整 Box 數據' : 'Click any matchup to view Box Score'}
               </span>
             </div>
           )}
@@ -243,7 +251,7 @@ export const TeamDetailPage: React.FC = () => {
           )}
 
           {!isScheduleLoading && !isScheduleError && (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {recentGames.map((g: any) => {
                 const isHome = g.teams.home.team.id === idNum;
                 const myScore = isHome ? g.teams.home.score : g.teams.away.score;
@@ -260,92 +268,179 @@ export const TeamDetailPage: React.FC = () => {
                 const isPreview = g.status?.abstractGameState === 'Preview';
 
                 const isWinner = isHome ? g.teams.home.isWinner : g.teams.away.isWinner;
+                const isExpanded = expandedGamePk === g.gamePk;
+
+                const awayTeamMeta = teamsData.find((tItem) => tItem.id === g.teams.away.team.id);
+                const homeTeamMeta = teamsData.find((tItem) => tItem.id === g.teams.home.team.id);
 
                 return (
                   <div
                     key={g.gamePk}
-                    className="bg-card border border-border rounded-xl p-4 shadow-sm hover:border-team-primary/50 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                    className="bg-card border border-border rounded-2xl p-4 shadow-sm hover:border-team-primary/40 transition-all overflow-hidden"
                   >
-                    {/* Left: Date, Matchup & Opponent */}
-                    <div className="flex items-center gap-3.5">
-                      <span className="text-xs font-mono text-muted w-20 shrink-0">
-                        {g.gameDateStr}
-                      </span>
-
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-xs font-bold text-muted uppercase">
-                          {isHome ? t('team.matchup_vs') : t('team.matchup_at')}
+                    <div
+                      onClick={() => toggleExpandGame(g.gamePk)}
+                      className="cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 select-none"
+                    >
+                      {/* Left: Date, Matchup & Opponent */}
+                      <div className="flex items-center gap-3.5">
+                        <span className="text-xs font-mono text-muted w-20 shrink-0 font-semibold">
+                          {g.gameDateStr}
                         </span>
-                        <Link
-                          to={`/teams/${oppTeamData.id}`}
-                          className="flex items-center gap-2 font-bold text-sm text-main hover:text-team-primary transition-colors group"
-                        >
-                          <img
-                            src={getTeamLogoUrl(oppTeamData.id)}
-                            alt={oppDisplayName}
-                            className="w-6 h-6 object-contain"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                          <span className="group-hover:underline">{oppDisplayName}</span>
-                        </Link>
-                      </div>
-                    </div>
 
-                    {/* Middle: Decisions summary if Final */}
-                    {isFinal && g.decisions && (
-                      <div className="hidden lg:flex items-center gap-3 text-xs text-muted font-sans">
-                        {g.decisions.winner && (
-                          <span>
-                            <strong className="text-emerald-500 font-bold">W:</strong>{' '}
-                            {g.decisions.winner.fullName}
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-xs font-bold text-muted uppercase">
+                            {isHome ? t('team.matchup_vs') : t('team.matchup_at')}
                           </span>
-                        )}
-                        {g.decisions.loser && (
-                          <span>
-                            <strong className="text-rose-500 font-bold">L:</strong>{' '}
-                            {g.decisions.loser.fullName}
-                          </span>
-                        )}
-                        {g.decisions.save && (
-                          <span>
-                            <strong className="text-amber-500 font-bold">SV:</strong>{' '}
-                            {g.decisions.save.fullName}
-                          </span>
-                        )}
+                          <div className="flex items-center gap-2 font-bold text-sm text-main">
+                            <img
+                              src={getTeamLogoUrl(oppTeamData.id)}
+                              alt={oppDisplayName}
+                              className="w-6 h-6 object-contain"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                            <span>{oppDisplayName}</span>
+                          </div>
+                        </div>
                       </div>
-                    )}
 
-                    {/* Right: Score & Result Tag */}
-                    <div className="flex items-center gap-3 self-end sm:self-auto">
-                      {isFinal && (
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`text-xs px-2.5 py-1 rounded-lg font-mono font-black border ${
-                              isWinner
-                                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-                                : 'bg-rose-500/15 border-rose-500/30 text-rose-400'
-                            }`}
-                          >
-                            {isWinner ? t('team.win_badge') : t('team.loss_badge')}{' '}
-                            {myScore !== undefined ? `${myScore} - ${oppScore}` : ''}
-                          </span>
+                      {/* Middle: Decisions summary if Final */}
+                      {isFinal && g.decisions && (
+                        <div className="hidden lg:flex items-center gap-3 text-xs text-muted font-sans">
+                          {g.decisions.winner && (
+                            <span>
+                              <strong className="text-emerald-500 font-bold">W:</strong>{' '}
+                              {g.decisions.winner.fullName}
+                            </span>
+                          )}
+                          {g.decisions.loser && (
+                            <span>
+                              <strong className="text-rose-500 font-bold">L:</strong>{' '}
+                              {g.decisions.loser.fullName}
+                            </span>
+                          )}
+                          {g.decisions.save && (
+                            <span>
+                              <strong className="text-amber-500 font-bold">SV:</strong>{' '}
+                              {g.decisions.save.fullName}
+                            </span>
+                          )}
                         </div>
                       )}
 
-                      {isLive && (
-                        <span className="text-xs px-2.5 py-1 rounded-lg font-mono font-bold bg-red-500/20 border border-red-500/40 text-red-400 animate-pulse">
-                          🔴 LIVE {myScore} - {oppScore}
-                        </span>
-                      )}
+                      {/* Right: Score, Result Tag & Expand Trigger */}
+                      <div className="flex items-center gap-3 self-end sm:self-auto">
+                        {isFinal && (
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`text-xs px-2.5 py-1 rounded-lg font-mono font-black border ${
+                                isWinner
+                                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                                  : 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                              }`}
+                            >
+                              {isWinner ? t('team.win_badge') : t('team.loss_badge')}{' '}
+                              {myScore !== undefined ? `${myScore} - ${oppScore}` : ''}
+                            </span>
+                          </div>
+                        )}
 
-                      {isPreview && (
-                        <span className="text-xs px-2.5 py-1 rounded-lg font-mono font-semibold bg-page border border-border text-muted">
-                          {t('sb.scheduled')}
-                        </span>
-                      )}
+                        {isLive && (
+                          <span className="text-xs px-2.5 py-1 rounded-lg font-mono font-bold bg-red-500/20 border border-red-500/40 text-red-400 animate-pulse">
+                            🔴 LIVE {myScore} - {oppScore}
+                          </span>
+                        )}
+
+                        {isPreview && (
+                          <span className="text-xs px-2.5 py-1 rounded-lg font-mono font-semibold bg-page border border-border text-muted">
+                            {t('sb.scheduled')}
+                          </span>
+                        )}
+
+                        <button
+                          type="button"
+                          className="p-1 rounded-lg text-muted hover:text-main hover:bg-page transition-colors"
+                          aria-label={isExpanded ? t('team.hide_boxscore') : t('team.view_boxscore')}
+                        >
+                          {isExpanded ? (
+                            <ChevronUp className="w-4 h-4 text-team-primary" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
                     </div>
+
+                    {/* EXPANDED SECTION: Linescore & Box Score Panel */}
+                    {isExpanded && (
+                      <div className="mt-4 pt-3 border-t border-border space-y-4 animate-in fade-in duration-200">
+                        {/* 1. Inning-by-Inning Linescore Table */}
+                        {g.linescore?.innings && g.linescore.innings.length > 0 && (
+                          <div className="overflow-x-auto bg-page/60 p-3 rounded-xl">
+                            <table className="w-full text-center text-xs font-mono">
+                              <thead>
+                                <tr className="text-muted border-b border-border/50 text-[10px]">
+                                  <th className="text-left font-normal py-1 pr-2">{t('sb.team')}</th>
+                                  {g.linescore.innings.map((inn: any) => (
+                                    <th key={inn.num} className="font-normal px-1.5 py-1">
+                                      {inn.num}
+                                    </th>
+                                  ))}
+                                  <th className="font-bold px-2 py-1 text-main border-l border-border/30">R</th>
+                                  <th className="font-normal px-1.5 py-1">H</th>
+                                  <th className="font-normal px-1.5 py-1">E</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-border/30 text-[11px]">
+                                <tr>
+                                  <td className="text-left py-1 pr-2 font-semibold text-muted">
+                                    {awayTeamMeta?.abbrev || g.teams.away.team.name}
+                                  </td>
+                                  {g.linescore.innings.map((inn: any) => (
+                                    <td key={inn.num} className="px-1.5 py-1">
+                                      {inn.away?.runs ?? '-'}
+                                    </td>
+                                  ))}
+                                  <td className="font-bold px-2 py-1 text-main border-l border-border/30">
+                                    {g.linescore.teams?.away?.runs ?? g.teams.away.score ?? 0}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-muted">
+                                    {g.linescore.teams?.away?.hits ?? '-'}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-muted">
+                                    {g.linescore.teams?.away?.errors ?? '-'}
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="text-left py-1 pr-2 font-semibold text-muted">
+                                    {homeTeamMeta?.abbrev || g.teams.home.team.name}
+                                  </td>
+                                  {g.linescore.innings.map((inn: any) => (
+                                    <td key={inn.num} className="px-1.5 py-1">
+                                      {inn.home?.runs ?? '-'}
+                                    </td>
+                                  ))}
+                                  <td className="font-bold px-2 py-1 text-main border-l border-border/30">
+                                    {g.linescore.teams?.home?.runs ?? g.teams.home.score ?? 0}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-muted">
+                                    {g.linescore.teams?.home?.hits ?? '-'}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-muted">
+                                    {g.linescore.teams?.home?.errors ?? '-'}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+
+                        {/* 2. Detailed Boxscore Panel (Batters & Pitchers) */}
+                        <GameBoxscorePanel gamePk={g.gamePk} />
+                      </div>
+                    )}
                   </div>
                 );
               })}

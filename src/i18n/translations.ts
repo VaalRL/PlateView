@@ -9,6 +9,7 @@ export const translations = {
     'nav.sponsor': '☕ 贊助本專案',
 
     // Theme & Lang
+    'theme.label': '顯示色系',
     'theme.toggle_light': '切換為明亮模式',
     'theme.toggle_dark': '切換為深色模式',
     'theme.team_color': '選擇 30 隊主題色',
@@ -98,6 +99,10 @@ export const translations = {
     'team.win_badge': '勝 (W)',
     'team.loss_badge': '敗 (L)',
     'team.no_schedule': '近期尚無已結束或預定之出賽日程。',
+    'team.view_boxscore': '展開比賽 Box',
+    'team.hide_boxscore': '收合比賽 Box',
+    'team.boxscore_batting': '打擊成績 (Batting)',
+    'team.boxscore_pitching': '投球成績 (Pitching)',
 
     // Player Detail
     'player.back': '返回首頁比分',
@@ -174,6 +179,7 @@ export const translations = {
     'nav.sponsor': '☕ Buy Me a Coffee',
 
     // Theme & Lang
+    'theme.label': 'Theme',
     'theme.toggle_light': 'Switch to Light Mode',
     'theme.toggle_dark': 'Switch to Dark Mode',
     'theme.team_color': 'Choose 30-Team Theme',
@@ -263,6 +269,10 @@ export const translations = {
     'team.win_badge': 'W',
     'team.loss_badge': 'L',
     'team.no_schedule': 'No recent completed or scheduled games found.',
+    'team.view_boxscore': 'View Box Score',
+    'team.hide_boxscore': 'Hide Box Score',
+    'team.boxscore_batting': 'Batting',
+    'team.boxscore_pitching': 'Pitching',
 
     // Player Detail
     'player.back': 'Back to Scores',
