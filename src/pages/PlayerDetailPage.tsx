@@ -467,7 +467,26 @@ export const PlayerDetailPage: React.FC = () => {
                     return (
                       <tr key={idx} className="hover:bg-card-hover/50 transition-colors">
                         <td className="py-2.5 px-4 text-main font-semibold">{log.date}</td>
-                        <td className="py-2.5 px-3 text-muted">{oppDisplayName}</td>
+                        <td className="py-2.5 px-3">
+                          {log.opponent?.id ? (
+                            <Link
+                              to={`/teams/${log.opponent.id}`}
+                              className="inline-flex items-center gap-1.5 hover:text-team-primary hover:underline font-semibold text-main transition-colors group"
+                            >
+                              <img
+                                src={getTeamLogoUrl(log.opponent.id)}
+                                alt={oppDisplayName}
+                                className="w-4 h-4 object-contain shrink-0 group-hover:scale-110 transition-transform"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                              <span className="truncate max-w-[110px] sm:max-w-none">{oppDisplayName}</span>
+                            </Link>
+                          ) : (
+                            <span className="text-muted">{oppDisplayName}</span>
+                          )}
+                        </td>
                         {effectiveRole === 'pitching' ? (
                           <>
                             <td className="py-2.5 px-2 text-center font-bold text-main">

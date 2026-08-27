@@ -11,8 +11,9 @@ import { useFavorites } from '../hooks/useFavorites';
 import { useLanguage } from '../hooks/useLanguage';
 import { GameBoxscorePanel } from '../components/team/GameBoxscorePanel';
 import { formatRateStat, formatEra, formatWhip } from '../utils/statsFormatters';
-import { formatBilingualGameTime } from '../utils/timezone';
+import { formatBilingualGameTime, formatApiDate } from '../utils/timezone';
 import teamsData from '../data/teams.json';
+import playersData from '../data/players-zh-tw.json';
 import {
   Star,
   ArrowLeft,
@@ -99,6 +100,36 @@ export const TeamDetailPage: React.FC = () => {
     // Sort newest games first
     return list.sort((a, b) => b.gameDateStr.localeCompare(a.gameDateStr));
   }, [scheduleData]);
+
+  // Map probable starter info for roster badges
+  const probableStartersMap = useMemo(() => {
+    const map = new Map<number, { gameDate: string; isTomorrow: boolean; isToday: boolean }>();
+    if (!scheduleData?.dates) return map;
+
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const tomorrowStr = formatApiDate(tomorrow);
+    const todayStr = formatApiDate(today);
+
+    scheduleData.dates.forEach((d: any) => {
+      d.games?.forEach((g: any) => {
+        if (g.status?.abstractGameState === 'Preview' || d.date >= todayStr) {
+          const isHome = g.teams.home.team.id === idNum;
+          const myTeam = isHome ? g.teams.home : g.teams.away;
+          const spId = myTeam.probablePitcher?.id;
+          if (spId) {
+            map.set(spId, {
+              gameDate: d.date,
+              isTomorrow: d.date === tomorrowStr,
+              isToday: d.date === todayStr,
+            });
+          }
+        }
+      });
+    });
+    return map;
+  }, [scheduleData, idNum]);
 
   // Calculate recent 10-game win-loss
   const recent10Stats = useMemo(() => {
@@ -637,6 +668,10 @@ export const TeamDetailPage: React.FC = () => {
                 <div className="divide-y divide-border/40 max-h-[700px] overflow-y-auto">
                   {pitchers.map((item: any) => {
                     const seasonPitching = item.person?.stats?.[0]?.splits?.[0]?.stat;
+                    const starterInfo = probableStartersMap.get(item.person.id);
+                    const zhPlayerMeta = playersData.find((p) => p.id === item.person.id);
+                    const displayName =
+                      lang === 'zh' ? zhPlayerMeta?.nameZh || item.person.fullName : item.person.fullName;
 
                     return (
                       <Link
@@ -645,18 +680,51 @@ export const TeamDetailPage: React.FC = () => {
                         className="py-2.5 px-2 flex items-center justify-between hover:bg-card-hover/70 rounded-lg transition-colors group"
                       >
                         <div className="flex items-center gap-3">
-                          <img
-                            src={getPlayerHeadshotUrl(item.person.id)}
-                            alt={item.person.fullName}
-                            className="w-9 h-9 rounded-full bg-page object-cover border border-border group-hover:scale-105 transition-transform"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="%2394a3b8" viewBox="0 0 16 16"%3E%3Cpath d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"%3E%3C/path%3E%3Cpath fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"%3E%3C/path%3E%3C/svg%3E';
-                            }}
-                          />
+                          <div className="relative shrink-0">
+                            <img
+                              src={getPlayerHeadshotUrl(item.person.id)}
+                              alt={item.person.fullName}
+                              className="w-10 h-10 rounded-full bg-page object-cover border border-border group-hover:scale-105 transition-transform"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="%2394a3b8" viewBox="0 0 16 16"%3E%3Cpath d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"%3E%3C/path%3E%3Cpath fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"%3E%3C/path%3E%3C/svg%3E';
+                              }}
+                            />
+                            {starterInfo && (
+                              <span
+                                className="absolute -top-1 -right-1 text-[10px] w-4 h-4 bg-amber-500 text-black rounded-full flex items-center justify-center font-bold shadow ring-2 ring-card"
+                                title={
+                                  starterInfo.isTomorrow
+                                    ? t('team.sp_tomorrow')
+                                    : starterInfo.isToday
+                                    ? t('team.sp_today')
+                                    : t('team.sp_probable')
+                                }
+                              >
+                                🔥
+                              </span>
+                            )}
+                          </div>
                           <div>
-                            <div className="text-sm font-semibold text-main group-hover:text-team-primary flex items-center gap-1.5">
-                              <span>{item.person.fullName}</span>
+                            <div className="text-sm font-semibold text-main group-hover:text-team-primary flex flex-wrap items-center gap-1.5">
+                              <span>{displayName}</span>
+                              {lang === 'zh' && zhPlayerMeta?.nameZh && (
+                                <span className="text-[11px] text-muted font-normal">
+                                  ({item.person.fullName})
+                                </span>
+                              )}
+                              {starterInfo && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-500 border border-amber-500/30 font-bold flex items-center gap-1 shadow-sm">
+                                  <span>🔥</span>
+                                  <span>
+                                    {starterInfo.isTomorrow
+                                      ? t('team.sp_tomorrow')
+                                      : starterInfo.isToday
+                                      ? t('team.sp_today')
+                                      : t('team.sp_probable')}
+                                  </span>
+                                </span>
+                              )}
                               {item.status?.code?.includes('I') && (
                                 <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
                                   IL
@@ -707,6 +775,9 @@ export const TeamDetailPage: React.FC = () => {
                 <div className="divide-y divide-border/40 max-h-[700px] overflow-y-auto">
                   {positionPlayers.map((item: any) => {
                     const seasonHitting = item.person?.stats?.[0]?.splits?.[0]?.stat;
+                    const zhPlayerMeta = playersData.find((p) => p.id === item.person.id);
+                    const displayName =
+                      lang === 'zh' ? zhPlayerMeta?.nameZh || item.person.fullName : item.person.fullName;
 
                     return (
                       <Link
@@ -718,15 +789,20 @@ export const TeamDetailPage: React.FC = () => {
                           <img
                             src={getPlayerHeadshotUrl(item.person.id)}
                             alt={item.person.fullName}
-                            className="w-9 h-9 rounded-full bg-page object-cover border border-border group-hover:scale-105 transition-transform"
+                            className="w-10 h-10 rounded-full bg-page object-cover border border-border group-hover:scale-105 transition-transform shrink-0"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src =
                                 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="%2394a3b8" viewBox="0 0 16 16"%3E%3Cpath d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"%3E%3C/path%3E%3Cpath fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"%3E%3C/path%3E%3C/svg%3E';
                             }}
                           />
                           <div>
-                            <div className="text-sm font-semibold text-main group-hover:text-team-primary flex items-center gap-1.5">
-                              <span>{item.person.fullName}</span>
+                            <div className="text-sm font-semibold text-main group-hover:text-team-primary flex flex-wrap items-center gap-1.5">
+                              <span>{displayName}</span>
+                              {lang === 'zh' && zhPlayerMeta?.nameZh && (
+                                <span className="text-[11px] text-muted font-normal">
+                                  ({item.person.fullName})
+                                </span>
+                              )}
                               {item.status?.code?.includes('I') && (
                                 <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
                                   IL

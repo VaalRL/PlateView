@@ -103,6 +103,9 @@ export const translations = {
     'team.hide_boxscore': '收合比賽 Box',
     'team.boxscore_batting': '打擊成績 (Batting)',
     'team.boxscore_pitching': '投球成績 (Pitching)',
+    'team.sp_tomorrow': '明日先發',
+    'team.sp_today': '今日先發',
+    'team.sp_probable': '預計先發',
 
     // Player Detail
     'player.back': '返回首頁比分',
@@ -273,6 +276,9 @@ export const translations = {
     'team.hide_boxscore': 'Hide Box Score',
     'team.boxscore_batting': 'Batting',
     'team.boxscore_pitching': 'Pitching',
+    'team.sp_tomorrow': "Tomorrow's SP",
+    'team.sp_today': "Today's SP",
+    'team.sp_probable': 'Probable SP',
 
     // Player Detail
     'player.back': 'Back to Scores',

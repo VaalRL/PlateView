@@ -7,6 +7,7 @@ import { BasesDiamond } from './BasesDiamond';
 import { CountDisplay } from './CountDisplay';
 import { useLanguage } from '../../hooks/useLanguage';
 import teamsData from '../../data/teams.json';
+import playersData from '../../data/players-zh-tw.json';
 import { ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 
 interface ScoreboardCardProps {
@@ -57,6 +58,15 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
 
   const totalInnings = linescore?.innings?.length || 9;
   const isExtraInnings = isFinal && totalInnings > 9;
+
+  const getPlayerDisplayName = (person?: { id?: number; fullName?: string }) => {
+    if (!person?.fullName) return '';
+    if (lang === 'zh' && person.id) {
+      const zhMeta = playersData.find((p) => p.id === person.id);
+      if (zhMeta?.nameZh) return zhMeta.nameZh;
+    }
+    return person.fullName;
+  };
 
   return (
     <div
@@ -262,17 +272,37 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             <span className="text-[10px] font-bold text-team-primary uppercase mr-1">
               {t('sb.pitcher_short')}:
             </span>
-            <span className="font-semibold text-main">
-              {linescore.defense?.pitcher?.fullName || 'Pitcher'}
-            </span>
+            {linescore.defense?.pitcher?.id ? (
+              <Link
+                to={`/players/${linescore.defense.pitcher.id}`}
+                className="font-semibold text-main hover:text-team-primary hover:underline transition-colors"
+                title={linescore.defense.pitcher.fullName}
+              >
+                {getPlayerDisplayName(linescore.defense.pitcher)}
+              </Link>
+            ) : (
+              <span className="font-semibold text-main">
+                {linescore.defense?.pitcher?.fullName || 'Pitcher'}
+              </span>
+            )}
           </div>
           <div className="truncate text-right">
             <span className="text-[10px] font-bold text-team-primary uppercase mr-1">
               {t('sb.batter_short')}:
             </span>
-            <span className="font-semibold text-main">
-              {linescore.offense?.batter?.fullName || 'Batter'}
-            </span>
+            {linescore.offense?.batter?.id ? (
+              <Link
+                to={`/players/${linescore.offense.batter.id}`}
+                className="font-semibold text-main hover:text-team-primary hover:underline transition-colors"
+                title={linescore.offense.batter.fullName}
+              >
+                {getPlayerDisplayName(linescore.offense.batter)}
+              </Link>
+            ) : (
+              <span className="font-semibold text-main">
+                {linescore.offense?.batter?.fullName || 'Batter'}
+              </span>
+            )}
           </div>
         </div>
       )}
@@ -281,15 +311,35 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
         <div className="pt-2 border-t border-border text-[11px] text-muted grid grid-cols-2 gap-2 bg-page/30 p-2 rounded-xl">
           <div className="truncate">
             <span className="opacity-75">{t('sb.sp_away')}: </span>
-            <span className="font-medium text-main">
-              {teams.away.probablePitcher?.fullName || t('sb.tbd')}
-            </span>
+            {teams.away.probablePitcher?.id ? (
+              <Link
+                to={`/players/${teams.away.probablePitcher.id}`}
+                className="font-medium text-main hover:text-team-primary hover:underline transition-colors"
+                title={teams.away.probablePitcher.fullName}
+              >
+                {getPlayerDisplayName(teams.away.probablePitcher)}
+              </Link>
+            ) : (
+              <span className="font-medium text-main">
+                {teams.away.probablePitcher?.fullName || t('sb.tbd')}
+              </span>
+            )}
           </div>
           <div className="truncate text-right">
             <span className="opacity-75">{t('sb.sp_home')}: </span>
-            <span className="font-medium text-main">
-              {teams.home.probablePitcher?.fullName || t('sb.tbd')}
-            </span>
+            {teams.home.probablePitcher?.id ? (
+              <Link
+                to={`/players/${teams.home.probablePitcher.id}`}
+                className="font-medium text-main hover:text-team-primary hover:underline transition-colors"
+                title={teams.home.probablePitcher.fullName}
+              >
+                {getPlayerDisplayName(teams.home.probablePitcher)}
+              </Link>
+            ) : (
+              <span className="font-medium text-main">
+                {teams.home.probablePitcher?.fullName || t('sb.tbd')}
+              </span>
+            )}
           </div>
         </div>
       )}
@@ -299,19 +349,46 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
           {game.decisions.winner && (
             <span>
               <strong className="text-emerald-500 font-bold">{t('sb.win_short')}:</strong>{' '}
-              {game.decisions.winner.fullName}
+              {game.decisions.winner.id ? (
+                <Link
+                  to={`/players/${game.decisions.winner.id}`}
+                  className="text-main hover:text-team-primary hover:underline transition-colors font-medium"
+                >
+                  {getPlayerDisplayName(game.decisions.winner)}
+                </Link>
+              ) : (
+                <span>{game.decisions.winner.fullName}</span>
+              )}
             </span>
           )}
           {game.decisions.loser && (
             <span>
               <strong className="text-rose-500 font-bold">{t('sb.loss_short')}:</strong>{' '}
-              {game.decisions.loser.fullName}
+              {game.decisions.loser.id ? (
+                <Link
+                  to={`/players/${game.decisions.loser.id}`}
+                  className="text-main hover:text-team-primary hover:underline transition-colors font-medium"
+                >
+                  {getPlayerDisplayName(game.decisions.loser)}
+                </Link>
+              ) : (
+                <span>{game.decisions.loser.fullName}</span>
+              )}
             </span>
           )}
           {game.decisions.save && (
             <span>
               <strong className="text-amber-500 font-bold">{t('sb.save_short')}:</strong>{' '}
-              {game.decisions.save.fullName}
+              {game.decisions.save.id ? (
+                <Link
+                  to={`/players/${game.decisions.save.id}`}
+                  className="text-main hover:text-team-primary hover:underline transition-colors font-medium"
+                >
+                  {getPlayerDisplayName(game.decisions.save)}
+                </Link>
+              ) : (
+                <span>{game.decisions.save.fullName}</span>
+              )}
             </span>
           )}
         </div>
