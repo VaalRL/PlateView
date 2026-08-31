@@ -11,15 +11,30 @@ export const translations = {
 
     // Leaderboards
     'leaders.title': 'MLB 數據領先榜 (Leaderboards)',
-    'leaders.subtitle': '2026 賽季大聯盟打擊與投球官方數據即時排行',
+    'leaders.subtitle': '{season} 賽季大聯盟打擊與投球官方數據即時排行',
     'leaders.tab_hitting': '🏏 打擊排行 (Batting)',
     'leaders.tab_pitching': '⚾ 投球排行 (Pitching)',
     'leaders.filter_all': '全大聯盟 (MLB)',
     'leaders.filter_al': '美國聯盟 (AL)',
     'leaders.filter_nl': '國家聯盟 (NL)',
-    'leaders.loading': '正在載入最新大聯盟排行榜...',
     'leaders.empty': '目前暫無該項目的排行榜數據。',
     'leaders.view_player': '查看球員詳情',
+    'leaders.cat_battingAverage': '打擊率 (AVG)',
+    'leaders.cat_homeRuns': '全壘打 (HR)',
+    'leaders.cat_runsBattedIn': '打點 (RBI)',
+    'leaders.cat_onBasePlusSlugging': '整體攻擊指數 (OPS)',
+    'leaders.cat_hits': '安打數 (H)',
+    'leaders.cat_stolenBases': '盜壘成功 (SB)',
+    'leaders.cat_onBasePercentage': '上壘率 (OBP)',
+    'leaders.cat_sluggingPercentage': '長打率 (SLG)',
+    'leaders.cat_earnedRunAverage': '防禦率 (ERA)',
+    'leaders.cat_walksAndHitsPerInningPitched': '每局被上壘率 (WHIP)',
+    'leaders.cat_strikeouts': '奪三振 (SO)',
+    'leaders.cat_wins': '勝投 (W)',
+    'leaders.cat_saves': '救援成功 (SV)',
+    'leaders.cat_holds': '中繼成功 (HLD)',
+    'leaders.cat_strikeoutsPer9Inn': '每九局三振數 (K/9)',
+    'leaders.cat_inningsPitched': '投球局數 (IP)',
 
     // Theme & Lang
     'theme.label': '顯示色系',
@@ -27,6 +42,9 @@ export const translations = {
     'theme.toggle_dark': '切換為深色模式',
     'theme.team_color': '選擇 30 隊主題色',
     'lang.toggle_label': '切換語系 (Language)',
+
+    // Common
+    'common.close': '關閉',
 
     // Favorites
     'fav.title': '我的最愛',
@@ -41,8 +59,6 @@ export const translations = {
     'fav.no_game_today': '今日尚無出賽紀錄',
     'fav.latest_game': '最近出賽 ({date})',
     'fav.today_game': '今日出賽 ({date})',
-    'fav.season_ops': '賽季 OPS',
-    'fav.season_era': '賽季 ERA',
     'fav.backup_modal_title': '⭐ 我的最愛管理與資料備份',
     'fav.backup_modal_desc': '可將您的球隊與球星收藏清單匯出為 JSON 備份檔，或跨裝置（如手機與電腦間）快速同步。',
     'fav.export_section': '1. 匯出備份 (Export)',
@@ -57,7 +73,13 @@ export const translations = {
     'fav.import_mode_overwrite': '🔄 完全覆蓋現有收藏',
     'fav.import_submit': '確認匯入',
     'fav.import_success': '🎉 收藏資料匯入成功！',
+    'fav.import_count': '{teams} 隊、{players} 位球員',
     'fav.import_error': '⚠️ 匯入失敗：格式不正確或檔案損壞。',
+    'fav.import_err_invalid_json': 'JSON 解析失敗',
+    'fav.import_err_not_object': '資料格式不是有效的 JSON 物件',
+    'fav.import_err_no_data': '找不到收藏球隊或球員清單',
+    'fav.import_err_storage_error': '無法寫入瀏覽器儲存空間',
+    'fav.copy_failed': '⚠️ 複製失敗，請改用下載備份檔。',
 
     // Scoreboard
     'sb.prev_day': '前一天',
@@ -236,15 +258,30 @@ export const translations = {
 
     // Leaderboards
     'leaders.title': 'MLB Stat Leaderboards',
-    'leaders.subtitle': '2026 MLB Regular Season Official Stat Leaders',
+    'leaders.subtitle': '{season} MLB Regular Season Official Stat Leaders',
     'leaders.tab_hitting': '🏏 Batting Leaders',
     'leaders.tab_pitching': '⚾ Pitching Leaders',
     'leaders.filter_all': 'All MLB',
     'leaders.filter_al': 'American League (AL)',
     'leaders.filter_nl': 'National League (NL)',
-    'leaders.loading': 'Loading MLB leaderboards...',
     'leaders.empty': 'No leaderboards data available for this category.',
     'leaders.view_player': 'View Player Profile',
+    'leaders.cat_battingAverage': 'Batting Average (AVG)',
+    'leaders.cat_homeRuns': 'Home Runs (HR)',
+    'leaders.cat_runsBattedIn': 'Runs Batted In (RBI)',
+    'leaders.cat_onBasePlusSlugging': 'On-base Plus Slugging (OPS)',
+    'leaders.cat_hits': 'Hits (H)',
+    'leaders.cat_stolenBases': 'Stolen Bases (SB)',
+    'leaders.cat_onBasePercentage': 'On-Base Percentage (OBP)',
+    'leaders.cat_sluggingPercentage': 'Slugging Percentage (SLG)',
+    'leaders.cat_earnedRunAverage': 'Earned Run Average (ERA)',
+    'leaders.cat_walksAndHitsPerInningPitched': 'WHIP',
+    'leaders.cat_strikeouts': 'Strikeouts (SO)',
+    'leaders.cat_wins': 'Wins (W)',
+    'leaders.cat_saves': 'Saves (SV)',
+    'leaders.cat_holds': 'Holds (HLD)',
+    'leaders.cat_strikeoutsPer9Inn': 'Strikeouts Per 9 (K/9)',
+    'leaders.cat_inningsPitched': 'Innings Pitched (IP)',
 
     // Theme & Lang
     'theme.label': 'Theme',
@@ -252,6 +289,9 @@ export const translations = {
     'theme.toggle_dark': 'Switch to Dark Mode',
     'theme.team_color': 'Choose 30-Team Theme',
     'lang.toggle_label': 'Switch Language (語系)',
+
+    // Common
+    'common.close': 'Close',
 
     // Favorites
     'fav.title': 'Favorites',
@@ -266,8 +306,6 @@ export const translations = {
     'fav.no_game_today': 'No game played today',
     'fav.latest_game': 'Last Game ({date})',
     'fav.today_game': 'Today ({date})',
-    'fav.season_ops': 'Season OPS',
-    'fav.season_era': 'Season ERA',
     'fav.backup_modal_title': '⭐ Favorites Backup & Sync',
     'fav.backup_modal_desc': 'Export your favorite players and teams as a JSON backup, or transfer between devices.',
     'fav.export_section': '1. Export Backup',
@@ -282,7 +320,13 @@ export const translations = {
     'fav.import_mode_overwrite': '🔄 Overwrite existing favorites',
     'fav.import_submit': 'Import Now',
     'fav.import_success': '🎉 Favorites imported successfully!',
+    'fav.import_count': '{teams} teams, {players} players',
     'fav.import_error': '⚠️ Import failed: Invalid format.',
+    'fav.import_err_invalid_json': 'Invalid JSON',
+    'fav.import_err_not_object': 'Not a valid backup object',
+    'fav.import_err_no_data': 'No favorite teams or players found',
+    'fav.import_err_storage_error': 'Failed to write browser storage',
+    'fav.copy_failed': '⚠️ Copy failed — use the download button instead.',
 
     // Scoreboard
     'sb.prev_day': 'Previous Day',

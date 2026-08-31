@@ -32,6 +32,35 @@ describe('FavoritesBackupModal component', () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it('exposes dialog semantics and closes on Escape', () => {
+    const onCloseMock = vi.fn();
+    render(
+      <LanguageProvider>
+        <FavoritesBackupModal isOpen={true} onClose={onCloseMock} />
+      </LanguageProvider>
+    );
+
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onCloseMock).toHaveBeenCalled();
+  });
+
+  it('shows a translated error detail for invalid JSON input', () => {
+    render(
+      <LanguageProvider>
+        <FavoritesBackupModal isOpen={true} onClose={() => {}} />
+      </LanguageProvider>
+    );
+
+    const textarea = screen.getByPlaceholderText(/請在此貼上備份/i);
+    fireEvent.change(textarea, { target: { value: 'not-valid-json' } });
+    fireEvent.click(screen.getByText(/確認匯入/i));
+
+    expect(screen.getByText(/JSON 解析失敗/)).toBeInTheDocument();
+  });
+
   it('successfully imports valid JSON from textarea', () => {
     const onSuccessMock = vi.fn();
     render(

@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Download, Copy, Check, Upload, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
+import { TranslationKey } from '../../i18n/translations';
 import {
   generateBackupPayload,
   downloadBackupFile,
@@ -11,6 +12,23 @@ interface FavoritesBackupModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+}
+
+function fallbackCopy(text: string): boolean {
+  try {
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.setAttribute('readonly', '');
+    el.style.position = 'fixed';
+    el.style.opacity = '0';
+    document.body.appendChild(el);
+    el.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(el);
+    return ok;
+  } catch {
+    return false;
+  }
 }
 
 export const FavoritesBackupModal: React.FC<FavoritesBackupModalProps> = ({
@@ -26,18 +44,37 @@ export const FavoritesBackupModal: React.FC<FavoritesBackupModalProps> = ({
     null
   );
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  // Close on Escape while open
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, onClose]);
+
+  // Move focus into the dialog when it opens
+  useEffect(() => {
+    if (isOpen) panelRef.current?.focus();
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const handleCopy = async () => {
+    const jsonStr = JSON.stringify(generateBackupPayload(), null, 2);
     try {
-      const payload = generateBackupPayload();
-      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      await navigator.clipboard.writeText(jsonStr);
     } catch {
-      // Fallback
+      if (!fallbackCopy(jsonStr)) {
+        setFeedback({ type: 'error', message: t('fav.copy_failed') });
+        return;
+      }
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,9 +104,13 @@ export const FavoritesBackupModal: React.FC<FavoritesBackupModalProps> = ({
 
     const result = restoreFavoritesFromJson(rawJson, mode);
     if (result.success) {
+      const countText = t('fav.import_count', {
+        teams: result.count?.teams ?? 0,
+        players: result.count?.players ?? 0,
+      });
       setFeedback({
         type: 'success',
-        message: `${t('fav.import_success')} (${result.count?.teams} 隊, ${result.count?.players} 球員)`,
+        message: `${t('fav.import_success')} (${countText})`,
       });
       setImportText('');
       if (onSuccess) onSuccess();
@@ -78,9 +119,12 @@ export const FavoritesBackupModal: React.FC<FavoritesBackupModalProps> = ({
         onClose();
       }, 1500);
     } else {
+      const detail = result.errorCode
+        ? t(`fav.import_err_${result.errorCode}` as TranslationKey)
+        : '';
       setFeedback({
         type: 'error',
-        message: `${t('fav.import_error')} (${result.error || ''})`,
+        message: detail ? `${t('fav.import_error')} (${detail})` : t('fav.import_error'),
       });
     }
   };
@@ -91,16 +135,28 @@ export const FavoritesBackupModal: React.FC<FavoritesBackupModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-card border border-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="fav-backup-modal-title"
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-card border border-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] focus:outline-none"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border bg-page/40">
-          <h2 className="text-base font-black text-main flex items-center gap-2">
+          <h2 id="fav-backup-modal-title" className="text-base font-black text-main flex items-center gap-2">
             <span>⭐</span>
             <span>{t('fav.backup_modal_title')}</span>
           </h2>
           <button
             onClick={onClose}
+            aria-label={t('common.close')}
             className="p-1.5 text-muted hover:text-main rounded-lg hover:bg-card-hover transition-colors"
           >
             <X className="w-5 h-5" />

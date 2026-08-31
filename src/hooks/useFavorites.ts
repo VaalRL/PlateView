@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-
-const FAV_TEAMS_KEY = 'plateview_fav_teams';
-const FAV_PLAYERS_KEY = 'plateview_fav_players';
-const FAV_PLAYERS_META_KEY = 'plateview_fav_players_meta';
+import {
+  STORAGE_KEYS,
+  DEFAULT_FAVORITE_TEAMS,
+  DEFAULT_FAVORITE_PLAYERS,
+  FAVORITES_UPDATED_EVENT,
+} from '../constants/storage';
 
 export interface FavoritePlayerMeta {
   nameZh?: string;
@@ -12,25 +14,25 @@ export interface FavoritePlayerMeta {
 export function useFavorites() {
   const [favoriteTeams, setFavoriteTeams] = useState<number[]>(() => {
     try {
-      const saved = localStorage.getItem(FAV_TEAMS_KEY);
-      return saved ? JSON.parse(saved) : [119]; // Default: Dodgers
+      const saved = localStorage.getItem(STORAGE_KEYS.favTeams);
+      return saved ? JSON.parse(saved) : [...DEFAULT_FAVORITE_TEAMS];
     } catch {
-      return [119];
+      return [...DEFAULT_FAVORITE_TEAMS];
     }
   });
 
   const [favoritePlayers, setFavoritePlayers] = useState<number[]>(() => {
     try {
-      const saved = localStorage.getItem(FAV_PLAYERS_KEY);
-      return saved ? JSON.parse(saved) : [660271, 694973]; // Default: Ohtani, Skenes
+      const saved = localStorage.getItem(STORAGE_KEYS.favPlayers);
+      return saved ? JSON.parse(saved) : [...DEFAULT_FAVORITE_PLAYERS];
     } catch {
-      return [660271, 694973];
+      return [...DEFAULT_FAVORITE_PLAYERS];
     }
   });
 
   const [favoritePlayersMeta, setFavoritePlayersMeta] = useState<Record<number, FavoritePlayerMeta>>(() => {
     try {
-      const saved = localStorage.getItem(FAV_PLAYERS_META_KEY);
+      const saved = localStorage.getItem(STORAGE_KEYS.favPlayersMeta);
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
@@ -39,43 +41,54 @@ export function useFavorites() {
 
   const reloadFromStorage = useCallback(() => {
     try {
-      const teams = localStorage.getItem(FAV_TEAMS_KEY);
-      if (teams) setFavoriteTeams(JSON.parse(teams));
+      // Keep the previous reference when storage matches current state,
+      // so the persist effects below do not re-fire and loop the sync event
+      const teams = localStorage.getItem(STORAGE_KEYS.favTeams);
+      if (teams) {
+        setFavoriteTeams((prev) => (JSON.stringify(prev) === teams ? prev : JSON.parse(teams)));
+      }
 
-      const players = localStorage.getItem(FAV_PLAYERS_KEY);
-      if (players) setFavoritePlayers(JSON.parse(players));
+      const players = localStorage.getItem(STORAGE_KEYS.favPlayers);
+      if (players) {
+        setFavoritePlayers((prev) => (JSON.stringify(prev) === players ? prev : JSON.parse(players)));
+      }
 
-      const meta = localStorage.getItem(FAV_PLAYERS_META_KEY);
-      if (meta) setFavoritePlayersMeta(JSON.parse(meta));
+      const meta = localStorage.getItem(STORAGE_KEYS.favPlayersMeta);
+      if (meta) {
+        setFavoritePlayersMeta((prev) => (JSON.stringify(prev) === meta ? prev : JSON.parse(meta)));
+      }
     } catch {}
   }, []);
 
   useEffect(() => {
     const handleStorageChange = () => reloadFromStorage();
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('plateview_favorites_updated', handleStorageChange);
+    window.addEventListener(FAVORITES_UPDATED_EVENT, handleStorageChange);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('plateview_favorites_updated', handleStorageChange);
+      window.removeEventListener(FAVORITES_UPDATED_EVENT, handleStorageChange);
     };
   }, [reloadFromStorage]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(FAV_TEAMS_KEY, JSON.stringify(favoriteTeams));
+      localStorage.setItem(STORAGE_KEYS.favTeams, JSON.stringify(favoriteTeams));
+      window.dispatchEvent(new CustomEvent(FAVORITES_UPDATED_EVENT));
     } catch {}
   }, [favoriteTeams]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(FAV_PLAYERS_KEY, JSON.stringify(favoritePlayers));
+      localStorage.setItem(STORAGE_KEYS.favPlayers, JSON.stringify(favoritePlayers));
+      window.dispatchEvent(new CustomEvent(FAVORITES_UPDATED_EVENT));
     } catch {}
   }, [favoritePlayers]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(FAV_PLAYERS_META_KEY, JSON.stringify(favoritePlayersMeta));
+      localStorage.setItem(STORAGE_KEYS.favPlayersMeta, JSON.stringify(favoritePlayersMeta));
+      window.dispatchEvent(new CustomEvent(FAVORITES_UPDATED_EVENT));
     } catch {}
   }, [favoritePlayersMeta]);
 

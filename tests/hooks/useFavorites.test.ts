@@ -29,6 +29,17 @@ describe('useFavorites hook', () => {
     expect(result.current.isFavoriteTeam(119)).toBe(false);
   });
 
+  it('syncs favorites across multiple hook instances in the same tab', () => {
+    const first = renderHook(() => useFavorites());
+    const second = renderHook(() => useFavorites());
+
+    act(() => {
+      first.result.current.toggleFavoriteTeam(147);
+    });
+
+    expect(second.result.current.isFavoriteTeam(147)).toBe(true);
+  });
+
   it('toggles favorite player state', () => {
     const { result } = renderHook(() => useFavorites());
 
