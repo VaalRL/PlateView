@@ -90,7 +90,8 @@ export const GameBoxscorePanel: React.FC<GameBoxscorePanelProps> = ({ gamePk }) 
                     <td className="py-1 text-center">{s.rbi}</td>
                     <td className="py-1 text-center">{s.baseOnBalls}</td>
                     <td className="py-1 text-center">{s.strikeOuts}</td>
-                    <td className="py-1 text-right text-muted">{s.avg}</td>
+                    {/* Rate stats only exist under seasonStats in the boxscore API */}
+                    <td className="py-1 text-right text-muted">{p.seasonStats?.batting?.avg ?? '-'}</td>
                   </tr>
                 );
               })}
@@ -156,7 +157,8 @@ export const GameBoxscorePanel: React.FC<GameBoxscorePanelProps> = ({ gamePk }) 
                     <td className="py-1 text-center">{s.earnedRuns}</td>
                     <td className="py-1 text-center">{s.baseOnBalls}</td>
                     <td className="py-1 text-center font-bold text-team-primary">{s.strikeOuts}</td>
-                    <td className="py-1 text-right text-muted">{s.era}</td>
+                    {/* Rate stats only exist under seasonStats in the boxscore API */}
+                    <td className="py-1 text-right text-muted">{p.seasonStats?.pitching?.era ?? '-'}</td>
                   </tr>
                 );
               })}
