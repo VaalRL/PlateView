@@ -3,6 +3,7 @@ import {
   formatGameTime,
   formatBilingualGameTime,
   formatApiDate,
+  getEasternDateStr,
   getRelativeDateLabel,
 } from '../../src/utils/timezone';
 
@@ -20,6 +21,14 @@ describe('timezone utility tests', () => {
   it('correctly labels today date', () => {
     const today = new Date();
     expect(getRelativeDateLabel(today)).toBe('今天 (Today)');
+  });
+
+  it('formats US Eastern date string across the UTC date boundary', () => {
+    // 2026-08-30T02:00:00Z is still 2026-08-29 22:00 in EDT (UTC-4)
+    expect(getEasternDateStr(new Date('2026-08-30T02:00:00Z'))).toBe('2026-08-29');
+    // Winter: EST (UTC-5)
+    expect(getEasternDateStr(new Date('2026-01-15T04:59:00Z'))).toBe('2026-01-14');
+    expect(getEasternDateStr(new Date('2026-01-15T05:00:00Z'))).toBe('2026-01-15');
   });
 
   it('formats bilingual game time for zh (Taipei Time) and en (Eastern Time)', () => {

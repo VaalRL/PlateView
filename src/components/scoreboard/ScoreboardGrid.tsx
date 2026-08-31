@@ -13,7 +13,7 @@ interface ScoreboardGridProps {
 
 export const ScoreboardGrid: React.FC<ScoreboardGridProps> = ({ selectedDate, onDateChange }) => {
   const dateStr = formatApiDate(selectedDate);
-  const { data, isLoading, isError, refetch, isFetching } = useScheduleQuery(dateStr, true);
+  const { data, isLoading, isError, refetch, isFetching } = useScheduleQuery(dateStr);
   const { lang, t } = useLanguage();
 
   const games = data?.dates?.[0]?.games || [];

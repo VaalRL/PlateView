@@ -1,4 +1,10 @@
 import { ScheduleResponse, StandingsResponse } from '../types/mlb';
+import { PeopleResponse } from '../types/favorites';
+import { getCurrentMlbSeason } from '../utils/season';
+import {
+  HITTING_LEADER_CATEGORIES,
+  PITCHING_LEADER_CATEGORIES,
+} from '../constants/leaderboards';
 
 const BASE_URL = 'https://statsapi.mlb.com/api/v1';
 
@@ -138,9 +144,9 @@ export async function searchPeople(name: string) {
 /**
  * Get multiple people batch by IDs via official MLB API
  */
-export async function getPeopleBatch(personIds: number[]) {
+export async function getPeopleBatch(personIds: number[]): Promise<PeopleResponse> {
   if (personIds.length === 0) return { people: [] };
-  return fetchMlb<{ people: any[] }>('/people', {
+  return fetchMlb<PeopleResponse>('/people', {
     personIds: personIds.join(','),
   });
 }
@@ -148,11 +154,11 @@ export async function getPeopleBatch(personIds: number[]) {
 /**
  * Fetch batch player profiles with gameLogs for daily favorite summary
  */
-export async function getFavoritePlayersGameLog(personIds: number[]) {
+export async function getFavoritePlayersGameLog(personIds: number[]): Promise<PeopleResponse> {
   if (personIds.length === 0) return { people: [] };
-  return fetchMlb<{ people: any[] }>('/people', {
+  return fetchMlb<PeopleResponse>('/people', {
     personIds: personIds.join(','),
-    hydrate: 'stats(group=[hitting,pitching],type=[gameLog],season=2026)',
+    hydrate: `stats(group=[hitting,pitching],type=[gameLog],season=${getCurrentMlbSeason()})`,
   });
 }
 
@@ -180,31 +186,13 @@ export async function getLeaderboards(params: {
   season?: number;
   limit?: number;
 }) {
-  const { statGroup, categories, leagueId, season = 2026, limit = 5 } = params;
+  const { statGroup, categories, leagueId, season = getCurrentMlbSeason(), limit = 5 } = params;
   const cats =
     categories && categories.length > 0
       ? categories
       : statGroup === 'hitting'
-      ? [
-          'battingAverage',
-          'homeRuns',
-          'runsBattedIn',
-          'onBasePlusSlugging',
-          'hits',
-          'stolenBases',
-          'onBasePercentage',
-          'sluggingPercentage',
-        ]
-      : [
-          'earnedRunAverage',
-          'wins',
-          'strikeouts',
-          'walksAndHitsPerInningPitched',
-          'saves',
-          'holds',
-          'strikeoutsPer9Inn',
-          'inningsPitched',
-        ];
+      ? [...HITTING_LEADER_CATEGORIES]
+      : [...PITCHING_LEADER_CATEGORIES];
 
   const queryParams: Record<string, string | number> = {
     leaderCategories: cats.join(','),

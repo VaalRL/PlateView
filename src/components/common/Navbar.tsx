@@ -12,21 +12,12 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleStandingsClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleStandingsClick = () => {
     if (location.pathname !== '/') {
-      navigate('/');
-      setTimeout(() => {
-        const el = document.getElementById('standings');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 150);
+      // HomePage scrolls to the section once mounted (see its scrollTo effect)
+      navigate('/', { state: { scrollTo: 'standings' } });
     } else {
-      const el = document.getElementById('standings');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      document.getElementById('standings')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 

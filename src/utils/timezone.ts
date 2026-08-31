@@ -77,6 +77,21 @@ export function formatApiDate(date: Date = new Date()): string {
 }
 
 /**
+ * Format a date as YYYY-MM-DD in US Eastern time. MLB gameLog `date` fields
+ * use the official (US-based) game date, so "today" comparisons must use the
+ * Eastern date, not the viewer's local date (e.g. Taiwan mornings are still
+ * the previous game day in the US).
+ */
+export function getEasternDateStr(date: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
+/**
  * Get human-readable date label (e.g. "今天", "昨天", "明天", or "MM/dd (E)")
  */
 export function getRelativeDateLabel(date: Date): string {

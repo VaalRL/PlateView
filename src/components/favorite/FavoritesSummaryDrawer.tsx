@@ -61,7 +61,7 @@ export const FavoritesSummaryDrawer: React.FC<FavoritesSummaryDrawerProps> = ({
       {/* Cards Grid */}
       {!isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
-          {people.map((person: any) => {
+          {people.map((person) => {
             const localMeta = playersData.find((p) => p.id === person.id);
             const cachedMeta = favoritePlayersMeta[person.id];
             const zhMeta = localMeta || cachedMeta;

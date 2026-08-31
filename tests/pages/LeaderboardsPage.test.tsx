@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -10,6 +10,9 @@ const queryClient = new QueryClient({
 });
 
 describe('LeaderboardsPage component', () => {
+  beforeEach(() => {
+    queryClient.clear(); // avoid cache leaking between tests
+  });
   it('renders page header, hitting/pitching tabs and league filter buttons', () => {
     render(
       <QueryClientProvider client={queryClient}>
@@ -44,5 +47,21 @@ describe('LeaderboardsPage component', () => {
     fireEvent.click(pitchingTab);
 
     expect(pitchingTab.className).toContain('bg-team-primary');
+  });
+
+  it('renders per-category empty states when the API returns no leaders', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <MemoryRouter>
+            <LeaderboardsPage />
+          </MemoryRouter>
+        </LanguageProvider>
+      </QueryClientProvider>
+    );
+
+    // The global fetch stub resolves {}, so every category falls back to its empty card
+    const placeholders = await screen.findAllByText('目前暫無該項目的排行榜數據。');
+    expect(placeholders.length).toBe(8);
   });
 });

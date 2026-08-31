@@ -13,13 +13,21 @@ import {
   getFavoritePlayersGameLog,
 } from './mlbApi';
 import { formatApiDate } from '../utils/timezone';
+import { ScheduleResponse } from '../types/mlb';
 
-export function useScheduleQuery(date: string, hasLiveGames: boolean = false) {
+/** True when any game in the schedule response is currently live */
+export function scheduleHasLiveGames(data?: ScheduleResponse): boolean {
+  const games = data?.dates?.[0]?.games ?? [];
+  return games.some((g) => g?.status?.abstractGameState === 'Live');
+}
+
+export function useScheduleQuery(date: string) {
   return useQuery({
     queryKey: ['schedule', date],
     queryFn: () => getSchedule(date),
-    refetchInterval: hasLiveGames ? 30000 : false, // 30s auto polling when live
-    staleTime: hasLiveGames ? 20000 : 300000,     // 20s or 5min
+    // Poll only while games are actually live; idle days stay quiet
+    refetchInterval: (query) => (scheduleHasLiveGames(query.state.data) ? 30000 : false),
+    staleTime: (query) => (scheduleHasLiveGames(query.state.data) ? 20000 : 300000), // 20s or 5min
   });
 }
 

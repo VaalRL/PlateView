@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLeaderboardsQuery } from '../services/queries';
 import { useLanguage } from '../hooks/useLanguage';
+import { TranslationKey } from '../i18n/translations';
 import { LeaderCard } from '../components/leaders/LeaderCard';
+import { getCurrentMlbSeason } from '../utils/season';
+import {
+  HITTING_LEADER_CATEGORIES,
+  PITCHING_LEADER_CATEGORIES,
+} from '../constants/leaderboards';
 import {
   Trophy,
   ArrowLeft,
@@ -16,87 +22,30 @@ import {
 } from 'lucide-react';
 
 export const LeaderboardsPage: React.FC = () => {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
   const [statGroup, setStatGroup] = useState<'hitting' | 'pitching'>('hitting');
   const [leagueFilter, setLeagueFilter] = useState<'all' | 'al' | 'nl'>('all');
 
   const leagueId =
     leagueFilter === 'al' ? 103 : leagueFilter === 'nl' ? 104 : undefined;
 
-  const hittingCategories = [
-    'battingAverage',
-    'onBasePlusSlugging',
-    'homeRuns',
-    'runsBattedIn',
-    'hits',
-    'stolenBases',
-    'onBasePercentage',
-    'sluggingPercentage',
-  ];
-
-  const pitchingCategories = [
-    'earnedRunAverage',
-    'walksAndHitsPerInningPitched',
-    'strikeouts',
-    'wins',
-    'saves',
-    'holds',
-    'strikeoutsPer9Inn',
-    'inningsPitched',
-  ];
+  const season = getCurrentMlbSeason();
 
   const activeCategories =
-    statGroup === 'hitting' ? hittingCategories : pitchingCategories;
+    statGroup === 'hitting'
+      ? [...HITTING_LEADER_CATEGORIES]
+      : [...PITCHING_LEADER_CATEGORIES];
 
   const { data, isLoading, isError, refetch } = useLeaderboardsQuery({
     statGroup,
     categories: activeCategories,
     leagueId,
-    season: 2026,
+    season,
     limit: 5,
   });
 
-  const getCategoryTitle = (category: string) => {
-    const zhMap: Record<string, string> = {
-      battingAverage: '打擊率 (AVG)',
-      homeRuns: '全壘打 (HR)',
-      runsBattedIn: '打點 (RBI)',
-      onBasePlusSlugging: '整體攻擊指數 (OPS)',
-      hits: '安打數 (H)',
-      stolenBases: '盜壘成功 (SB)',
-      onBasePercentage: '上壘率 (OBP)',
-      sluggingPercentage: '長打率 (SLG)',
-      earnedRunAverage: '防禦率 (ERA)',
-      walksAndHitsPerInningPitched: '每局被上壘率 (WHIP)',
-      strikeouts: '奪三振 (SO)',
-      wins: '勝投 (W)',
-      saves: '救援成功 (SV)',
-      holds: '中繼成功 (HLD)',
-      strikeoutsPer9Inn: '每九局三振數 (K/9)',
-      inningsPitched: '投球局數 (IP)',
-    };
-
-    const enMap: Record<string, string> = {
-      battingAverage: 'Batting Average (AVG)',
-      homeRuns: 'Home Runs (HR)',
-      runsBattedIn: 'Runs Batted In (RBI)',
-      onBasePlusSlugging: 'On-base Plus Slugging (OPS)',
-      hits: 'Hits (H)',
-      stolenBases: 'Stolen Bases (SB)',
-      onBasePercentage: 'On-Base Percentage (OBP)',
-      sluggingPercentage: 'Slugging Percentage (SLG)',
-      earnedRunAverage: 'Earned Run Average (ERA)',
-      walksAndHitsPerInningPitched: 'WHIP',
-      strikeouts: 'Strikeouts (SO)',
-      wins: 'Wins (W)',
-      saves: 'Saves (SV)',
-      holds: 'Holds (HLD)',
-      strikeoutsPer9Inn: 'Strikeouts Per 9 (K/9)',
-      inningsPitched: 'Innings Pitched (IP)',
-    };
-
-    return lang === 'zh' ? zhMap[category] || category : enMap[category] || category;
-  };
+  const getCategoryTitle = (category: string) =>
+    t(`leaders.cat_${category}` as TranslationKey);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -147,7 +96,7 @@ export const LeaderboardsPage: React.FC = () => {
             </h1>
           </div>
           <p className="text-xs text-muted max-w-xl">
-            {t('leaders.subtitle')}
+            {t('leaders.subtitle', { season })}
           </p>
         </div>
 
@@ -246,7 +195,22 @@ export const LeaderboardsPage: React.FC = () => {
               (g) => g.leaderCategory === category && g.statGroup === statGroup
             );
 
-            if (!group) return null;
+            if (!group || !group.leaders?.length) {
+              return (
+                <div
+                  key={category}
+                  className="bg-card border border-border rounded-2xl p-5 shadow-sm flex flex-col"
+                >
+                  <div className="flex items-center gap-2 pb-3.5 border-b border-border">
+                    {getCategoryIcon(category)}
+                    <h3 className="font-bold text-sm text-main tracking-tight">
+                      {getCategoryTitle(category)}
+                    </h3>
+                  </div>
+                  <p className="py-8 text-center text-xs text-muted">{t('leaders.empty')}</p>
+                </div>
+              );
+            }
 
             return (
               <LeaderCard
