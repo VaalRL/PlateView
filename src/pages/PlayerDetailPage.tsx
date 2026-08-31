@@ -152,11 +152,10 @@ export const PlayerDetailPage: React.FC = () => {
     return Math.max(0, val);
   }, [hittingSabermetrics, activeHittingStats]);
 
-  const displayNameZh = zhPlayerMeta?.nameZh || person?.fullName || 'MLB 球星';
-  const displayNameEn = person?.fullName || zhPlayerMeta?.nameEn || 'MLB Player';
-
-  const primaryName = lang === 'zh' ? displayNameZh : displayNameEn;
-  const secondaryName = lang === 'zh' ? displayNameEn : displayNameZh;
+  // Primary name is always English; the dictionary Chinese name (when
+  // available) shows as a secondary line in either language mode
+  const primaryName = person?.fullName || zhPlayerMeta?.nameEn || 'MLB Player';
+  const secondaryName = zhPlayerMeta?.nameZh || '';
 
   const activeGameLogs = (effectiveRole === 'pitching' ? sortedPitchingGameLogs : sortedHittingGameLogs).slice(0, 10);
 
@@ -200,12 +199,14 @@ export const PlayerDetailPage: React.FC = () => {
               )}
             </div>
 
-            <p className="text-sm text-muted mt-0.5">
-              {secondaryName}{' '}
-              {lang === 'zh' && zhPlayerMeta && zhPlayerMeta.nicknames.length > 0
-                ? `(${zhPlayerMeta.nicknames.slice(0, 3).join(' / ')})`
-                : ''}
-            </p>
+            {(secondaryName || (zhPlayerMeta?.nicknames.length ?? 0) > 0) && (
+              <p className="text-sm text-muted mt-0.5">
+                {secondaryName}{' '}
+                {zhPlayerMeta && zhPlayerMeta.nicknames.length > 0
+                  ? `(${zhPlayerMeta.nicknames.slice(0, 3).join(' / ')})`
+                  : ''}
+              </p>
+            )}
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-3 text-xs text-muted">
               {person?.currentTeam ? (

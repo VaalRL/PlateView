@@ -32,7 +32,7 @@ describe('LeaderCard component', () => {
     ],
   };
 
-  it('renders category title, medal ranks, player names and stat values', () => {
+  it('renders category title, medal ranks, English player names and stat values', () => {
     render(
       <LanguageProvider>
         <MemoryRouter>
@@ -45,9 +45,10 @@ describe('LeaderCard component', () => {
     expect(screen.getByText('🥇')).toBeInTheDocument();
     expect(screen.getByText('🥈')).toBeInTheDocument();
     expect(screen.getByText('🥉')).toBeInTheDocument();
-    expect(screen.getByText('大谷翔平')).toBeInTheDocument();
-    expect(screen.getByText('亞倫·賈吉')).toBeInTheDocument();
-    expect(screen.getByText('胡安·索托')).toBeInTheDocument();
+    // Player names display in English regardless of UI language for consistency
+    expect(screen.getByText('Shohei Ohtani')).toBeInTheDocument();
+    expect(screen.getByText('Aaron Judge')).toBeInTheDocument();
+    expect(screen.getByText('Juan Soto')).toBeInTheDocument();
     expect(screen.getByText('40')).toBeInTheDocument();
     expect(screen.getByText('38')).toBeInTheDocument();
     expect(screen.getByText('35')).toBeInTheDocument();

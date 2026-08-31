@@ -2,11 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { getPlayerHeadshotUrl, getTeamLogoUrl } from '../../services/mlbApi';
 import { useLanguage } from '../../hooks/useLanguage';
+import { GameLogPerson } from '../../types/favorites';
 import teamsData from '../../data/teams.json';
 import { Flame, Shield, ArrowRight } from 'lucide-react';
 
 interface FavoritePlayerSummaryCardProps {
-  person: any;
+  person: GameLogPerson;
   zhMeta?: { nameZh?: string; nameEn?: string };
   todayDateStr: string;
 }
@@ -18,10 +19,8 @@ export const FavoritePlayerSummaryCard: React.FC<FavoritePlayerSummaryCardProps>
 }) => {
   const { lang, t } = useLanguage();
 
-  const playerName =
-    lang === 'zh'
-      ? zhMeta?.nameZh || person.fullName
-      : person.fullName || zhMeta?.nameEn;
+  // Player names always display in English for cross-list consistency
+  const playerName = person.fullName || zhMeta?.nameEn;
 
   const teamId = person.currentTeam?.id;
   const teamMeta = teamsData.find((t) => t.id === teamId);
@@ -32,14 +31,14 @@ export const FavoritePlayerSummaryCard: React.FC<FavoritePlayerSummaryCardProps>
 
   // Extract gameLogs
   const hittingGroup = person.stats?.find(
-    (s: any) => s.group?.displayName === 'hitting' && s.type?.displayName === 'gameLog'
+    (s) => s.group?.displayName === 'hitting' && s.type?.displayName === 'gameLog'
   );
   const pitchingGroup = person.stats?.find(
-    (s: any) => s.group?.displayName === 'pitching' && s.type?.displayName === 'gameLog'
+    (s) => s.group?.displayName === 'pitching' && s.type?.displayName === 'gameLog'
   );
 
-  const latestHitting = hittingGroup?.splits?.[hittingGroup.splits.length - 1];
-  const latestPitching = pitchingGroup?.splits?.[pitchingGroup.splits.length - 1];
+  const latestHitting = hittingGroup?.splits?.slice(-1)[0];
+  const latestPitching = pitchingGroup?.splits?.slice(-1)[0];
 
   // Determine primary active split (prioritize today's game)
   let activeSplit = latestHitting;
@@ -75,7 +74,7 @@ export const FavoritePlayerSummaryCard: React.FC<FavoritePlayerSummaryCardProps>
                 }}
               />
               {person.primaryPosition?.abbreviation && (
-                <span className="absolute -bottom-1 -right-1 px-1 py-0.2 bg-main text-page font-mono text-[9px] font-bold rounded">
+                <span className="absolute -bottom-1 -right-1 px-1 py-0.5 bg-main text-page font-mono text-[9px] font-bold rounded">
                   {person.primaryPosition.abbreviation}
                 </span>
               )}

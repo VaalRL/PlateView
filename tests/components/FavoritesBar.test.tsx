@@ -12,6 +12,7 @@ const queryClient = new QueryClient({
 describe('FavoritesBar component', () => {
   beforeEach(() => {
     localStorage.clear();
+    queryClient.clear(); // avoid cache leaking between tests
   });
 
   it('renders favorite teams and players from local storage including Kai-Wei Teng (678906)', () => {
@@ -31,8 +32,9 @@ describe('FavoritesBar component', () => {
     expect(screen.getByText('我的最愛')).toBeInTheDocument();
     expect(screen.getByText('洛杉磯道奇')).toBeInTheDocument();
     expect(screen.getByText('紐約洋基')).toBeInTheDocument();
-    expect(screen.getByText(/大谷翔平/)).toBeInTheDocument();
-    expect(screen.getByText(/鄧愷威/)).toBeInTheDocument();
+    // Player names display in English regardless of UI language
+    expect(screen.getByText(/Shohei Ohtani/)).toBeInTheDocument();
+    expect(screen.getByText(/Kai-Wei Teng/)).toBeInTheDocument();
     expect(screen.getByText('今日愛將戰報')).toBeInTheDocument();
     expect(screen.getByText('備份 / 匯入')).toBeInTheDocument();
   });
@@ -79,6 +81,6 @@ describe('FavoritesBar component', () => {
       </QueryClientProvider>
     );
 
-    expect(screen.getByText(/自訂測試球星/)).toBeInTheDocument();
+    expect(screen.getByText(/Custom Test Player/)).toBeInTheDocument();
   });
 });

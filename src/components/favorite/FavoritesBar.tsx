@@ -9,7 +9,7 @@ import teamsData from '../../data/teams.json';
 import playersData from '../../data/players-zh-tw.json';
 import { FavoritesBackupModal } from './FavoritesBackupModal';
 import { FavoritesSummaryDrawer } from './FavoritesSummaryDrawer';
-import { formatApiDate } from '../../utils/timezone';
+import { getEasternDateStr } from '../../utils/timezone';
 
 interface FavoritesBarProps {
   games?: GameSchedule[];
@@ -22,7 +22,8 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
   const [showSummary, setShowSummary] = useState(false);
   const [isBackupOpen, setIsBackupOpen] = useState(false);
 
-  const todayDateStr = currentDate || formatApiDate();
+  // MLB gameLog dates are US-based, so "today" must be the Eastern date
+  const todayDateStr = currentDate || getEasternDateStr();
 
   const favTeams = teamsData.filter((t) => favoriteTeams.includes(t.id));
 
@@ -33,40 +34,30 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
 
   const { data: batchPeopleData } = usePeopleBatchQuery(unseededIds);
 
-  // Construct full list of favorite players ensuring EVERY favorite player is rendered
+  // Construct full list of favorite players ensuring EVERY favorite player is
+  // rendered. Display names are always English for cross-list consistency.
   const favPlayers = favoritePlayers.map((id) => {
     const local = playersData.find((p) => p.id === id);
     if (local) {
-      return {
-        id,
-        nameZh: local.nameZh,
-        nameEn: local.nameEn,
-      };
+      return { id, nameEn: local.nameEn };
     }
 
     const cached = favoritePlayersMeta[id];
     if (cached?.nameEn) {
-      return {
-        id,
-        nameZh: cached.nameZh || cached.nameEn,
-        nameEn: cached.nameEn,
-      };
+      return { id, nameEn: cached.nameEn };
     }
 
-    const remote = batchPeopleData?.people?.find((p: any) => p.id === id);
+    const remote = batchPeopleData?.people?.find((p) => p.id === id);
     if (remote) {
-      return {
-        id,
-        nameZh: remote.fullName,
-        nameEn: remote.fullName,
-      };
+      return { id, nameEn: remote.fullName };
     }
 
-    return {
-      id,
-      nameZh: `Player #${id}`,
-      nameEn: `Player #${id}`,
-    };
+    // Chinese-only meta: show it until the batch API supplies the English name
+    if (cached?.nameZh) {
+      return { id, nameEn: cached.nameZh };
+    }
+
+    return { id, nameEn: `Player #${id}` };
   });
 
   if (favTeams.length === 0 && favPlayers.length === 0) {
@@ -136,7 +127,7 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
                     />
                     <span className="font-semibold text-main">{teamDisplayName}</span>
                     {gameSummary && (
-                      <span className="text-[10px] text-muted font-mono bg-card px-1.5 py-0.2 rounded border border-border/50">
+                      <span className="text-[10px] text-muted font-mono bg-card px-1.5 py-0.5 rounded border border-border/50">
                         {gameSummary}
                       </span>
                     )}
@@ -146,7 +137,7 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
 
               {favPlayers.map((player) => {
                 const isStarting = isPlayerStartingToday(player.id);
-                const playerDisplayName = lang === 'zh' ? player.nameZh : player.nameEn;
+                const playerDisplayName = player.nameEn;
 
                 return (
                   <Link

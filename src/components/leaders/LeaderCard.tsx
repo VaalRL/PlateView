@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { LeaderCategoryGroup, LeaderItem } from '../../types/leaderboards';
 import { getPlayerHeadshotUrl, getTeamLogoUrl } from '../../services/mlbApi';
 import { useLanguage } from '../../hooks/useLanguage';
-import playersData from '../../data/players-zh-tw.json';
 import teamsData from '../../data/teams.json';
 import { Trophy } from 'lucide-react';
 
@@ -13,6 +12,9 @@ interface LeaderCardProps {
   unit?: string;
   icon?: React.ReactNode;
 }
+
+// Static dictionary — index once at module load instead of scanning per row
+const teamsById = new Map(teamsData.map((t) => [t.id, t]));
 
 export const LeaderCard: React.FC<LeaderCardProps> = ({
   categoryGroup,
@@ -62,13 +64,11 @@ export const LeaderCard: React.FC<LeaderCardProps> = ({
         {/* Leaders List */}
         <div className="divide-y divide-border/30 mt-1">
           {leaders.map((leader: LeaderItem, index: number) => {
-            const zhMeta = playersData.find((p) => p.id === leader.person.id);
-            const teamMeta = teamsData.find((t) => t.id === leader.team.id);
+            const teamMeta = teamsById.get(leader.team.id);
 
-            const playerName =
-              lang === 'zh'
-                ? zhMeta?.nameZh || leader.person.fullName
-                : leader.person.fullName;
+            // Player names always display in English (the zh dictionary only
+            // covers ~50 stars, so localizing some rows made lists inconsistent)
+            const playerName = leader.person.fullName;
 
             const teamName =
               lang === 'zh'

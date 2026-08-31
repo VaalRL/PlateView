@@ -43,7 +43,8 @@ describe('FavoritePlayerSummaryCard component', () => {
       </LanguageProvider>
     );
 
-    expect(screen.getByText('大谷翔平')).toBeInTheDocument();
+    // Player name displays in English regardless of UI language
+    expect(screen.getByText('Shohei Ohtani')).toBeInTheDocument();
     expect(screen.getByText('DH')).toBeInTheDocument();
     expect(screen.getByText('2-4 | HR, 3 RBI, BB')).toBeInTheDocument();
     expect(screen.getByText('.295')).toBeInTheDocument();

@@ -13,7 +13,6 @@ import { GameBoxscorePanel } from '../components/team/GameBoxscorePanel';
 import { formatRateStat, formatEra, formatWhip } from '../utils/statsFormatters';
 import { formatBilingualGameTime, formatApiDate } from '../utils/timezone';
 import teamsData from '../data/teams.json';
-import playersData from '../data/players-zh-tw.json';
 import {
   Star,
   ArrowLeft,
@@ -674,9 +673,7 @@ export const TeamDetailPage: React.FC = () => {
                       ) || statsList.find((s: any) => s.group?.displayName === 'pitching');
                     const seasonPitching = pitchingGroup?.splits?.[0]?.stat;
                     const starterInfo = probableStartersMap.get(item.person.id);
-                    const zhPlayerMeta = playersData.find((p) => p.id === item.person.id);
-                    const displayName =
-                      lang === 'zh' ? zhPlayerMeta?.nameZh || item.person.fullName : item.person.fullName;
+                    const displayName = item.person.fullName;
 
                     return (
                       <Link
@@ -713,11 +710,6 @@ export const TeamDetailPage: React.FC = () => {
                           <div>
                             <div className="text-sm font-semibold text-main group-hover:text-team-primary flex flex-wrap items-center gap-1.5">
                               <span>{displayName}</span>
-                              {lang === 'zh' && zhPlayerMeta?.nameZh && (
-                                <span className="text-[11px] text-muted font-normal">
-                                  ({item.person.fullName})
-                                </span>
-                              )}
                               {starterInfo && (
                                 <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-500 border border-amber-500/30 font-bold flex items-center gap-1 shadow-sm">
                                   <span>🔥</span>
@@ -785,9 +777,7 @@ export const TeamDetailPage: React.FC = () => {
                         (s: any) => s.group?.displayName === 'hitting' && s.type?.displayName === 'season'
                       ) || statsList.find((s: any) => s.group?.displayName === 'hitting');
                     const seasonHitting = hittingGroup?.splits?.[0]?.stat;
-                    const zhPlayerMeta = playersData.find((p) => p.id === item.person.id);
-                    const displayName =
-                      lang === 'zh' ? zhPlayerMeta?.nameZh || item.person.fullName : item.person.fullName;
+                    const displayName = item.person.fullName;
 
                     return (
                       <Link
@@ -808,11 +798,6 @@ export const TeamDetailPage: React.FC = () => {
                           <div>
                             <div className="text-sm font-semibold text-main group-hover:text-team-primary flex flex-wrap items-center gap-1.5">
                               <span>{displayName}</span>
-                              {lang === 'zh' && zhPlayerMeta?.nameZh && (
-                                <span className="text-[11px] text-muted font-normal">
-                                  ({item.person.fullName})
-                                </span>
-                              )}
                               {item.status?.code?.includes('I') && (
                                 <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
                                   IL

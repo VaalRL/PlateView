@@ -217,8 +217,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
                 {localResults.players.map((pItem) => {
                   const itemIndex = currentIndexTracker++;
                   const isSelected = itemIndex === selectedIndex;
-                  const primaryName = lang === 'zh' ? pItem.nameZh : pItem.nameEn;
-                  const secondaryName = lang === 'zh' ? pItem.nameEn : pItem.nameZh;
+                  // Primary is always English; the Chinese name stays visible so a
+                  // zh query still maps to what the user typed
+                  const primaryName = pItem.nameEn;
+                  const secondaryName = pItem.nameZh;
 
                   return (
                     <button

@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useGameBoxscoreQuery } from '../../services/queries';
 import { useLanguage } from '../../hooks/useLanguage';
-import playersData from '../../data/players-zh-tw.json';
 import { Loader2 } from 'lucide-react';
 
 interface GameBoxscorePanelProps {
@@ -66,9 +65,7 @@ export const GameBoxscorePanel: React.FC<GameBoxscorePanelProps> = ({ gamePk }) 
                 if (!s || s.atBats === undefined) return null;
 
                 const personId = p.person?.id || bId;
-                const zhPlayerMeta = playersData.find((item) => item.id === personId);
-                const displayName =
-                  lang === 'zh' ? zhPlayerMeta?.nameZh || p.person?.fullName : p.person?.fullName;
+                const displayName = p.person?.fullName;
 
                 return (
                   <tr key={bId} className="hover:bg-card-hover/40 group">
@@ -136,9 +133,7 @@ export const GameBoxscorePanel: React.FC<GameBoxscorePanelProps> = ({ gamePk }) 
                 if (!s || s.inningsPitched === undefined) return null;
 
                 const personId = p.person?.id || pId;
-                const zhPlayerMeta = playersData.find((item) => item.id === personId);
-                const displayName =
-                  lang === 'zh' ? zhPlayerMeta?.nameZh || p.person?.fullName : p.person?.fullName;
+                const displayName = p.person?.fullName;
 
                 return (
                   <tr key={pId} className="hover:bg-card-hover/40 group">
