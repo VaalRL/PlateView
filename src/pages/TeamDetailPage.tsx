@@ -16,6 +16,7 @@ import teamsData from '../data/teams.json';
 import {
   Star,
   ArrowLeft,
+  ExternalLink,
   Users,
   ShieldAlert,
   MapPin,
@@ -45,7 +46,9 @@ export const TeamDetailPage: React.FC = () => {
     isError: isRosterError,
   } = useTeamRosterQuery(
     idNum,
-    activeRosterTab === '40Man' ? '40Man' : 'active'
+    // Injured players are absent from the active roster, so the IL tab has to
+    // read the 40-man roster and filter it down
+    activeRosterTab === 'active' ? 'active' : '40Man'
   );
 
   const { data: scheduleData, isLoading: isScheduleLoading, isError: isScheduleError } =
@@ -59,13 +62,13 @@ export const TeamDetailPage: React.FC = () => {
 
   const rawRoster = rosterData?.roster || [];
 
-  // Filter injured list players
-  const ilPlayers = rawRoster.filter(
-    (p: any) =>
-      p.status?.code?.includes('I') ||
-      p.status?.description?.toLowerCase().includes('injured') ||
-      p.status?.description?.toLowerCase().includes('il')
-  );
+  // MLB marks the injured list with status codes D7 / D10 / D15 / D60. The
+  // digit check keeps "DES" (Designated for Assignment) out of the IL.
+  const isOnInjuredList = (status?: { code?: string; description?: string }) =>
+    /^D\d+$/.test(status?.code || '') ||
+    !!status?.description?.toLowerCase().includes('injured');
+
+  const ilPlayers = rawRoster.filter((p: any) => isOnInjuredList(p.status));
 
   const displayRoster = activeRosterTab === 'il' ? ilPlayers : rawRoster;
 
@@ -74,7 +77,7 @@ export const TeamDetailPage: React.FC = () => {
 
   // Find standings record
   let teamRecord: any = null;
-  standingsData?.records.forEach((div) => {
+  standingsData?.records?.forEach((div) => {
     const found = div.teamRecords.find((tr) => tr.team.id === idNum);
     if (found) teamRecord = found;
   });
@@ -206,18 +209,44 @@ export const TeamDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Favorite Button */}
-        <button
-          onClick={() => toggleFavoriteTeam(idNum)}
-          className={`w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
-            isFav
-              ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 shadow-sm'
-              : 'bg-page border-border text-muted hover:text-main hover:border-team-primary'
-          }`}
-        >
-          <Star className={`w-4 h-4 ${isFav ? 'fill-amber-500 text-amber-500' : ''}`} />
-          <span>{isFav ? t('team.fav_active') : t('team.fav_btn')}</span>
-        </button>
+        {/* Actions: Official Site & Favorite Button */}
+        <div className="w-full md:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          {teamMeta?.mlbSlug && (
+            <a
+              href={`https://www.mlb.com/${teamMeta.mlbSlug}/transactions`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border bg-page border-border text-muted hover:text-main hover:border-rose-500/60 transition-all"
+            >
+              <ShieldAlert className="w-4 h-4 text-rose-400" />
+              <span>{t('team.injury_news')}</span>
+            </a>
+          )}
+
+          {teamMeta?.mlbSlug && (
+            <a
+              href={`https://www.mlb.com/${teamMeta.mlbSlug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border bg-page border-border text-muted hover:text-main hover:border-team-primary transition-all"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span>{t('team.official_site')}</span>
+            </a>
+          )}
+
+          <button
+            onClick={() => toggleFavoriteTeam(idNum)}
+            className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+              isFav
+                ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 shadow-sm'
+                : 'bg-page border-border text-muted hover:text-main hover:border-team-primary'
+            }`}
+          >
+            <Star className={`w-4 h-4 ${isFav ? 'fill-amber-500 text-amber-500' : ''}`} />
+            <span>{isFav ? t('team.fav_active') : t('team.fav_btn')}</span>
+          </button>
+        </div>
       </div>
 
       {/* Main View Switcher (Schedule vs Roster) */}
@@ -722,7 +751,7 @@ export const TeamDetailPage: React.FC = () => {
                                   </span>
                                 </span>
                               )}
-                              {item.status?.code?.includes('I') && (
+                              {isOnInjuredList(item.status) && (
                                 <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
                                   IL
                                 </span>
@@ -798,7 +827,7 @@ export const TeamDetailPage: React.FC = () => {
                           <div>
                             <div className="text-sm font-semibold text-main group-hover:text-team-primary flex flex-wrap items-center gap-1.5">
                               <span>{displayName}</span>
-                              {item.status?.code?.includes('I') && (
+                              {isOnInjuredList(item.status) && (
                                 <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
                                   IL
                                 </span>
