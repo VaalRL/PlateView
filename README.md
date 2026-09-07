@@ -51,11 +51,13 @@
   * **進行中賽事**：30 秒自動輪詢更新比分、好壞球數、出局數（Outs 圓點）與動態壘包狀態（Bases Diamond）。
   * **已結束賽事 (Final)**：點擊對戰卡片即可原地展開/收合 **MLB 官方每局比分板 (Linescore & Boxscore)** 與 R / H / E 詳細攻守數據。
 * **全站無縫連結**：在對戰卡片中點擊球隊 Logo、先發投手 (SP)、勝/敗/救援投手姓名，均可一鍵跳轉至對應專屬頁面。
+* **球隊官網捷徑**：進入任一球隊頁後，標題右側提供兩顆外部連結按鈕——「🛡️ 傷兵異動消息」直達官網球隊異動頁（含 IL 進出與傷勢說明），「🔗 球隊官網」直達 MLB 官方球隊首頁（例：`mlb.com/rays`）。
 
 ### 2. ⭐ 我的最愛與今日戰報彙總 (Favorites & Today's Summary)
 * **收藏球星與球隊**：在任何球員或球隊頁面點擊「⭐ 收藏此球星／球隊」，首頁最愛列即時常駐顯示。
 * **今日先發提醒**：若收藏的投手被排定為當日先發，人像旁會自動標記金色 `今日先發` 徽章。
-* **展開今日戰報**：點擊最愛列右側 **「✨ 今日愛將戰報」** 按鈕：
+* **展開今日戰報**：點擊最愛列右側 **「✨ 今日愛將戰報」** 按鈕，或直接點擊最愛卡片任一空白處即可展開／收合：
+  * **球隊戰報**：同一張卡片並列 **今日與昨日** 兩場戰績——對戰比分與對手（如 `5 - 3 @ PIT`）、進行中局數、勝敗徽章；今日列另含 R / H / E 拆解，賽前則顯示開打時間與雙方預定先發投手，無賽程亦會明確標示。
   * **打者戰報**：即時顯示今日打席精華（如 `2-4 | HR, 3 RBI, BB`）、打擊率、OPS、全壘打與打點。
   * **投手戰報**：即時顯示投球局數、三振數、失分（如 `6.0 IP, 8 K, 1 ER`）、防禦率與 WHIP。
   * 若當日未出賽或輪休，會貼心展示最近一場的出賽精華。
@@ -161,11 +163,13 @@ npm run lint         # 執行程式碼品質檢查
 * **Live Match State**: 30-second automated polling with count display (Balls, Strikes, Outs), real-time base runners diamond, and venue information.
 * **In-Game Linescores**: Click any completed game card to expand official inning-by-inning linescores and R/H/E boxscore summaries.
 * **Direct Navigation**: Click on any team logo, probable starting pitcher, or decision pitcher to open their respective detail pages.
+* **Official Shortcuts**: Each team page carries an "Injury & Transactions" button (IL moves with injury reasons) and an "Official Site" button, both opening mlb.com in a new tab (e.g. `mlb.com/rays`).
 
 ### 2. ⭐ Favorites Bar & Today's Summary
 * **Pin Players & Teams**: Click "⭐ Favorite Player/Team" on any detail page to pin them to the homepage favorites strip.
 * **Today's Starter Indicator**: Pitchers scheduled to start today receive an amber badge highlighting their upcoming outing.
-* **Expand Daily Live Summary**: Click **"✨ Today's Summary"** in the favorites bar:
+* **Expand Daily Live Summary**: Click **"✨ Today's Summary"**, or anywhere on the favorites card, to expand or collapse the drawer:
+  * **Teams**: Today and yesterday side by side on one card — score and opponent (e.g. `5 - 3 @ PIT`), current inning, win/loss badge, plus R/H/E or probable starters.
   * **Batters**: View real-time game summaries (e.g. `2-4 | HR, 3 RBI, BB`), batting average, OPS, home runs, and RBIs.
   * **Pitchers**: View innings pitched, strikeouts, earned runs (e.g. `6.0 IP, 8 K, 1 ER`), ERA, and WHIP.
   * Shows either today's live stats or the most recent game performance.
