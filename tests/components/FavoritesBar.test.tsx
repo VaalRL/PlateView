@@ -64,6 +64,80 @@ describe('FavoritesBar component', () => {
     expect(screen.getByText(/我的最愛管理與資料備份/i)).toBeInTheDocument();
   });
 
+  it('expands the summary drawer when clicking anywhere on the favorites card', () => {
+    localStorage.setItem('plateview_fav_teams', JSON.stringify([119]));
+    localStorage.setItem('plateview_fav_players', JSON.stringify([]));
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <MemoryRouter>
+            <FavoritesBar />
+          </MemoryRouter>
+        </LanguageProvider>
+      </QueryClientProvider>
+    );
+
+    expect(screen.queryByText(/今日愛將即時戰報/)).not.toBeInTheDocument();
+
+    // Clicking the card body (not a link or button) toggles the drawer
+    fireEvent.click(screen.getByText('我的最愛'));
+    expect(screen.getByText(/今日愛將即時戰報/)).toBeInTheDocument();
+    expect(screen.getByText('收合戰報')).toBeInTheDocument();
+
+    // Clicking inside the opened drawer keeps it open
+    fireEvent.click(screen.getByText(/今日愛將即時戰報/));
+    expect(screen.getByText(/今日愛將即時戰報/)).toBeInTheDocument();
+
+    // Clicking the card body again collapses it
+    fireEvent.click(screen.getByText('我的最愛'));
+    expect(screen.queryByText(/今日愛將即時戰報/)).not.toBeInTheDocument();
+  });
+
+  it('does not toggle the drawer when clicking a favorite link or the backup button', () => {
+    localStorage.setItem('plateview_fav_teams', JSON.stringify([119]));
+    localStorage.setItem('plateview_fav_players', JSON.stringify([]));
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <MemoryRouter>
+            <FavoritesBar />
+          </MemoryRouter>
+        </LanguageProvider>
+      </QueryClientProvider>
+    );
+
+    fireEvent.click(screen.getByText('洛杉磯道奇'));
+    expect(screen.queryByText(/今日愛將即時戰報/)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('備份 / 匯入'));
+    expect(screen.queryByText(/今日愛將即時戰報/)).not.toBeInTheDocument();
+  });
+
+  it('shows team summary cards in the drawer even without any favorite player', () => {
+    localStorage.setItem('plateview_fav_teams', JSON.stringify([119, 147]));
+    localStorage.setItem('plateview_fav_players', JSON.stringify([]));
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <MemoryRouter>
+            <FavoritesBar />
+          </MemoryRouter>
+        </LanguageProvider>
+      </QueryClientProvider>
+    );
+
+    // The summary toggle must be available for team-only favorites
+    fireEvent.click(screen.getByText('今日愛將戰報'));
+
+    // Each favorite team now appears twice: once as a pill, once as a summary card
+    expect(screen.getAllByText('洛杉磯道奇')).toHaveLength(2);
+    expect(screen.getAllByText('紐約洋基')).toHaveLength(2);
+    expect(screen.getAllByText('無賽程').length).toBeGreaterThan(0);
+  });
+
   it('renders unseeded favorite player with cached metadata gracefully', () => {
     localStorage.setItem('plateview_fav_players', JSON.stringify([999999]));
     localStorage.setItem(

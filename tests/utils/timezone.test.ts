@@ -4,6 +4,7 @@ import {
   formatBilingualGameTime,
   formatApiDate,
   getEasternDateStr,
+  getPreviousDateStr,
   getRelativeDateLabel,
 } from '../../src/utils/timezone';
 
@@ -29,6 +30,16 @@ describe('timezone utility tests', () => {
     // Winter: EST (UTC-5)
     expect(getEasternDateStr(new Date('2026-01-15T04:59:00Z'))).toBe('2026-01-14');
     expect(getEasternDateStr(new Date('2026-01-15T05:00:00Z'))).toBe('2026-01-15');
+  });
+
+  it('returns the previous calendar day without shifting time zones', () => {
+    expect(getPreviousDateStr('2026-09-07')).toBe('2026-09-06');
+    // Month boundary
+    expect(getPreviousDateStr('2026-09-01')).toBe('2026-08-31');
+    // Year boundary
+    expect(getPreviousDateStr('2026-01-01')).toBe('2025-12-31');
+    // Leap day
+    expect(getPreviousDateStr('2028-03-01')).toBe('2028-02-29');
   });
 
   it('formats bilingual game time for zh (Taipei Time) and en (Eastern Time)', () => {

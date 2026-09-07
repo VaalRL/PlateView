@@ -1,25 +1,53 @@
 import React from 'react';
-import { useFavoritePlayersGameLogQuery } from '../../services/queries';
+import { useQueryClient } from '@tanstack/react-query';
+import { useFavoritePlayersGameLogQuery, useScheduleQuery } from '../../services/queries';
+import { getPreviousDateStr } from '../../utils/timezone';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useFavorites } from '../../hooks/useFavorites';
 import { FavoritePlayerSummaryCard } from './FavoritePlayerSummaryCard';
+import { FavoriteTeamSummaryCard } from './FavoriteTeamSummaryCard';
+import { GameSchedule } from '../../types/mlb';
 import playersData from '../../data/players-zh-tw.json';
 import { Sparkles, RefreshCw } from 'lucide-react';
 
 interface FavoritesSummaryDrawerProps {
+  teamIds: number[];
   playerIds: number[];
+  games: GameSchedule[];
   todayDateStr: string;
 }
 
 export const FavoritesSummaryDrawer: React.FC<FavoritesSummaryDrawerProps> = ({
+  teamIds,
   playerIds,
+  games,
   todayDateStr,
 }) => {
   const { t } = useLanguage();
   const { favoritePlayersMeta } = useFavorites();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, isFetching, refetch } = useFavoritePlayersGameLogQuery(playerIds);
   const people = data?.people || [];
+
+  // Team cards pair the summarized day with the one before it. The base date is
+  // taken from the games themselves so both rows always belong to the same day.
+  const baseDateStr = games[0]?.officialDate || todayDateStr;
+  const { data: previousData } = useScheduleQuery(
+    getPreviousDateStr(baseDateStr),
+    teamIds.length > 0
+  );
+  const previousGames = previousData?.dates?.[0]?.games || [];
+
+  const findTeamGame = (list: GameSchedule[], teamId: number) =>
+    list.find((g) => g.teams.away.team.id === teamId || g.teams.home.team.id === teamId);
+
+  // Team cards are fed by the schedule query owned by the page, so a manual
+  // refresh has to invalidate it as well as the player game logs
+  const handleRefresh = () => {
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ['schedule'] });
+  };
 
   return (
     <div className="mt-3 pt-3 border-t border-border/40 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -36,7 +64,7 @@ export const FavoritesSummaryDrawer: React.FC<FavoritesSummaryDrawerProps> = ({
         </div>
 
         <button
-          onClick={() => refetch()}
+          onClick={handleRefresh}
           disabled={isFetching}
           className="flex items-center gap-1 text-[11px] text-muted hover:text-team-primary transition-colors disabled:opacity-50"
           title={t('sb.refresh')}
@@ -46,37 +74,39 @@ export const FavoritesSummaryDrawer: React.FC<FavoritesSummaryDrawerProps> = ({
         </button>
       </div>
 
-      {/* Loading Skeleton */}
-      {isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
-          {playerIds.map((id) => (
-            <div
-              key={id}
-              className="bg-card/60 border border-border rounded-2xl p-4 h-40 animate-pulse"
-            />
-          ))}
-        </div>
-      )}
+      {/* Cards Grid: favorite teams first, then favorite players */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+        {teamIds.map((teamId) => (
+          <FavoriteTeamSummaryCard
+            key={`team-${teamId}`}
+            teamId={teamId}
+            game={findTeamGame(games, teamId)}
+            previousGame={findTeamGame(previousGames, teamId)}
+          />
+        ))}
 
-      {/* Cards Grid */}
-      {!isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
-          {people.map((person) => {
-            const localMeta = playersData.find((p) => p.id === person.id);
-            const cachedMeta = favoritePlayersMeta[person.id];
-            const zhMeta = localMeta || cachedMeta;
-
-            return (
-              <FavoritePlayerSummaryCard
-                key={person.id}
-                person={person}
-                zhMeta={zhMeta}
-                todayDateStr={todayDateStr}
+        {isLoading
+          ? playerIds.map((id) => (
+              <div
+                key={`skeleton-${id}`}
+                className="bg-card/60 border border-border rounded-2xl p-4 h-40 animate-pulse"
               />
-            );
-          })}
-        </div>
-      )}
+            ))
+          : people.map((person) => {
+              const localMeta = playersData.find((p) => p.id === person.id);
+              const cachedMeta = favoritePlayersMeta[person.id];
+              const zhMeta = localMeta || cachedMeta;
+
+              return (
+                <FavoritePlayerSummaryCard
+                  key={person.id}
+                  person={person}
+                  zhMeta={zhMeta}
+                  todayDateStr={todayDateStr}
+                />
+              );
+            })}
+      </div>
     </div>
   );
 };

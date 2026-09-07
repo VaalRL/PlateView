@@ -100,7 +100,11 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
 
   return (
     <>
-      <div className="mb-6 bg-card border border-border rounded-2xl p-3 shadow-sm transition-all">
+      <div
+        onClick={() => setShowSummary((prev) => !prev)}
+        title={showSummary ? t('fav.hide_summary') : t('fav.toggle_summary')}
+        className="mb-6 bg-card border border-border rounded-2xl p-3 shadow-sm transition-all cursor-pointer hover:border-team-primary/40"
+      >
         {/* Main Bar Top Row */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Left: Star Title & Tag List */}
@@ -119,6 +123,7 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
                   <Link
                     key={team.id}
                     to={`/teams/${team.id}`}
+                    onClick={(e) => e.stopPropagation()}
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-page border border-border text-xs font-medium hover:border-team-primary transition-all group"
                   >
                     <span
@@ -143,6 +148,7 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
                   <Link
                     key={player.id}
                     to={`/players/${player.id}`}
+                    onClick={(e) => e.stopPropagation()}
                     className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
                       isStarting
                         ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 font-bold shadow-[0_0_8px_rgba(245,158,11,0.2)]'
@@ -163,30 +169,35 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
 
           {/* Right: Actions (Summary Drawer Toggle & Backup Modal Trigger) */}
           <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-border/30 shrink-0">
-            {favoritePlayers.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setShowSummary((prev) => !prev)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition-all border ${
-                  showSummary
-                    ? 'bg-team-primary text-white border-team-primary shadow-xs'
-                    : 'bg-page text-muted hover:text-main border-border hover:border-team-primary/50'
-                }`}
-                title={showSummary ? t('fav.hide_summary') : t('fav.toggle_summary')}
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>{showSummary ? t('fav.hide_summary') : t('fav.toggle_summary')}</span>
-                {showSummary ? (
-                  <ChevronUp className="w-3.5 h-3.5" />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5" />
-                )}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowSummary((prev) => !prev);
+              }}
+              aria-expanded={showSummary}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition-all border ${
+                showSummary
+                  ? 'bg-team-primary text-white border-team-primary shadow-xs'
+                  : 'bg-page text-muted hover:text-main border-border hover:border-team-primary/50'
+              }`}
+              title={showSummary ? t('fav.hide_summary') : t('fav.toggle_summary')}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>{showSummary ? t('fav.hide_summary') : t('fav.toggle_summary')}</span>
+              {showSummary ? (
+                <ChevronUp className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5" />
+              )}
+            </button>
 
             <button
               type="button"
-              onClick={() => setIsBackupOpen(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsBackupOpen(true);
+              }}
               className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-medium text-muted hover:text-main bg-page border border-border hover:border-team-primary/50 transition-colors"
               title={t('fav.backup_btn')}
             >
@@ -197,11 +208,15 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
         </div>
 
         {/* Collapsible Today's Summary Drawer */}
-        {showSummary && favoritePlayers.length > 0 && (
-          <FavoritesSummaryDrawer
-            playerIds={favoritePlayers}
-            todayDateStr={todayDateStr}
-          />
+        {showSummary && (
+          <div onClick={(e) => e.stopPropagation()} className="cursor-default">
+            <FavoritesSummaryDrawer
+              teamIds={favTeams.map((team) => team.id)}
+              playerIds={favoritePlayers}
+              games={games}
+              todayDateStr={todayDateStr}
+            />
+          </div>
         )}
       </div>
 

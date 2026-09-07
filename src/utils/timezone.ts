@@ -92,6 +92,17 @@ export function getEasternDateStr(date: Date = new Date()): string {
 }
 
 /**
+ * Previous calendar day of a YYYY-MM-DD string. Works purely on the calendar
+ * value so an API date string never shifts by the viewer's time zone.
+ */
+export function getPreviousDateStr(dateStr: string): string {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() - 1);
+  return date.toISOString().slice(0, 10);
+}
+
+/**
  * Get human-readable date label (e.g. "今天", "昨天", "明天", or "MM/dd (E)")
  */
 export function getRelativeDateLabel(date: Date): string {

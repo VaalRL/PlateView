@@ -21,10 +21,11 @@ export function scheduleHasLiveGames(data?: ScheduleResponse): boolean {
   return games.some((g) => g?.status?.abstractGameState === 'Live');
 }
 
-export function useScheduleQuery(date: string) {
+export function useScheduleQuery(date: string, enabled: boolean = true) {
   return useQuery({
     queryKey: ['schedule', date],
     queryFn: () => getSchedule(date),
+    enabled,
     // Poll only while games are actually live; idle days stay quiet
     refetchInterval: (query) => (scheduleHasLiveGames(query.state.data) ? 30000 : false),
     staleTime: (query) => (scheduleHasLiveGames(query.state.data) ? 20000 : 300000), // 20s or 5min
