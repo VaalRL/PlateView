@@ -13,6 +13,7 @@ import {
   formatFip,
   formatWoba,
   formatPer9,
+  getPitchingDecision,
 } from '../utils/statsFormatters';
 import playersData from '../data/players-zh-tw.json';
 import teamsData from '../data/teams.json';
@@ -794,7 +795,7 @@ export const PlayerDetailPage: React.FC = () => {
                         {effectiveRole === 'pitching' ? (
                           <>
                             <td className="py-2.5 px-2 text-center font-bold text-main">
-                              {log.stat?.decision || '-'}
+                              {getPitchingDecision(log.stat)}
                             </td>
                             <td className="py-2.5 px-2 text-center">{log.stat?.inningsPitched}</td>
                             <td className="py-2.5 px-2 text-center">{log.stat?.hits}</td>

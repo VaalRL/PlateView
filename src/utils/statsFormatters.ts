@@ -99,3 +99,35 @@ export function formatPer9(val?: string | number | null): string {
   if (isNaN(num)) return '---';
   return num.toFixed(2);
 }
+
+export interface PitchingDecisionStat {
+  wins?: number | null;
+  losses?: number | null;
+  saves?: number | null;
+  holds?: number | null;
+  blownSaves?: number | null;
+}
+
+const DECISION_COUNTERS: [keyof PitchingDecisionStat, string][] = [
+  ['wins', 'W'],
+  ['losses', 'L'],
+  ['saves', 'SV'],
+  ['holds', 'HLD'],
+  ['blownSaves', 'BS'],
+];
+
+/**
+ * Derive a single game decision (W / L / SV / HLD / BS / ND) from a pitching game log split.
+ * The MLB API reports per-game counters instead of a decision field; exactly one of them is
+ * set on a decided appearance, so the first non-zero counter wins.
+ * Returns "-" when the split carries no decision counters at all.
+ */
+export function getPitchingDecision(stat?: PitchingDecisionStat | null): string {
+  if (!stat) return '-';
+
+  const reported = DECISION_COUNTERS.filter(([key]) => typeof stat[key] === 'number');
+  if (reported.length === 0) return '-';
+
+  const decided = reported.find(([key]) => (stat[key] as number) > 0);
+  return decided ? decided[1] : 'ND';
+}

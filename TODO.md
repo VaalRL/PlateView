@@ -82,3 +82,10 @@
   - [x] 球隊頁新增「傷兵異動消息」外部按鈕，連至 `mlb.com/{slug}/transactions`（官網團隊異動頁，含 IL 進出與傷勢原因）
   - [x] 已驗證 mlb.com 無球隊層級傷兵專頁（`/{slug}/roster/injury-report` 等皆 404），聯盟版 `/injury-report` 亦不支援 `teamId` 篩選
   - [x] 測試由 95 項增至 98 項，全數通過；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過
+
+- [x] **Phase 9: 修正球員頁 Game Logs「結果」欄永遠空白（2026-09-10）**
+  - [x] 修正先發投手逐場紀錄的「結果 / Dec」欄永遠顯示 `-`：原讀取 `log.stat.decision`，但 MLB API 的 pitching gameLog split 並無此欄位（經真實 API 驗證，Skubal 全季 23 場皆無）
+  - [x] 新增 `getPitchingDecision()` 至既有 `statsFormatters.ts`（SSOT），依 `wins`／`losses`／`saves`／`holds`／`blownSaves` 計數欄位推導 W／L／SV／HLD／BS／ND，無任何計數欄位時回傳 `-`
+  - [x] 明確不採用 split 層級的 `isWin`：該欄位是球隊當場勝負，非投手決勝（實測 Skubal 三場球隊獲勝但投手無關勝負）
+  - [x] 以真實 API 交叉驗證先發（Skubal）與後援（Díaz，含 SV／HLD／BS 與「BS 後撿勝」同場並存情境）
+  - [x] 測試由 98 項增至 106 項，全數通過；TypeScript、ESLint（0 errors）驗證通過

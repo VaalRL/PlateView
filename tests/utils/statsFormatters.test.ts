@@ -10,7 +10,9 @@ import {
   formatFip,
   formatWoba,
   formatPer9,
+  getPitchingDecision,
 } from '../../src/utils/statsFormatters';
+import type { PitchingDecisionStat } from '../../src/utils/statsFormatters';
 
 describe('statsFormatters utility tests', () => {
   describe('formatRateStat (AVG / OBP / SLG)', () => {
@@ -88,6 +90,46 @@ describe('statsFormatters utility tests', () => {
     it('formats Per9 with 2 decimal places', () => {
       expect(formatPer9(10.864)).toBe('10.86');
       expect(formatPer9(undefined)).toBe('---');
+    });
+  });
+
+  describe('getPitchingDecision (game log Dec column)', () => {
+    it('returns W when the pitcher took the win', () => {
+      expect(getPitchingDecision({ wins: 1, losses: 0, saves: 0, holds: 0, blownSaves: 0 })).toBe('W');
+    });
+
+    it('returns L when the pitcher took the loss', () => {
+      expect(getPitchingDecision({ wins: 0, losses: 1, saves: 0, holds: 0, blownSaves: 0 })).toBe('L');
+    });
+
+    it('returns SV for a save and HLD for a hold', () => {
+      expect(getPitchingDecision({ wins: 0, losses: 0, saves: 1, holds: 0, blownSaves: 0 })).toBe('SV');
+      expect(getPitchingDecision({ wins: 0, losses: 0, saves: 0, holds: 1, blownSaves: 0 })).toBe('HLD');
+    });
+
+    it('returns BS for a blown save without a decision', () => {
+      expect(getPitchingDecision({ wins: 0, losses: 0, saves: 0, holds: 0, blownSaves: 1 })).toBe('BS');
+    });
+
+    it('prefers the actual decision over a blown save on the same appearance', () => {
+      expect(getPitchingDecision({ wins: 1, losses: 0, saves: 0, holds: 0, blownSaves: 1 })).toBe('W');
+      expect(getPitchingDecision({ wins: 0, losses: 1, saves: 0, holds: 0, blownSaves: 1 })).toBe('L');
+    });
+
+    it('returns ND when the pitcher appeared without a decision', () => {
+      expect(getPitchingDecision({ wins: 0, losses: 0, saves: 0, holds: 0, blownSaves: 0 })).toBe('ND');
+    });
+
+    it('returns ND when only some counters are reported', () => {
+      expect(getPitchingDecision({ wins: 0, losses: 0 })).toBe('ND');
+    });
+
+    it('returns - when no decision data exists at all', () => {
+      expect(getPitchingDecision(undefined)).toBe('-');
+      expect(getPitchingDecision(null)).toBe('-');
+      expect(getPitchingDecision({})).toBe('-');
+      // A split that carries other pitching stats but no decision counters
+      expect(getPitchingDecision({ era: '2.84' } as PitchingDecisionStat)).toBe('-');
     });
   });
 });
