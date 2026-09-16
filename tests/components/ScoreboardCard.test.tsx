@@ -158,9 +158,10 @@ describe('ScoreboardCard component', () => {
       </QueryClientProvider>
     );
 
-    expect(
-      screen.getByRole('link', { name: /完整 Box 專頁/ })
-    ).toHaveAttribute('href', `/games/${mockLiveGame.gamePk}`);
+    const entry = screen.getByRole('link', { name: /完整 Box 專頁/ });
+    expect(entry).toHaveAttribute('href', `/games/${mockLiveGame.gamePk}`);
+    // Reads as a button labelled "Box"; the full phrase is for assistive tech
+    expect(entry.textContent).toBe('Box');
   });
 
   it('offers no game page before first pitch, since there is nothing in it yet', () => {

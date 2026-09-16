@@ -433,14 +433,18 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
 
       {/* 4. Link through to the standalone game page, once there is one */}
       {hasStarted && (
-        <div className="pt-2 mt-2 border-t border-border">
+        <div className="pt-2.5 mt-2 border-t border-border flex justify-center">
           <Link
             to={`/games/${game.gamePk}`}
             onClick={(e) => e.stopPropagation()}
-            className="w-full flex items-center justify-center gap-1.5 text-[11px] text-muted hover:text-team-primary transition-colors py-1 font-medium group"
+            /* Short visible label, full description for assistive tech */
+            aria-label={t('game.open_full_box')}
+            title={t('game.open_full_box')}
+            /* Neutral fill rather than the team colour: a light primary such as
+               the Pirates' gold leaves white text at about 1.7:1 */
+            className="inline-flex items-center justify-center px-4 py-1 rounded-lg border border-border bg-card-hover text-main text-[11px] font-bold tracking-wide shadow-sm hover:border-team-primary hover:text-team-primary active:translate-y-px transition-colors"
           >
-            <span>{t('game.open_full_box')}</span>
-            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            Box
           </Link>
         </div>
       )}
