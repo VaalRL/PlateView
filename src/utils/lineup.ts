@@ -58,6 +58,16 @@ export interface Fielder {
   /** Batting order slot, or null for a pitcher who never bats (DH games) */
   battingSlot: number | null;
   isSubstitute: boolean;
+  /**
+   * True when the player has taken over the slot but MLB has not assigned him a
+   * fielding position yet, so he is shown at his predecessor's position. This
+   * happens mid-inning, while a pinch hitter or pinch runner is still listed as
+   * PH / PR.
+   */
+  isPending?: boolean;
+  /** The player he came in for, when he entered the slot as a substitute */
+  replacedName?: string;
+  replacedPersonId?: number;
 }
 
 /**
@@ -136,13 +146,18 @@ export function buildLineup(teamBox: BoxscoreTeam): LineupSlot[] {
  */
 export function buildFieldAlignment(teamBox: BoxscoreTeam): Partial<Record<FieldPosition, Fielder>> {
   const alignment: Partial<Record<FieldPosition, Fielder>> = {};
+  const lineup = buildLineup(teamBox);
 
-  buildLineup(teamBox).forEach(({ slot, entries }) => {
+  const toFielder = (
+    slot: number,
+    entries: LineupEntry[],
+    position: FieldPosition,
+    isPending: boolean
+  ): Fielder => {
     const current = entries[entries.length - 1];
-    const position = current?.position as FieldPosition | undefined;
-    if (!position || !POSITION_NUMBERS[position]) return;
+    const replaced = entries.length > 1 ? entries[entries.length - 2] : undefined;
 
-    alignment[position] = {
+    return {
       personId: current.personId,
       fullName: current.fullName,
       position,
@@ -150,7 +165,33 @@ export function buildFieldAlignment(teamBox: BoxscoreTeam): Partial<Record<Field
       jerseyNumber: current.jerseyNumber,
       battingSlot: slot,
       isSubstitute: !current.isStarter,
+      ...(isPending ? { isPending: true } : {}),
+      ...(replaced ? { replacedName: replaced.fullName, replacedPersonId: replaced.personId } : {}),
     };
+  };
+
+  // Pass 1: slots whose current occupant holds a real fielding position
+  lineup.forEach(({ slot, entries }) => {
+    const position = entries[entries.length - 1]?.position as FieldPosition | undefined;
+    if (!position || !POSITION_NUMBERS[position]) return;
+    alignment[position] = toFielder(slot, entries, position, false);
+  });
+
+  // Pass 2: a slot whose occupant is still listed as PH / PR inherits the
+  // position his predecessor held, so the chart shows who took the slot over
+  // instead of leaving a hole. Never overwrites a confirmed fielder.
+  lineup.forEach(({ slot, entries }) => {
+    const current = entries[entries.length - 1];
+    const currentPosition = current?.position as FieldPosition | undefined;
+    if (currentPosition && POSITION_NUMBERS[currentPosition]) return;
+
+    for (let i = entries.length - 2; i >= 0; i -= 1) {
+      const previous = entries[i].position as FieldPosition | undefined;
+      if (previous && POSITION_NUMBERS[previous] && !alignment[previous]) {
+        alignment[previous] = toFielder(slot, entries, previous, true);
+        return;
+      }
+    }
   });
 
   // `pitchers` is ordered by appearance, so the last entry is on the mound

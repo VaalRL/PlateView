@@ -85,4 +85,70 @@ describe('FieldAlignmentDiagram component', () => {
 
     expect(screen.getByText('本場尚未公布守備名單。')).toBeInTheDocument();
   });
+
+  it('shows who a substituted fielder came in for', () => {
+    const swapped = {
+      pitchers: [90],
+      players: {
+        ID40: {
+          person: { id: 40, fullName: 'Marcus Semien' },
+          position: { abbreviation: '2B' },
+          allPositions: [{ abbreviation: '2B' }],
+          battingOrder: '400',
+        },
+        ID41: {
+          person: { id: 41, fullName: 'Josh Smith' },
+          position: { abbreviation: '2B' },
+          allPositions: [{ abbreviation: '2B' }],
+          battingOrder: '401',
+        },
+        ID90: { person: { id: 90, fullName: 'Kirby Yates' }, position: { abbreviation: 'P' } },
+      },
+    };
+
+    render(
+      <MemoryRouter>
+        <LanguageProvider>
+          <FieldAlignmentDiagram teamBox={swapped} teamName="Texas Rangers" />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    // Only the current occupant is charted, annotated with who he replaced
+    expect(screen.getAllByText('Josh Smith').length).toBeGreaterThan(0);
+    // Rendered twice on purpose: the SVG tooltip and the narrow-screen list
+    expect(screen.getAllByText(/替下 Marcus Semien/).length).toBe(2);
+  });
+
+  it('marks a slot as position-pending rather than leaving a hole on the field', () => {
+    const pending = {
+      pitchers: [90],
+      players: {
+        ID40: {
+          person: { id: 40, fullName: 'Marcus Semien' },
+          position: { abbreviation: '2B' },
+          allPositions: [{ abbreviation: '2B' }],
+          battingOrder: '400',
+        },
+        ID41: {
+          person: { id: 41, fullName: 'Pinch Runner' },
+          position: { abbreviation: 'PR' },
+          allPositions: [{ abbreviation: 'PR' }],
+          battingOrder: '401',
+        },
+        ID90: { person: { id: 90, fullName: 'Kirby Yates' }, position: { abbreviation: 'P' } },
+      },
+    };
+
+    render(
+      <MemoryRouter>
+        <LanguageProvider>
+          <FieldAlignmentDiagram teamBox={pending} teamName="Texas Rangers" />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.getAllByText('Pinch Runner').length).toBeGreaterThan(0);
+    expect(screen.getByText('(守位待定)')).toBeInTheDocument();
+  });
 });

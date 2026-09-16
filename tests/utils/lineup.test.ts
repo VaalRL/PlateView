@@ -159,3 +159,139 @@ describe('buildFieldAlignment', () => {
     expect(buildFieldAlignment(undefined)).toEqual({});
   });
 });
+
+/**
+ * A second-baseman swap, in the three shapes it actually reaches the box score.
+ * Only one player may occupy a position at a time, so the chart must resolve to
+ * the current occupant even though the lineup carries two players listed 2B.
+ */
+describe('buildFieldAlignment when a second baseman is replaced mid-game', () => {
+  const straightSwap = {
+    pitchers: [90],
+    players: {
+      ID40: {
+        person: { id: 40, fullName: 'Starter Secondbase' },
+        position: { abbreviation: '2B' },
+        allPositions: [{ abbreviation: '2B' }],
+        battingOrder: '400',
+      },
+      ID41: {
+        person: { id: 41, fullName: 'Sub Secondbase' },
+        position: { abbreviation: '2B' },
+        allPositions: [{ abbreviation: '2B' }],
+        battingOrder: '401',
+      },
+      ID90: { person: { id: 90, fullName: 'Only Pitcher' }, position: { abbreviation: 'P' } },
+    },
+  };
+
+  it('charts only the current occupant, not both players listed 2B', () => {
+    const alignment = buildFieldAlignment(straightSwap);
+    expect(alignment['2B']?.fullName).toBe('Sub Secondbase');
+    expect(alignment['2B']?.isSubstitute).toBe(true);
+    // Exactly one fielder holds the position; the replaced starter is off the field
+    expect(Object.values(alignment).filter((f) => f.position === '2B')).toHaveLength(1);
+  });
+
+  it('names the player who was replaced, so the chart still tells the story', () => {
+    const alignment = buildFieldAlignment(straightSwap);
+    expect(alignment['2B']?.replacedName).toBe('Starter Secondbase');
+    expect(alignment['2B']?.replacedPersonId).toBe(40);
+    // The full chain remains visible through the lineup
+    expect(buildLineup(straightSwap)[0].entries.map((e) => e.fullName)).toEqual([
+      'Starter Secondbase',
+      'Sub Secondbase',
+    ]);
+  });
+
+  it('keeps both positions right when the starter shifts to short instead', () => {
+    const rotation = {
+      pitchers: [90],
+      players: {
+        ID40: {
+          person: { id: 40, fullName: 'Moved To Short' },
+          position: { abbreviation: 'SS' },
+          allPositions: [{ abbreviation: '2B' }, { abbreviation: 'SS' }],
+          battingOrder: '400',
+        },
+        ID60: {
+          person: { id: 60, fullName: 'Old Shortstop' },
+          position: { abbreviation: 'SS' },
+          allPositions: [{ abbreviation: 'SS' }],
+          battingOrder: '600',
+        },
+        ID61: {
+          person: { id: 61, fullName: 'New Secondbase' },
+          position: { abbreviation: '2B' },
+          allPositions: [{ abbreviation: '2B' }],
+          battingOrder: '601',
+        },
+        ID90: { person: { id: 90, fullName: 'Only Pitcher' }, position: { abbreviation: 'P' } },
+      },
+    };
+
+    const alignment = buildFieldAlignment(rotation);
+    expect(alignment.SS?.fullName).toBe('Moved To Short');
+    expect(alignment['2B']?.fullName).toBe('New Secondbase');
+  });
+
+  it('holds the slot open for a pinch runner MLB has not assigned a position yet', () => {
+    const pendingRunner = {
+      pitchers: [90],
+      players: {
+        ID40: {
+          person: { id: 40, fullName: 'Starter Secondbase' },
+          position: { abbreviation: '2B' },
+          allPositions: [{ abbreviation: '2B' }],
+          battingOrder: '400',
+        },
+        ID41: {
+          person: { id: 41, fullName: 'Pinch Runner' },
+          position: { abbreviation: 'PR' },
+          allPositions: [{ abbreviation: 'PR' }],
+          battingOrder: '401',
+        },
+        ID90: { person: { id: 90, fullName: 'Only Pitcher' }, position: { abbreviation: 'P' } },
+      },
+    };
+
+    const alignment = buildFieldAlignment(pendingRunner);
+    // Without the fallback the position would simply go blank mid-inning
+    expect(alignment['2B']?.fullName).toBe('Pinch Runner');
+    expect(alignment['2B']?.isPending).toBe(true);
+    expect(alignment['2B']?.replacedName).toBe('Starter Secondbase');
+  });
+
+  it('never lets a pending slot displace a confirmed fielder', () => {
+    const pendingCollision = {
+      pitchers: [90],
+      players: {
+        // Slot 4 was the second baseman, now a pinch runner with no position
+        ID40: {
+          person: { id: 40, fullName: 'Removed Secondbase' },
+          position: { abbreviation: '2B' },
+          allPositions: [{ abbreviation: '2B' }],
+          battingOrder: '400',
+        },
+        ID41: {
+          person: { id: 41, fullName: 'Pinch Runner' },
+          position: { abbreviation: 'PR' },
+          allPositions: [{ abbreviation: 'PR' }],
+          battingOrder: '401',
+        },
+        // Slot 6 already moved over and is confirmed at second base
+        ID60: {
+          person: { id: 60, fullName: 'Confirmed Secondbase' },
+          position: { abbreviation: '2B' },
+          allPositions: [{ abbreviation: 'SS' }, { abbreviation: '2B' }],
+          battingOrder: '600',
+        },
+        ID90: { person: { id: 90, fullName: 'Only Pitcher' }, position: { abbreviation: 'P' } },
+      },
+    };
+
+    const alignment = buildFieldAlignment(pendingCollision);
+    expect(alignment['2B']?.fullName).toBe('Confirmed Secondbase');
+    expect(alignment['2B']?.isPending).toBeUndefined();
+  });
+});

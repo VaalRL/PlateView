@@ -42,6 +42,7 @@ const PositionNode: React.FC<{
   fielder?: Fielder;
   isHighlighted: boolean;
 }> = ({ position, fielder, isHighlighted }) => {
+  const { t } = useLanguage();
   const { x, y } = NODE_COORDS[position];
 
   const node = (
@@ -55,10 +56,13 @@ const PositionNode: React.FC<{
         r={14}
         className={
           fielder
-            ? 'fill-team-primary stroke-card'
+            ? fielder.isPending
+              ? 'fill-team-primary/40 stroke-team-primary'
+              : 'fill-team-primary stroke-card'
             : 'fill-transparent stroke-border'
         }
         strokeWidth={2}
+        strokeDasharray={fielder?.isPending ? '3 2' : undefined}
       />
       <text
         x={x}
@@ -84,7 +88,11 @@ const PositionNode: React.FC<{
 
   return (
     <a href={`#/players/${fielder.personId}`} aria-label={`${position} ${fielder.fullName}`}>
-      <title>{`${fielder.positionNumber} ${position} — ${fielder.fullName}`}</title>
+      <title>
+        {`${fielder.positionNumber} ${position} — ${fielder.fullName}` +
+          (fielder.replacedName ? ` (${t('game.replaced_prefix')}${fielder.replacedName})` : '') +
+          (fielder.isPending ? ` — ${t('game.position_pending')}` : '')}
+      </title>
       {node}
     </a>
   );
@@ -166,6 +174,17 @@ export const FieldAlignmentDiagram: React.FC<FieldAlignmentDiagramProps> = ({
                 {f.fullName}
               </a>
               {f.isSubstitute && <span className="text-[9px] text-amber-500 shrink-0">*</span>}
+              {f.replacedName && (
+                <span className="text-[9px] text-muted truncate shrink-0">
+                  {t('game.replaced_prefix')}
+                  {f.replacedName}
+                </span>
+              )}
+              {f.isPending && (
+                <span className="text-[9px] text-team-primary shrink-0">
+                  {t('game.position_pending')}
+                </span>
+              )}
             </li>
           );
         })}
