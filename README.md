@@ -37,6 +37,7 @@
 - 🚫 **極致輕量與無廣告干擾（Ad-Free Minimalist UI）**：摒除傳統運動網站臃腫廣告與追蹤腳本，打包體積 < 500 KB，秒級即時載入。
 - 🇹🇼 **在地化雙語體驗（Bilingual Localization）**：內建台灣球迷慣用之繁體中文譯名對照字典（支援搜尋「大谷」、「斯肯斯」、「法官」、「道奇」、「鄧愷威」等秒級匹配官方數據）。
 - 📊 **進階賽伯計量學（Sabermetrics & Analytics）**：完整提供 WAR、wRC+、OPS+、FIP、FIP+、xFIP、wOBA、BABIP、ISO、K/9 等專業指標與 100 基準換算。
+- 🛡️ **逐場比賽 Box 專頁與守備配置圖（Game Detail & Alignment Chart）**：`#/games/:gamePk` 專屬網址可分享，以 SVG 場地圖呈現雙方 1–9 號守備位置、1–9 棒打序與代打／代跑換人鏈，並附完整不截斷的 Box 數據。
 - 🏆 **MLB 官方即時排行榜（Official Leaderboards）**：提供打擊 8 大榜單與投球 8 大榜單，支援全聯盟 (MLB)、美聯 (AL)、國聯 (NL) 即時切換。
 - ⭐ **我的最愛今日戰報與備份同步（Daily Summary & Sync）**：一鍵展開關注球星今日表現精華，支援 JSON 匯出與匯入跨裝置備份。
 - 🎨 **沉浸式 30 隊動態主題（30-Team Dynamic Theming）**：支援深色/淺色模式，並可一鍵切換 30 支大聯盟球隊之官方主題色。
@@ -51,6 +52,11 @@
   * **進行中賽事**：30 秒自動輪詢更新比分、好壞球數、出局數（Outs 圓點）與動態壘包狀態（Bases Diamond）。
   * **已結束賽事 (Final)**：點擊對戰卡片即可原地展開/收合 **MLB 官方每局比分板 (Linescore & Boxscore)** 與 R / H / E 詳細攻守數據。
 * **全站無縫連結**：在對戰卡片中點擊球隊 Logo、先發投手 (SP)、勝/敗/救援投手姓名，均可一鍵跳轉至對應專屬頁面。
+* **逐場 Box 專頁**：展開任一場比賽的 Box 後，點擊底部「**開啟完整 Box 專頁（守備配置 / 打序）**」即可進入 `#/games/:gamePk` 專屬頁面（可直接分享網址），內含三個分頁：
+  * **🛡️ 守備配置圖**：SVG 場地圖標示雙方 1–9 號守備位置與球員（替補以 `*` 標記），進行中比賽會高亮場上投手；窄螢幕另提供 1–9 條列。
+  * **📋 打序與換人**：1–9 棒完整打序，同一棒次以箭頭串接先發與後續代打／代跑／雙重守備變換，另列板凳、牛棚與 MLB 官方換人註記。
+  * **📊 完整 Box 數據**：所有打者與投手的逐場數據（不再截斷），並附官方註記（HR、SB、E 等分組說明）。
+  * ⚠️ **說明**：守備配置圖呈現的是 MLB 官方登錄的 1–9 號守備位置（誰守哪個位置），**非 Statcast 的實際站位座標或布陣（shift）熱區**——後者未開放於官方公開 API。
 * **球隊官網捷徑**：進入任一球隊頁後，標題右側提供兩顆外部連結按鈕——「🛡️ 傷兵異動消息」直達官網球隊異動頁（含 IL 進出與傷勢說明），「🔗 球隊官網」直達 MLB 官方球隊首頁（例：`mlb.com/rays`）。
 
 ### 2. ⭐ 我的最愛與今日戰報彙總 (Favorites & Today's Summary)
@@ -150,6 +156,7 @@ npm run lint         # 執行程式碼品質檢查
 - 🚫 **Ad-Free & Ultralight UI**: Clean, distraction-free interface with bundle size < 500 KB and instant load times.
 - 🇹🇼 **Bilingual Localization**: Built-in Traditional Chinese translation dictionary for Taiwanese baseball fans alongside full English support.
 - 📊 **Advanced Sabermetrics & Analytics**: In-depth stats including WAR, wRC+, OPS+, FIP, FIP+, xFIP, wOBA, BABIP, ISO, K/9, BB/9 with league baseline (100) comparison.
+- 🛡️ **Game Detail Page & Alignment Chart**: a shareable `#/games/:gamePk` page rendering both teams' 1-9 defensive positions on an SVG field chart, the full batting order with substitution chains, and an untruncated box score.
 - 🏆 **MLB Official Stat Leaderboards**: Comprehensive top-ranking leaderboards across 16 core batting and pitching categories with All MLB / AL / NL filters.
 - ⭐ **Favorites Bar, Today's Summary & Backup Sync**: Real-time daily stats summary drawer for favorited stars with JSON export/import for cross-device syncing.
 - 🎨 **30-Team Dynamic Theming**: Dark/Light mode and customizable accent palettes inspired by all 30 MLB franchises.
@@ -163,6 +170,11 @@ npm run lint         # 執行程式碼品質檢查
 * **Live Match State**: 30-second automated polling with count display (Balls, Strikes, Outs), real-time base runners diamond, and venue information.
 * **In-Game Linescores**: Click any completed game card to expand official inning-by-inning linescores and R/H/E boxscore summaries.
 * **Direct Navigation**: Click on any team logo, probable starting pitcher, or decision pitcher to open their respective detail pages.
+* **Standalone Game Page**: Expand any box score and click **"Open full box score (alignment / lineup)"** to reach `#/games/:gamePk`, a shareable page with three tabs:
+  * **🛡️ Defensive Alignment**: an SVG field chart placing both teams' fielders at scorekeeping positions 1-9 (substitutes marked `*`), highlighting the pitcher on the mound during live games, with a 1-9 list for narrow screens.
+  * **📋 Lineup & Substitutions**: the full 1-9 batting order, with each slot chaining the starter to every pinch hitter, pinch runner and double switch, plus bench, bullpen and MLB's own substitution notes.
+  * **📊 Full Box Score**: every batter and pitcher, untruncated, with the official remark groups (HR, SB, E and so on).
+  * ⚠️ **Note**: the alignment chart shows MLB's official 1-9 scorekeeping positions (who plays where), **not Statcast tracked fielder coordinates or shift alignment**, which MLB does not expose through its public API.
 * **Official Shortcuts**: Each team page carries an "Injury & Transactions" button (IL moves with injury reasons) and an "Official Site" button, both opening mlb.com in a new tab (e.g. `mlb.com/rays`).
 
 ### 2. ⭐ Favorites Bar & Today's Summary

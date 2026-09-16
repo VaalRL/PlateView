@@ -136,14 +136,24 @@ export interface Linescore {
       leftOnBase?: number;
     };
   };
+  /**
+   * The nine fielders currently on the field. Unlike `offense`, where
+   * first/second/third are the runners on base, here they are the basemen.
+   */
   defense?: {
     pitcher?: Player;
-    batter?: Player;
-    onDeck?: Player;
-    inHole?: Player;
+    catcher?: Player;
     first?: Player;
     second?: Player;
     third?: Player;
+    shortstop?: Player;
+    left?: Player;
+    center?: Player;
+    right?: Player;
+    batter?: Player;
+    onDeck?: Player;
+    inHole?: Player;
+    team?: Team;
   };
   offense?: {
     batter?: Player;
@@ -231,4 +241,93 @@ export interface StandingsDivision {
 
 export interface StandingsResponse {
   records: StandingsDivision[];
+}
+
+/* --- /game/{gamePk}/boxscore --- */
+
+/** Box score stat blocks mix counting numbers with pre-formatted rate strings */
+export type BoxscoreStatValue = number | string | undefined;
+
+export interface BoxscoreBattingStats {
+  atBats?: number;
+  runs?: number;
+  hits?: number;
+  rbi?: number;
+  homeRuns?: number;
+  baseOnBalls?: number;
+  strikeOuts?: number;
+  avg?: string;
+  ops?: string;
+  /** Substitution marker (a, b, c...) tying the row to `note` */
+  note?: string;
+  [key: string]: BoxscoreStatValue;
+}
+
+export interface BoxscorePitchingStats {
+  inningsPitched?: string;
+  hits?: number;
+  runs?: number;
+  earnedRuns?: number;
+  baseOnBalls?: number;
+  strikeOuts?: number;
+  era?: string;
+  [key: string]: BoxscoreStatValue;
+}
+
+export interface BoxscorePosition {
+  code?: string;
+  name?: string;
+  type?: string;
+  abbreviation?: string;
+}
+
+export interface BoxscorePlayerEntry {
+  person?: { id?: number; fullName?: string; link?: string };
+  jerseyNumber?: string;
+  /** Position held at the end of the game (or right now, while it is live) */
+  position?: BoxscorePosition;
+  /** Every position the player covered in this game */
+  allPositions?: BoxscorePosition[];
+  /** Hundreds digit is the lineup slot, last two digits the substitution order */
+  battingOrder?: string | number;
+  status?: { code?: string; description?: string };
+  stats?: { batting?: BoxscoreBattingStats; pitching?: BoxscorePitchingStats };
+  seasonStats?: { batting?: BoxscoreBattingStats; pitching?: BoxscorePitchingStats };
+  gameStatus?: {
+    isCurrentBatter?: boolean;
+    isCurrentPitcher?: boolean;
+    isOnBench?: boolean;
+    isSubstitute?: boolean;
+  };
+}
+
+/** Grouped official remarks, e.g. title "BATTING" with a list of HR / 2B lines */
+export interface BoxscoreInfoGroup {
+  title?: string;
+  fieldList?: Array<{ label?: string; value?: string }>;
+}
+
+export interface BoxscoreTeamSide {
+  team?: Team;
+  teamStats?: { batting?: BoxscoreBattingStats; pitching?: BoxscorePitchingStats };
+  players?: Record<string, BoxscorePlayerEntry>;
+  /** Person IDs in the order they came to the plate */
+  batters?: number[];
+  /** Person IDs in the order they took the mound; the tail is the current pitcher */
+  pitchers?: number[];
+  bench?: number[];
+  bullpen?: number[];
+  /** The nine starters' person IDs */
+  battingOrder?: number[];
+  info?: BoxscoreInfoGroup[];
+  /** Substitution footnotes: "a-Grounded out for X in the 7th." */
+  note?: Array<{ label?: string; value?: string }>;
+}
+
+export interface BoxscoreResponse {
+  teams?: {
+    away: BoxscoreTeamSide;
+    home: BoxscoreTeamSide;
+  };
+  officials?: Array<{ official?: Player; officialType?: string }>;
 }

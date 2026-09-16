@@ -89,3 +89,18 @@
   - [x] 明確不採用 split 層級的 `isWin`：該欄位是球隊當場勝負，非投手決勝（實測 Skubal 三場球隊獲勝但投手無關勝負）
   - [x] 以真實 API 交叉驗證先發（Skubal）與後援（Díaz，含 SV／HLD／BS 與「BS 後撿勝」同場並存情境）
   - [x] 測試由 98 項增至 106 項，全數通過；TypeScript、ESLint（0 errors）驗證通過
+
+- [x] **Phase 10: 逐場比賽 Box 專頁與守備配置圖像化（2026-09-16）**
+  - [x] 先產出評估 `docs/adr/0002-game-detail-page.md`：確認 boxscore 單一請求即含 `battingOrder`／`position`／`allPositions`／`bench`／`bullpen`／`info`／`note`，並明確劃出做不到的範圍
+  - [x] **明確不做 Statcast 式守備布陣（shift）站位座標**：野手追蹤座標與 `if_fielding_alignment` 僅存在於 Baseball Savant（非開放 CORS），零後端取不到；本頁提供的是官方登錄的 1–9 守備位置配置，UI 文案與頁內說明皆已標示
+  - [x] 新增 `src/utils/lineup.ts` 純函式（SSOT）：`parseBattingOrder()` 解析 MLB 的打序編碼（百位＝棒次、末兩位＝該棒第幾位球員，`00` 為先發）、`buildLineup()` 產生 1–9 棒替補鏈、`buildFieldAlignment()` 推導當前守備配置
+  - [x] 投手改由 `pitchers` 陣列末位取得（DH 制下投手不在打序中，無法從棒次推導）
+  - [x] 新增 `#/games/:gamePk` 逐場專頁（lazy route）：頁首比分／狀態／球場／勝敗投 ＋ 三分頁（守備配置圖 / 打序與換人 / 完整 Box）
+  - [x] 新增 `FieldAlignmentDiagram.tsx`：手刻 SVG 菱形場地（不引入任何圖表函式庫），9 個守位節點含位置代號與球員連結，替補以 `*` 標示，Live 時高亮場上投手；窄螢幕另有 1–9 條列不依賴圖形
+  - [x] 新增 `LineupOrderBoard.tsx`：1–9 棒與同棒次替補鏈（代打／代跑／雙重守備變換），多守位者顯示 `SS-2B` 形式
+  - [x] 表格抽為共用 `BoxscoreTables.tsx`、逐局比分抽為共用 `LinescoreTable.tsx`：折疊面板與專頁不再有兩份重複邏輯（SSOT）
+  - [x] 修正 Box 打者表被 `slice(0, 12)` 截斷：專頁完整顯示所有打者，折疊面板維持 12 筆並附「開啟完整 Box 專頁」連結
+  - [x] 修正球隊層 `info` 結構誤讀：官方註記為 `[{title, fieldList:[{label, value}]}]` 而非扁平 `{label, value}`；換人註記另由 `note[]` 呈現於打序分頁
+  - [x] `src/types/mlb.d.ts` 補上 boxscore 完整型別與 `linescore.defense` 九名野手欄位，新元件不再使用 `any`（ESLint warnings 由 58 降至 53）
+  - [x] 單場 Box 查詢支援 Live 輪詢（`useGameBoxscoreQuery(gamePk, isLive)`），完賽維持 30 分鐘快取；`useGameScheduleQuery` 沿用既有 `scheduleHasLiveGames` 判定
+  - [x] 測試由 106 項增至 133 項，全數通過；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過（主 bundle 372.13 → 376.74 kB，專頁為 17.27 kB lazy chunk）

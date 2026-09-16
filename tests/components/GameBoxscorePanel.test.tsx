@@ -94,4 +94,19 @@ describe('GameBoxscorePanel component', () => {
 
     expect(await screen.findByText('3.47')).toBeInTheDocument();
   });
+
+  it('links through to the standalone game page for the alignment and lineup views', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <MemoryRouter>
+            <GameBoxscorePanel gamePk={822688} />
+          </MemoryRouter>
+        </LanguageProvider>
+      </QueryClientProvider>
+    );
+
+    const link = await screen.findByRole('link', { name: /完整 Box 專頁/ });
+    expect(link).toHaveAttribute('href', '/games/822688');
+  });
 });

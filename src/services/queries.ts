@@ -5,6 +5,7 @@ import {
   getTeamRoster,
   getTeamDetail,
   getTeamSchedule,
+  getGameSchedule,
   getGameBoxscore,
   getPlayerDetail,
   searchPeople,
@@ -73,12 +74,32 @@ export function useTeamScheduleQuery(teamId?: number) {
   });
 }
 
-export function useGameBoxscoreQuery(gamePk?: number) {
+/**
+ * Single game schedule entry, used by the game detail page header.
+ * Shares `scheduleHasLiveGames` with the daily scoreboard so a live game keeps
+ * the same 30s cadence everywhere.
+ */
+export function useGameScheduleQuery(gamePk?: number) {
+  return useQuery({
+    queryKey: ['game-schedule', gamePk],
+    queryFn: () => getGameSchedule(gamePk!),
+    enabled: !!gamePk,
+    refetchInterval: (query) => (scheduleHasLiveGames(query.state.data) ? 30000 : false),
+    staleTime: (query) => (scheduleHasLiveGames(query.state.data) ? 20000 : 1000 * 60 * 30),
+  });
+}
+
+/**
+ * Box score for a game. Completed games are effectively immutable, so they stay
+ * cached for 30 minutes; a live game polls alongside the scoreboard instead.
+ */
+export function useGameBoxscoreQuery(gamePk?: number, isLive: boolean = false) {
   return useQuery({
     queryKey: ['game-boxscore', gamePk],
     queryFn: () => getGameBoxscore(gamePk!),
     enabled: !!gamePk,
-    staleTime: 1000 * 60 * 30, // 30 minutes for completed games
+    refetchInterval: isLive ? 30000 : false,
+    staleTime: isLive ? 20000 : 1000 * 60 * 30, // 30 minutes for completed games
   });
 }
 

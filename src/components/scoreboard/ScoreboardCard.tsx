@@ -4,6 +4,7 @@ import { GameSchedule } from '../../types/mlb';
 import { formatBilingualGameTime } from '../../utils/timezone';
 import { getTeamLogoUrl } from '../../services/mlbApi';
 import { BasesDiamond } from './BasesDiamond';
+import { LinescoreTable } from './LinescoreTable';
 import { CountDisplay } from './CountDisplay';
 import { GameBoxscorePanel } from '../team/GameBoxscorePanel';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -458,71 +459,15 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Inning-by-Inning Linescore Table */}
-              {linescore && linescore.innings && linescore.innings.length > 0 && (
-                <div className="overflow-x-auto pb-1 bg-page/40 p-2.5 rounded-xl border border-border/40">
-                  <table className="w-full text-center text-xs font-mono">
-                    <thead>
-                      <tr className="text-muted border-b border-border/50 text-[10px]">
-                        <th className="text-left font-normal py-1 pr-2">{t('sb.team')}</th>
-                        {linescore.innings.map((inn) => (
-                          <th
-                            key={inn.num}
-                            className={`font-normal px-1.5 py-1 ${
-                              isLive && inn.num === linescore.currentInning
-                                ? 'text-red-400 font-bold'
-                                : ''
-                            }`}
-                          >
-                            {inn.num}
-                          </th>
-                        ))}
-                        <th className="font-bold px-2 py-1 text-main border-l border-border/30">R</th>
-                        <th className="font-normal px-1.5 py-1">H</th>
-                        <th className="font-normal px-1.5 py-1">E</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/30 text-[11px]">
-                      <tr>
-                        <td className="text-left py-1 pr-2 font-semibold text-muted">
-                          {awayTeamMeta?.abbrev || 'AWAY'}
-                        </td>
-                        {linescore.innings.map((inn) => (
-                          <td key={inn.num} className="px-1.5 py-1">
-                            {inn.away.runs ?? '-'}
-                          </td>
-                        ))}
-                        <td className="font-bold px-2 py-1 text-main border-l border-border/30">
-                          {linescore.teams?.away.runs ?? teams.away.score ?? 0}
-                        </td>
-                        <td className="px-1.5 py-1 text-muted">
-                          {linescore.teams?.away.hits ?? '-'}
-                        </td>
-                        <td className="px-1.5 py-1 text-muted">
-                          {linescore.teams?.away.errors ?? '-'}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="text-left py-1 pr-2 font-semibold text-muted">
-                          {homeTeamMeta?.abbrev || 'HOME'}
-                        </td>
-                        {linescore.innings.map((inn) => (
-                          <td key={inn.num} className="px-1.5 py-1">
-                            {inn.home.runs ?? '-'}
-                          </td>
-                        ))}
-                        <td className="font-bold px-2 py-1 text-main border-l border-border/30">
-                          {linescore.teams?.home.runs ?? teams.home.score ?? 0}
-                        </td>
-                        <td className="px-1.5 py-1 text-muted">
-                          {linescore.teams?.home.hits ?? '-'}
-                        </td>
-                        <td className="px-1.5 py-1 text-muted">
-                          {linescore.teams?.home.errors ?? '-'}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+              {linescore && (
+                <LinescoreTable
+                  linescore={linescore}
+                  awayAbbrev={awayTeamMeta?.abbrev || 'AWAY'}
+                  homeAbbrev={homeTeamMeta?.abbrev || 'HOME'}
+                  awayScore={teams.away.score}
+                  homeScore={teams.home.score}
+                  isLive={isLive}
+                />
               )}
 
               {/* Detailed Boxscore Panel (Batters & Pitchers) */}

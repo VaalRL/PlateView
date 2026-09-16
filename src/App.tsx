@@ -17,6 +17,9 @@ const PlayerDetailPage = lazy(() =>
 const LeaderboardsPage = lazy(() =>
   import('./pages/LeaderboardsPage').then((m) => ({ default: m.LeaderboardsPage }))
 );
+const GameDetailPage = lazy(() =>
+  import('./pages/GameDetailPage').then((m) => ({ default: m.GameDetailPage }))
+);
 
 const RouteFallback: React.FC = () => (
   <div className="flex justify-center py-24">
@@ -47,6 +50,7 @@ export const App: React.FC = () => {
                   <Route path="/teams/:teamId" element={<TeamDetailPage />} />
                   <Route path="/players/:personId" element={<PlayerDetailPage />} />
                   <Route path="/leaders" element={<LeaderboardsPage />} />
+                  <Route path="/games/:gamePk" element={<GameDetailPage />} />
                 </Routes>
               </Suspense>
             </main>

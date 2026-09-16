@@ -82,6 +82,20 @@ export async function getTeamSchedule(teamId: number, startDate: string, endDate
 }
 
 /**
+ * Fetch a single game's schedule entry (status, score, decisions, linescore).
+ *
+ * The /schedule response shape is identical to the daily scoreboard, so the
+ * game detail page reuses the existing GameSchedule type and formatters.
+ */
+export async function getGameSchedule(gamePk: number): Promise<ScheduleResponse> {
+  return fetchMlb<ScheduleResponse>('/schedule', {
+    sportId: 1,
+    gamePk,
+    hydrate: 'linescore,team,probablePitcher(note),decisions,venue',
+  });
+}
+
+/**
  * Fetch detailed box score for a specific game
  */
 export async function getGameBoxscore(gamePk: number) {

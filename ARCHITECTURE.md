@@ -30,7 +30,7 @@ flowchart TD
         Browser["使用者瀏覽器 (Desktop / Mobile)"] -->|"載入 SPA"| GHPages
         
         subgraph 前端應用架構 (React + TypeScript)
-            Router["HashRouter 路由引擎<br>(#/, #/teams/:id, #/players/:id)"]
+            Router["HashRouter 路由引擎<br>(#/, #/teams/:id, #/players/:id, #/games/:gamePk)"]
             Theming["動態主題引擎<br>(CSS Variables + 30 隊主題)"]
             Store["LocalStorage 持久化<br>(最愛球隊/球星/外觀設定)"]
             
@@ -38,6 +38,7 @@ flowchart TD
                 Home["首頁 (比分看板 + 分區戰績)"]
                 TeamView["球隊頁 (26 人著名陣容 + 戰績)"]
                 PlayerView["球員頁 (賽季數據 + 近 10 場 Game Logs)"]
+                GameView["逐場比賽頁 (守備配置圖 + 打序換人 + 完整 Box)"]
                 Search["全域繁中雙語搜尋 (Ctrl+K)"]
             end
 
@@ -51,9 +52,9 @@ flowchart TD
         MLB_IMG["🖼️ img.mlbstatic.com<br>(球員大頭照 / 隊徽 SVG)"]
     end
 
-    Router --> Home & TeamView & PlayerView
+    Router --> Home & TeamView & PlayerView & GameView
     Search --> Router
-    Home & TeamView & PlayerView --> Cache
+    Home & TeamView & PlayerView & GameView --> Cache
     Cache --> Client
     Client <-->|"HTTPS GET 直連查詢 (無 API Key)"| MLB_API
     Browser <-->|"直連高清隊徽與球員頭像"| MLB_IMG
@@ -77,6 +78,7 @@ plateview/
 │   │   ├── common/             # 通用元件 (Navbar, SearchModal, ThemeSelector, Footer)
 │   │   ├── scoreboard/         # 比分板元件 (ScoreboardGrid, ScoreboardCard)
 │   │   ├── standings/          # 戰績表元件 (StandingsTable)
+│   │   ├── game/               # 逐場比賽元件 (FieldAlignmentDiagram, LineupOrderBoard, BoxscoreTables)
 │   │   ├── team/               # 球隊詳細資訊元件
 │   │   ├── player/             # 球員詳細數據元件
 │   │   └── favorite/           # 我的最愛頂部追蹤列 (FavoritesBar)
@@ -96,6 +98,7 @@ plateview/
 │   ├── types/                  # TypeScript 型別定義
 │   │   └── mlb.d.ts            # MLB API 回傳實體型別
 │   ├── utils/                  # 純粹工具函式 (Pure Functions)
+│   │   ├── lineup.ts           # 打序 (battingOrder) 解析與守備配置推導
 │   │   ├── timezone.ts         # UTC 轉本地時區與日期格式化
 │   │   └── statsFormatters.ts  # 棒球數據格式化 (AVG, ERA, WHIP, OPS)
 │   ├── App.tsx                 # 根路由與 QueryClientProvider 設定
@@ -131,6 +134,7 @@ graph TD
 | **分區戰績榜** | TanStack Query | 15 分鐘 | 無 | 每日變更頻率低 |
 | **球隊陣容/名單** | TanStack Query | 60 分鐘 | 無 | 賽季名單穩定 |
 | **球員生涯/賽季** | TanStack Query | 10 分鐘 | 無 | 賽後更新 |
+| **單場 Box / 守備配置** | TanStack Query | 30 分鐘 (Live 為 20 秒) | 30 秒 (僅限進行中賽事) | 折疊面板與 `#/games/:gamePk` 共用同一把快取鍵 |
 | **使用者最愛/外觀** | `LocalStorage` | 永久 (本機) | 無 | 跨 Session 保持偏好設定 |
 
 ---
