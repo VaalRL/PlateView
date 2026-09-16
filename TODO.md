@@ -117,3 +117,15 @@
   - [x] 清除孤兒翻譯鍵 `team.view_boxscore`／`team.hide_boxscore`
   - [x] **主 bundle 反而縮小**：Box 表格與 `LinescoreTable` 隨之移出首頁 chunk、併入 lazy 專頁 chunk，376.89 → 366.52 kB（低於本次功能開發前的 372.13 kB）；專頁 chunk 18.19 → 26.78 kB
   - [x] 測試由 141 項增至 145 項，全數通過；TypeScript、ESLint（0 errors，warnings 53 → 50）與 Vite 打包驗證通過
+
+- [x] **Phase 12: 守備配置圖場地繪製與深淺色修正（2026-09-16）**
+  - [x] **修正 SVG 填色退化為黑色的實際 bug**：`fill-team-primary/5`、`/10`、`/20`、`/40` 這類帶透明度的 utility，Tailwind 無法從 `var()` 主題色推導 alpha，會**靜默丟棄整條規則**；`fill` 未設定時 SVG 預設為黑色，導致內外野渲染成兩塊實心黑（已於編譯後 CSS 實測確認該類規則完全未產生）
+  - [x] 新增專屬場地色票 `--field-grass`／`--field-infield`／`--field-dirt`／`--field-line`（`:root` 與 `.dark` 各一組）並註冊進 `tailwind.config.ts`，不依賴 alpha 修飾即可隨深淺色切換
+  - [x] 場地改繪為真實球場結構：外野草皮扇形、外野警戒區、內野紅土弧、壘包間內野草皮、投手丘、三個壘包與本壘板、兩條邊線（viewBox 360 → 400，一併修正捕手名字被裁切）
+  - [x] 節點座標依新場地重排，野手落在符合實際站位的位置（游擊／二壘分居二壘包兩側，三壘／一壘各在邊線側）
+  - [x] Live 高亮環與「守位待定」圈改用 SVG `fillOpacity` 屬性，不再依賴 Tailwind alpha 修飾
+  - [x] 補回歸測試：斷言四個場地圖層皆使用主題 token，且 SVG 內**不得出現任何帶 `/` 的 fill／stroke class**（此類失效是靜默的，必須由測試把關）
+  - [x] 以 Playwright 實際渲染深／淺兩種模式截圖目視確認
+  - [x] 測試由 145 項增至 147 項，全數通過；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過
+
+> ⚠️ **待決議（全專案）**：`/透明度` 修飾套用在 CSS 變數色票上會被 Tailwind 丟棄，全專案尚有約 150 處（`border-border/40`、`bg-page/60`、`bg-team-primary/10` 等）。背景與邊框的退化較不明顯（透明／currentColor），但同樣未生效。根治方式是將 CSS 變數改存 RGB 通道值並在 `tailwind.config.ts` 以 `rgb(var(--x) / <alpha-value>)` 引用，需一併調整 30 隊主題色定義。

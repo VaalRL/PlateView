@@ -17,17 +17,30 @@ interface FieldAlignmentDiagramProps {
   highlightPersonId?: number;
 }
 
-/** Node centres inside the 400x360 viewBox, laid out like a TV centre-field shot */
+/**
+ * Ballpark geometry inside the 400x400 viewBox, drawn as a TV centre-field
+ * shot. Home plate sits at (200, 318); the outfield arc is 250 units out and
+ * the skinned infield 140, so the bases land on dirt like a real diamond.
+ */
+const HOME = { x: 200, y: 318 };
+const BASES = [
+  { x: 266, y: 250 }, // 1B
+  { x: 200, y: 184 }, // 2B
+  { x: 134, y: 250 }, // 3B
+];
+const MOUND = { x: 200, y: 250 };
+
+/** Node centres, offset from their base so the marker and the name stay clear */
 const NODE_COORDS: Record<FieldPosition, { x: number; y: number }> = {
-  P: { x: 200, y: 214 },
-  C: { x: 200, y: 322 },
-  '1B': { x: 278, y: 222 },
-  '2B': { x: 244, y: 168 },
-  SS: { x: 156, y: 168 },
-  '3B': { x: 122, y: 222 },
-  LF: { x: 74, y: 104 },
-  CF: { x: 200, y: 62 },
-  RF: { x: 326, y: 104 },
+  P: { x: 200, y: 250 },
+  C: { x: 200, y: 344 },
+  '1B': { x: 288, y: 236 },
+  '2B': { x: 246, y: 192 },
+  SS: { x: 154, y: 192 },
+  '3B': { x: 112, y: 236 },
+  LF: { x: 76, y: 128 },
+  CF: { x: 200, y: 80 },
+  RF: { x: 324, y: 128 },
 };
 
 /** Short surname-style label; SVG has no ellipsis so the text is trimmed here */
@@ -48,7 +61,13 @@ const PositionNode: React.FC<{
   const node = (
     <g>
       {isHighlighted && (
-        <circle cx={x} cy={y} r={20} className="fill-team-primary/20 animate-pulse" />
+        <circle
+          cx={x}
+          cy={y}
+          r={21}
+          className="fill-team-primary animate-pulse"
+          fillOpacity={0.25}
+        />
       )}
       <circle
         cx={x}
@@ -57,10 +76,11 @@ const PositionNode: React.FC<{
         className={
           fielder
             ? fielder.isPending
-              ? 'fill-team-primary/40 stroke-team-primary'
+              ? 'fill-team-primary stroke-team-primary'
               : 'fill-team-primary stroke-card'
             : 'fill-transparent stroke-border'
         }
+        fillOpacity={fielder?.isPending ? 0.45 : undefined}
         strokeWidth={2}
         strokeDasharray={fielder?.isPending ? '3 2' : undefined}
       />
@@ -128,24 +148,72 @@ export const FieldAlignmentDiagram: React.FC<FieldAlignmentDiagramProps> = ({
       </div>
 
       <svg
-        viewBox="0 0 400 360"
+        viewBox="0 0 400 400"
         role="img"
         aria-label={`${teamName} ${t('game.alignment_title')}`}
         className="w-full h-auto"
       >
-        {/* Outfield grass, infield dirt and foul lines */}
+        {/* Outfield grass, bounded by the foul lines and the outfield arc */}
         <path
-          d="M 200 320 L 20 140 A 255 255 0 0 1 380 140 Z"
-          className="fill-team-primary/5 stroke-border"
+          d={`M ${HOME.x} ${HOME.y} L 23 141 A 250 250 0 0 1 377 141 Z`}
+          className="fill-field-grass stroke-border"
           strokeWidth={1.5}
         />
+        {/* Warning track hugging the arc */}
         <path
-          d="M 200 320 L 128 248 L 200 176 L 272 248 Z"
-          className="fill-team-primary/10 stroke-border"
+          d="M 23 141 A 250 250 0 0 1 377 141"
+          className="stroke-field-dirt"
+          fill="none"
+          strokeWidth={9}
+        />
+        {/* Skinned infield */}
+        <path
+          d={`M ${HOME.x} ${HOME.y} L 101 219 A 140 140 0 0 1 299 219 Z`}
+          className="fill-field-dirt"
+        />
+        {/* Infield grass inside the base paths */}
+        <path
+          d="M 200 304 L 252 250 L 200 196 L 148 250 Z"
+          className="fill-field-infield"
+        />
+        {/* Foul lines */}
+        <line
+          x1={HOME.x}
+          y1={HOME.y}
+          x2={23}
+          y2={141}
+          className="stroke-field-line"
           strokeWidth={1.5}
         />
-        <line x1={200} y1={320} x2={44} y2={164} className="stroke-border" strokeWidth={1} />
-        <line x1={200} y1={320} x2={356} y2={164} className="stroke-border" strokeWidth={1} />
+        <line
+          x1={HOME.x}
+          y1={HOME.y}
+          x2={377}
+          y2={141}
+          className="stroke-field-line"
+          strokeWidth={1.5}
+        />
+        {/* Pitcher's mound, bases and home plate */}
+        <circle cx={MOUND.x} cy={MOUND.y} r={11} className="fill-field-dirt" />
+        {BASES.map((base) => (
+          <rect
+            key={`${base.x}-${base.y}`}
+            x={base.x - 5}
+            y={base.y - 5}
+            width={10}
+            height={10}
+            transform={`rotate(45 ${base.x} ${base.y})`}
+            className="fill-field-line stroke-border"
+            strokeWidth={0.75}
+          />
+        ))}
+        <path
+          d={`M ${HOME.x - 6} ${HOME.y - 6} L ${HOME.x + 6} ${HOME.y - 6} L ${HOME.x + 6} ${
+            HOME.y + 2
+          } L ${HOME.x} ${HOME.y + 8} L ${HOME.x - 6} ${HOME.y + 2} Z`}
+          className="fill-field-line stroke-border"
+          strokeWidth={0.75}
+        />
 
         {FIELD_POSITIONS.map((pos) => (
           <PositionNode

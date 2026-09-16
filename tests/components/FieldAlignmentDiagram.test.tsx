@@ -151,4 +151,30 @@ describe('FieldAlignmentDiagram component', () => {
     expect(screen.getAllByText('Pinch Runner').length).toBeGreaterThan(0);
     expect(screen.getByText('(守位待定)')).toBeInTheDocument();
   });
+
+  it('paints the field from theme tokens that follow dark and light mode', () => {
+    const { container } = renderDiagram();
+    const svg = container.querySelector('svg')!;
+
+    // Each surface reads a CSS variable that :root and .dark both define
+    expect(svg.querySelector('.fill-field-grass')).toBeInTheDocument();
+    expect(svg.querySelector('.fill-field-dirt')).toBeInTheDocument();
+    expect(svg.querySelector('.fill-field-infield')).toBeInTheDocument();
+    expect(svg.querySelector('.fill-field-line')).toBeInTheDocument();
+  });
+
+  it('never styles the SVG with an alpha-modified theme colour', () => {
+    // Tailwind cannot derive alpha from a raw var() colour and silently drops
+    // the utility; an unset `fill` then falls back to SVG's default black.
+    const { container } = renderDiagram();
+    const svg = container.querySelector('svg')!;
+
+    svg.querySelectorAll('*').forEach((el) => {
+      const classes = el.getAttribute('class') || '';
+      classes
+        .split(/\s+/)
+        .filter((c) => c.startsWith('fill-') || c.startsWith('stroke-'))
+        .forEach((c) => expect(c).not.toContain('/'));
+    });
+  });
 });

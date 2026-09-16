@@ -11,6 +11,15 @@
   --text-main: #0f172a;
   --text-muted: #64748b;
 
+  /* Ballpark surfaces for the defensive alignment chart.
+     Dedicated tokens rather than an alpha-modified theme colour: Tailwind
+     cannot derive alpha from a raw `var()` colour, and a dropped `fill`
+     utility falls back to SVG's default black. */
+  --field-grass: #e4efdf;
+  --field-infield: #d7e8d0;
+  --field-dirt: #ecdcc6;
+  --field-line: #ffffff;
+
   /* Default Team: MLB Classic Blue */
   --team-primary: #005A9C;
   --team-secondary: #EF3E42;
@@ -24,6 +33,11 @@
   --border-color: #1e293b;
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
+
+  --field-grass: #16241a;
+  --field-infield: #1b2c1f;
+  --field-dirt: #2b2118;
+  --field-line: #3f5163;
 }
 
 /* 30 Team Theme Injections */
