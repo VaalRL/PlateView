@@ -163,18 +163,4 @@ describe('FieldAlignmentDiagram component', () => {
     expect(svg.querySelector('.fill-field-line')).toBeInTheDocument();
   });
 
-  it('never styles the SVG with an alpha-modified theme colour', () => {
-    // Tailwind cannot derive alpha from a raw var() colour and silently drops
-    // the utility; an unset `fill` then falls back to SVG's default black.
-    const { container } = renderDiagram();
-    const svg = container.querySelector('svg')!;
-
-    svg.querySelectorAll('*').forEach((el) => {
-      const classes = el.getAttribute('class') || '';
-      classes
-        .split(/\s+/)
-        .filter((c) => c.startsWith('fill-') || c.startsWith('stroke-'))
-        .forEach((c) => expect(c).not.toContain('/'));
-    });
-  });
 });

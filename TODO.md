@@ -128,4 +128,13 @@
   - [x] 以 Playwright 實際渲染深／淺兩種模式截圖目視確認
   - [x] 測試由 145 項增至 147 項，全數通過；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過
 
-> ⚠️ **待決議（全專案）**：`/透明度` 修飾套用在 CSS 變數色票上會被 Tailwind 丟棄，全專案尚有約 150 處（`border-border/40`、`bg-page/60`、`bg-team-primary/10` 等）。背景與邊框的退化較不明顯（透明／currentColor），但同樣未生效。根治方式是將 CSS 變數改存 RGB 通道值並在 `tailwind.config.ts` 以 `rgb(var(--x) / <alpha-value>)` 引用，需一併調整 30 隊主題色定義。
+- [x] **Phase 13: 主題色票改存 RGB 通道，修復全站透明度修飾（2026-09-16）**
+  - [x] 根治 Phase 12 發現的問題：`index.css` 全部 82 個色票由 hex 改存空格分隔的 RGB 通道值（含 30 隊主題色與深／淺色介面色）
+  - [x] `tailwind.config.ts` 12 個色票改以 `rgb(var(--token) / <alpha-value>)` 引用，透明度修飾才會真正產生規則
+  - [x] 兩處非 Tailwind 的直接引用（捲軸樣式）補上 `rgb()` 包裝
+  - [x] **實測成效**：編譯後 CSS 中帶透明度的主題色規則由 **0 條增至 24 條**（對應原始碼約 150 處使用）
+  - [x] ⚠️ **本次為全站視覺變更**：`border-border/40` 等原本整條被丟棄、邊框退回 `currentColor`（跟著文字色）；修正後才是預期的淡邊框。`bg-page/60`、`bg-card-hover/50` 等原本完全透明，修正後才有半透明底色
+  - [x] 新增 `tests/theme/tokens.test.ts` 鎖定不變量：所有色票必須是 `r g b` 格式（禁止 hex）、通道值介於 0–255、Tailwind 端必須以 `<alpha-value>` 引用且不得出現裸 `var()`、每個介面色票都要有深色版本、30 隊主題色皆需定義主/次色
+  - [x] 移除守備圖中「禁止 alpha class」的測試：該限制的成因已根除，留著反而會誤導後人；不變量改由上述色票測試把關
+  - [x] 以 Playwright 渲染比分卡（大量使用原本失效的邊框／背景透明度）深淺兩色目視確認
+  - [x] 測試由 147 項增至 151 項，全數通過；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過

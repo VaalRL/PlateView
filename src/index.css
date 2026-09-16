@@ -2,75 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Theme tokens are stored as space-separated RGB channels, not hex, so that
+ * Tailwind can compose them with an alpha modifier: the config reads them as
+ * `rgb(var(--token) / <alpha-value>)`, which makes `bg-card/60`,
+ * `border-border/40` and `fill-team-primary/20` real rules. With a raw hex
+ * `var()` colour Tailwind cannot derive the alpha and silently drops the whole
+ * utility — harmless-looking for a background, but an unset SVG `fill` falls
+ * back to black.
+ *
+ * Anything reading a token outside Tailwind must wrap it: `rgb(var(--token))`.
+ */
+
 :root {
   /* Default Light Mode */
-  --bg-page: #f8fafc;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f1f5f9;
-  --border-color: #e2e8f0;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
+  --bg-page: 248 250 252;
+  --bg-card: 255 255 255;
+  --bg-card-hover: 241 245 249;
+  --border-color: 226 232 240;
+  --text-main: 15 23 42;
+  --text-muted: 100 116 139;
 
-  /* Ballpark surfaces for the defensive alignment chart.
-     Dedicated tokens rather than an alpha-modified theme colour: Tailwind
-     cannot derive alpha from a raw `var()` colour, and a dropped `fill`
-     utility falls back to SVG's default black. */
-  --field-grass: #e4efdf;
-  --field-infield: #d7e8d0;
-  --field-dirt: #ecdcc6;
-  --field-line: #ffffff;
+  /* Ballpark surfaces for the defensive alignment chart */
+  --field-grass: 228 239 223;
+  --field-infield: 215 232 208;
+  --field-dirt: 236 220 198;
+  --field-line: 255 255 255;
 
   /* Default Team: MLB Classic Blue */
-  --team-primary: #005A9C;
-  --team-secondary: #EF3E42;
+  --team-primary: 0 90 156;
+  --team-secondary: 239 62 66;
 }
 
 .dark, [data-mode="dark"] {
   /* Default Dark Mode */
-  --bg-page: #090d16;
-  --bg-card: #131b2e;
-  --bg-card-hover: #1c2742;
-  --border-color: #1e293b;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
+  --bg-page: 9 13 22;
+  --bg-card: 19 27 46;
+  --bg-card-hover: 28 39 66;
+  --border-color: 30 41 59;
+  --text-main: 248 250 252;
+  --text-muted: 148 163 184;
 
-  --field-grass: #16241a;
-  --field-infield: #1b2c1f;
-  --field-dirt: #2b2118;
-  --field-line: #3f5163;
+  --field-grass: 22 36 26;
+  --field-infield: 27 44 31;
+  --field-dirt: 43 33 24;
+  --field-line: 63 81 99;
 }
 
 /* 30 Team Theme Injections */
-[data-team="lad"] { --team-primary: #005A9C; --team-secondary: #EF3E42; } /* LA Dodgers */
-[data-team="nyy"] { --team-primary: #003087; --team-secondary: #E4002C; } /* NY Yankees */
-[data-team="sd"]  { --team-primary: #2F241D; --team-secondary: #FFC425; } /* SD Padres */
-[data-team="pit"] { --team-primary: #FDB827; --team-secondary: #000000; } /* PIT Pirates */
-[data-team="bos"] { --team-primary: #BD3039; --team-secondary: #0C2340; } /* BOS Red Sox */
-[data-team="sf"]  { --team-primary: #FD5A1E; --team-secondary: #27251F; } /* SF Giants */
-[data-team="bal"] { --team-primary: #DF4601; --team-secondary: #000000; } /* BAL Orioles */
-[data-team="tb"]  { --team-primary: #092C5C; --team-secondary: #8FBCE6; } /* TB Rays */
-[data-team="tor"] { --team-primary: #134A8E; --team-secondary: #E8291C; } /* TOR Blue Jays */
-[data-team="cws"] { --team-primary: #27251F; --team-secondary: #C4CED4; } /* CWS White Sox */
-[data-team="cle"] { --team-primary: #E31937; --team-secondary: #002B5C; } /* CLE Guardians */
-[data-team="det"] { --team-primary: #0C2340; --team-secondary: #FA4616; } /* DET Tigers */
-[data-team="kc"]  { --team-primary: #004687; --team-secondary: #BD9B60; } /* KC Royals */
-[data-team="min"] { --team-primary: #002B5C; --team-secondary: #D31145; } /* MIN Twins */
-[data-team="hou"] { --team-primary: #002D62; --team-secondary: #EB6E1F; } /* HOU Astros */
-[data-team="laa"] { --team-primary: #BA0021; --team-secondary: #003263; } /* LAA Angels */
-[data-team="oak"] { --team-primary: #003831; --team-secondary: #EFB21E; } /* OAK Athletics */
-[data-team="sea"] { --team-primary: #0C2340; --team-secondary: #005C5C; } /* SEA Mariners */
-[data-team="tex"] { --team-primary: #003278; --team-secondary: #C0111F; } /* TEX Rangers */
-[data-team="atl"] { --team-primary: #CE1141; --team-secondary: #13274F; } /* ATL Braves */
-[data-team="mia"] { --team-primary: #00A3E0; --team-secondary: #EF3340; } /* MIA Marlins */
-[data-team="nym"] { --team-primary: #002D72; --team-secondary: #FF5910; } /* NY Mets */
-[data-team="phi"] { --team-primary: #E81828; --team-secondary: #002D72; } /* PHI Phillies */
-[data-team="wsh"] { --team-primary: #AB0003; --team-secondary: #142238; } /* WSH Nationals */
-[data-team="chc"] { --team-primary: #0E3386; --team-secondary: #CC3433; } /* CHC Cubs */
-[data-team="cin"] { --team-primary: #C6011F; --team-secondary: #000000; } /* CIN Reds */
-[data-team="mil"] { --team-primary: #12284C; --team-secondary: #FFC52F; } /* MIL Brewers */
-[data-team="stl"] { --team-primary: #C41E3A; --team-secondary: #0C2340; } /* STL Cardinals */
-[data-team="ari"] { --team-primary: #A71930; --team-secondary: #E3D4AD; } /* ARI Diamondbacks */
-[data-team="col"] { --team-primary: #33006F; --team-secondary: #C4CED4; } /* COL Rockies */
+[data-team="lad"] { --team-primary: 0 90 156; --team-secondary: 239 62 66; } /* LA Dodgers */
+[data-team="nyy"] { --team-primary: 0 48 135; --team-secondary: 228 0 44; } /* NY Yankees */
+[data-team="sd"]  { --team-primary: 47 36 29; --team-secondary: 255 196 37; } /* SD Padres */
+[data-team="pit"] { --team-primary: 253 184 39; --team-secondary: 0 0 0; } /* PIT Pirates */
+[data-team="bos"] { --team-primary: 189 48 57; --team-secondary: 12 35 64; } /* BOS Red Sox */
+[data-team="sf"]  { --team-primary: 253 90 30; --team-secondary: 39 37 31; } /* SF Giants */
+[data-team="bal"] { --team-primary: 223 70 1; --team-secondary: 0 0 0; } /* BAL Orioles */
+[data-team="tb"]  { --team-primary: 9 44 92; --team-secondary: 143 188 230; } /* TB Rays */
+[data-team="tor"] { --team-primary: 19 74 142; --team-secondary: 232 41 28; } /* TOR Blue Jays */
+[data-team="cws"] { --team-primary: 39 37 31; --team-secondary: 196 206 212; } /* CWS White Sox */
+[data-team="cle"] { --team-primary: 227 25 55; --team-secondary: 0 43 92; } /* CLE Guardians */
+[data-team="det"] { --team-primary: 12 35 64; --team-secondary: 250 70 22; } /* DET Tigers */
+[data-team="kc"]  { --team-primary: 0 70 135; --team-secondary: 189 155 96; } /* KC Royals */
+[data-team="min"] { --team-primary: 0 43 92; --team-secondary: 211 17 69; } /* MIN Twins */
+[data-team="hou"] { --team-primary: 0 45 98; --team-secondary: 235 110 31; } /* HOU Astros */
+[data-team="laa"] { --team-primary: 186 0 33; --team-secondary: 0 50 99; } /* LAA Angels */
+[data-team="oak"] { --team-primary: 0 56 49; --team-secondary: 239 178 30; } /* OAK Athletics */
+[data-team="sea"] { --team-primary: 12 35 64; --team-secondary: 0 92 92; } /* SEA Mariners */
+[data-team="tex"] { --team-primary: 0 50 120; --team-secondary: 192 17 31; } /* TEX Rangers */
+[data-team="atl"] { --team-primary: 206 17 65; --team-secondary: 19 39 79; } /* ATL Braves */
+[data-team="mia"] { --team-primary: 0 163 224; --team-secondary: 239 51 64; } /* MIA Marlins */
+[data-team="nym"] { --team-primary: 0 45 114; --team-secondary: 255 89 16; } /* NY Mets */
+[data-team="phi"] { --team-primary: 232 24 40; --team-secondary: 0 45 114; } /* PHI Phillies */
+[data-team="wsh"] { --team-primary: 171 0 3; --team-secondary: 20 34 56; } /* WSH Nationals */
+[data-team="chc"] { --team-primary: 14 51 134; --team-secondary: 204 52 51; } /* CHC Cubs */
+[data-team="cin"] { --team-primary: 198 1 31; --team-secondary: 0 0 0; } /* CIN Reds */
+[data-team="mil"] { --team-primary: 18 40 76; --team-secondary: 255 197 47; } /* MIL Brewers */
+[data-team="stl"] { --team-primary: 196 30 58; --team-secondary: 12 35 64; } /* STL Cardinals */
+[data-team="ari"] { --team-primary: 167 25 48; --team-secondary: 227 212 173; } /* ARI Diamondbacks */
+[data-team="col"] { --team-primary: 51 0 111; --team-secondary: 196 206 212; } /* COL Rockies */
 
 /* Mobile & Touch Optimizations */
 html {
@@ -91,9 +100,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: rgb(var(--border-color));
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: rgb(var(--text-muted));
 }

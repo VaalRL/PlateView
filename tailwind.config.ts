@@ -8,19 +8,22 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      // Tokens are RGB channels in index.css, so `<alpha-value>` lets every
+      // opacity modifier (bg-card/60, border-border/40, fill-team-primary/20)
+      // resolve instead of being silently dropped.
       colors: {
-        page: 'var(--bg-page)',
-        card: 'var(--bg-card)',
-        'card-hover': 'var(--bg-card-hover)',
-        border: 'var(--border-color)',
-        main: 'var(--text-main)',
-        muted: 'var(--text-muted)',
-        'team-primary': 'var(--team-primary)',
-        'team-secondary': 'var(--team-secondary)',
-        'field-grass': 'var(--field-grass)',
-        'field-infield': 'var(--field-infield)',
-        'field-dirt': 'var(--field-dirt)',
-        'field-line': 'var(--field-line)',
+        page: 'rgb(var(--bg-page) / <alpha-value>)',
+        card: 'rgb(var(--bg-card) / <alpha-value>)',
+        'card-hover': 'rgb(var(--bg-card-hover) / <alpha-value>)',
+        border: 'rgb(var(--border-color) / <alpha-value>)',
+        main: 'rgb(var(--text-main) / <alpha-value>)',
+        muted: 'rgb(var(--text-muted) / <alpha-value>)',
+        'team-primary': 'rgb(var(--team-primary) / <alpha-value>)',
+        'team-secondary': 'rgb(var(--team-secondary) / <alpha-value>)',
+        'field-grass': 'rgb(var(--field-grass) / <alpha-value>)',
+        'field-infield': 'rgb(var(--field-infield) / <alpha-value>)',
+        'field-dirt': 'rgb(var(--field-dirt) / <alpha-value>)',
+        'field-line': 'rgb(var(--field-line) / <alpha-value>)',
       },
     },
   },
