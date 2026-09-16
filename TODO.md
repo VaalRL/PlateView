@@ -105,4 +105,6 @@
   - [x] 單場 Box 查詢支援 Live 輪詢（`useGameBoxscoreQuery(gamePk, isLive)`），完賽維持 30 分鐘快取；`useGameScheduleQuery` 沿用既有 `scheduleHasLiveGames` 判定
   - [x] 同一守位出現兩位球員的處理（換二壘手情境）：守備圖取每棒次「當前在場者」，被換下者不留在場上圖但以「替下 ○○○」註明，完整鏈保留在打序分頁
   - [x] 修正進行中比賽的守位天窗：代打／代跑剛上場而 MLB 尚未指派守位（`position` 仍為 `PH`／`PR`）時，原本該守位會整個空缺；改為第二輪回填繼承前一位守位並標記「守位待定」（虛線圈），且永不覆蓋已確認的守備者
-  - [x] 測試由 106 項增至 140 項，全數通過；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過（主 bundle 372.13 → 376.89 kB，專頁為 18.14 kB lazy chunk）
+  - [x] 修正雙重守備變換的錯誤標示：「替下 ○○○」原取同棒次前一位，但顯示於守備位置旁；雙重守備變換時棒次與守位分開易主，會標出從未守過該位置的人。改為僅在前一位確實守過同一位置時才顯示
+  - [x] 釐清範圍：以上皆為「單張 boxscore 快照內的消歧義」，非時間軸還原；逐局守備變動時點仍需 feed/live（v2）
+  - [x] 測試由 106 項增至 141 項，全數通過；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過（主 bundle 372.13 → 376.89 kB，專頁為 18.14 kB lazy chunk）

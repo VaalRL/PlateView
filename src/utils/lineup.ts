@@ -65,7 +65,12 @@ export interface Fielder {
    * PH / PR.
    */
   isPending?: boolean;
-  /** The player he came in for, when he entered the slot as a substitute */
+  /**
+   * The player he took this position over from. Only set when the slot's
+   * previous occupant actually held this same position: in a double switch the
+   * batting slot and the fielding position change hands separately, and naming
+   * a predecessor who never played here would be a lie.
+   */
   replacedName?: string;
   replacedPersonId?: number;
 }
@@ -155,7 +160,9 @@ export function buildFieldAlignment(teamBox: BoxscoreTeam): Partial<Record<Field
     isPending: boolean
   ): Fielder => {
     const current = entries[entries.length - 1];
-    const replaced = entries.length > 1 ? entries[entries.length - 2] : undefined;
+    const previous = entries.length > 1 ? entries[entries.length - 2] : undefined;
+    // Only a predecessor who held this very position was replaced *here*
+    const replaced = previous?.position === position ? previous : undefined;
 
     return {
       personId: current.personId,

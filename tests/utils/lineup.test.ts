@@ -294,4 +294,40 @@ describe('buildFieldAlignment when a second baseman is replaced mid-game', () =>
     expect(alignment['2B']?.fullName).toBe('Confirmed Secondbase');
     expect(alignment['2B']?.isPending).toBeUndefined();
   });
+
+  it('does not credit a double switch predecessor with a position he never played', () => {
+    // Semien (slot 4) played 2B; his replacement Duran takes the slot but plays
+    // LF, while the starting left fielder shifts over to second base.
+    const doubleSwitch = {
+      pitchers: [90],
+      players: {
+        ID40: {
+          person: { id: 40, fullName: 'Semien' },
+          position: { abbreviation: '2B' },
+          allPositions: [{ abbreviation: '2B' }],
+          battingOrder: '400',
+        },
+        ID41: {
+          person: { id: 41, fullName: 'Duran' },
+          position: { abbreviation: 'LF' },
+          allPositions: [{ abbreviation: 'LF' }],
+          battingOrder: '401',
+        },
+        ID70: {
+          person: { id: 70, fullName: 'Garcia' },
+          position: { abbreviation: '2B' },
+          allPositions: [{ abbreviation: 'LF' }, { abbreviation: '2B' }],
+          battingOrder: '700',
+        },
+        ID90: { person: { id: 90, fullName: 'Only Pitcher' }, position: { abbreviation: 'P' } },
+      },
+    };
+
+    const alignment = buildFieldAlignment(doubleSwitch);
+    // Positions themselves are right
+    expect(alignment.LF?.fullName).toBe('Duran');
+    expect(alignment['2B']?.fullName).toBe('Garcia');
+    // ...but Semien never played left, so Duran is not shown as replacing him
+    expect(alignment.LF?.replacedName).toBeUndefined();
+  });
 });
