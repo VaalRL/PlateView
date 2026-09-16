@@ -164,4 +164,75 @@ describe('FieldAlignmentDiagram component', () => {
     expect(svg.querySelector('.fill-field-line')).toBeInTheDocument();
   });
 
+  it('draws a generic arc when the venue publishes no dimensions', () => {
+    const { container } = renderDiagram();
+    const grass = container.querySelector('.fill-field-grass')!;
+
+    // The fallback is the fixed 250-unit arc from before venues were wired in
+    expect(grass.getAttribute('d')).toContain('A 250 250');
+    expect(screen.queryByText(/依官方公布之全壘打牆距離/)).not.toBeInTheDocument();
+  });
+
+  it('shapes the outfield wall from the published fence distances', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <LanguageProvider>
+          <FieldAlignmentDiagram
+            teamBox={teamBox}
+            teamName="Pittsburgh Pirates"
+            venueName="PNC Park"
+            fieldInfo={{
+              leftLine: 325,
+              left: 389,
+              leftCenter: 410,
+              center: 399,
+              rightCenter: 375,
+              rightLine: 320,
+            }}
+          />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    const grass = container.querySelector('.fill-field-grass')!;
+    // A measured wall is a spline, never the generic arc
+    expect(grass.getAttribute('d')).not.toContain('A 250 250');
+    expect(grass.getAttribute('d')).toContain('Q ');
+
+    // The chart says where the numbers came from
+    expect(screen.getByText('PNC Park')).toBeInTheDocument();
+    expect(screen.getByText('325 · 389 · 410 · 399 · 375 · 320')).toBeInTheDocument();
+    expect(screen.getByText(/非球場平面圖/)).toBeInTheDocument();
+  });
+
+  it('pulls an outfielder in when his corner of the wall is short', () => {
+    const shortRight = {
+      leftLine: 310,
+      leftCenter: 379,
+      center: 420,
+      rightCenter: 380,
+      rightLine: 302,
+    };
+
+    const { container } = render(
+      <MemoryRouter>
+        <LanguageProvider>
+          <FieldAlignmentDiagram teamBox={teamBox} teamName="Boston Red Sox" fieldInfo={shortRight} />
+        </LanguageProvider>
+      </MemoryRouter>
+    );
+
+    // Centre field is the deepest wall here, so the centre fielder plays deepest
+    const svg = container.querySelector('svg')!;
+    const labels = [...svg.querySelectorAll('text')].filter((el) =>
+      ['LF', 'CF', 'RF'].includes(el.textContent || '')
+    );
+    const byPosition = Object.fromEntries(
+      labels.map((el) => [el.textContent, Number(el.getAttribute('y'))])
+    );
+
+    // Smaller y is deeper into the outfield
+    expect(byPosition.CF).toBeLessThan(byPosition.LF);
+    expect(byPosition.CF).toBeLessThan(byPosition.RF);
+  });
 });

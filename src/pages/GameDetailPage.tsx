@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useGameScheduleQuery, useGameBoxscoreQuery } from '../services/queries';
+import { useGameScheduleQuery, useGameBoxscoreQuery, useVenueQuery } from '../services/queries';
 import { getTeamLogoUrl } from '../services/mlbApi';
 import { useLanguage } from '../hooks/useLanguage';
 import { formatBilingualGameTime } from '../utils/timezone';
@@ -142,6 +142,10 @@ export const GameDetailPage: React.FC = () => {
     isLoading: boolean;
     isError: boolean;
   };
+
+  // Ballpark dimensions shape the outfield wall on the alignment chart
+  const { data: venueData } = useVenueQuery(game?.venue?.id);
+  const fieldInfo = venueData?.venues?.[0]?.fieldInfo;
 
   if (!pkNum) {
     return <div className="max-w-7xl mx-auto px-4 py-16 text-center text-sm text-muted">{t('game.not_found')}</div>;
@@ -364,6 +368,8 @@ export const GameDetailPage: React.FC = () => {
                   teamBox={side === 'away' ? awayBox : homeBox}
                   teamName={side === 'away' ? awayName : homeName}
                   highlightPersonId={livePitcherId}
+                  fieldInfo={fieldInfo}
+                  venueName={game.venue?.name}
                 />
                 <div className="space-y-5">
                   <LineupOrderBoard

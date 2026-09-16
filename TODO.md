@@ -148,3 +148,17 @@
   - [x] 清除孤兒翻譯鍵 `game.tab_alignment`，新增 `game.batting_slot`
   - [x] 以 Playwright 於桌機寬度渲染深／淺兩色確認並排版面與小圈對比度
   - [x] 測試 151 項全數通過（改寫兩項描述舊分頁結構的測試）；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過
+
+- [x] **Phase 15: 守備配置圖依球場繪製外野輪廓（2026-09-16）**
+  - [x] 先產出評估 `docs/adr/0003-venue-specific-ballpark-shape.md`：確認 `/venues/{id}?hydrate=fieldInfo` 提供最多 7 個角度的全壘打牆距離、`turfType` 與 `roofType`，並劃清「這不是球場平面圖」的邊界
+  - [x] **明確不做**：牆高（`fieldInfo` 根本沒有此欄位，綠色怪物畫出來只會是一條短邊線）、特殊地形（三角區、常春藤、Crawford Boxes、PNC 凹角）、看台與場館外觀
+  - [x] 新增 `src/utils/ballpark.ts` 純函式（17 項單元測試）：角度指派（邊線 ±45°、7 點以 15° 等距）、比例正規化（最深點對應 250 SVG 單位）、任意角度的牆距離線性內插、極座標轉 SVG、二次樣條路徑產生、距離標籤
+  - [x] 防呆：距離值需落在 250–550 英尺且必須同時具備兩條邊線，否則回傳 null 讓呼叫端退回原本的通用弧線（春訓場、海外賽場地可能缺 `fieldInfo`）
+  - [x] 外野草皮、警戒區與兩條邊線改為依實際牆形繪製；**外野手站位改為牆距離的 82%**（外野手站在牆前面，短邊線球場的外野手會站得比較淺）
+  - [x] 修正外野手被擠到內野的問題：內野為了可讀性畫得比實際比例大，芬威 302 英尺的右外野角會把外野手推到游擊手旁邊 —— 加上最小半徑 172 單位的夾制（實際渲染後才發現，已於截圖確認）
+  - [x] 新增 `getVenue()` 與 `useVenueQuery()`（24 小時 staleTime，全聯盟僅 30 座球場）；`src/types/mlb.d.ts` 補 `VenueFieldInfo` / `VenueDetail` / `VenuesResponse` 型別
+  - [x] 圖上標示球場名、各角度距離與「依官方公布之全壘打牆距離繪製，非球場平面圖」的說明文字（雙語）
+  - [x] 以 Playwright 並排渲染 PNC Park、Fenway Park 與無資料 fallback 三種情境確認形狀確實可辨識
+  - [x] 測試由 151 項增至 171 項，全數通過；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過
+
+> 📌 **後續可選優化**：球場尺寸是靜態資料，可比照 `teams.json` 烤成 `src/data/venues.json` 達成執行期零請求。本次未做，因為開發環境無法連線驗證這 30 筆資料，而產出一份無法驗證的靜態檔比多打一次請求糟糕。

@@ -174,6 +174,7 @@ export const translations = {
     'game.alignment_title': '守備配置圖',
     'game.alignment_note': '大圈＝守位代號 1–9，小圈＝打序棒次；＊ 為替補上場',
     'game.batting_slot': '第 {slot} 棒',
+    'game.fence_note': '(依官方公布之全壘打牆距離繪製,非球場平面圖)',
     'game.alignment_empty': '本場尚未公布守備名單。',
     'game.alignment_disclaimer':
       '守備配置圖呈現的是 MLB 官方登錄的 1–9 號守備位置（誰守哪個位置），非 Statcast 的實際站位座標或布陣熱區——後者未開放於官方公開 API。',
@@ -456,6 +457,7 @@ export const translations = {
     'game.alignment_title': 'Defensive Alignment',
     'game.alignment_note': 'Large circle = position 1-9, small circle = batting slot; * entered as a substitute',
     'game.batting_slot': 'Bats {slot}',
+    'game.fence_note': '(drawn from the published fence distances, not a park outline)',
     'game.alignment_empty': 'No defensive lineup posted for this game yet.',
     'game.alignment_disclaimer':
       'This chart shows the official 1-9 scorekeeping positions (who plays where), not Statcast tracked fielder coordinates or shift alignment, which MLB does not expose through its public API.',

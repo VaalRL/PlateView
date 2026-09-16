@@ -331,3 +331,39 @@ export interface BoxscoreResponse {
   };
   officials?: Array<{ official?: Player; officialType?: string }>;
 }
+
+/* --- /venues/{venueId}?hydrate=fieldInfo --- */
+
+/**
+ * Home run fence distances in feet at up to seven named angles, plus surface
+ * details. Not an outline: there is no wall height and no corner geometry.
+ */
+export interface VenueFieldInfo {
+  capacity?: number;
+  turfType?: string;
+  roofType?: string;
+  leftLine?: number;
+  left?: number;
+  leftCenter?: number;
+  center?: number;
+  rightCenter?: number;
+  right?: number;
+  rightLine?: number;
+}
+
+export interface VenueDetail {
+  id: number;
+  name: string;
+  link?: string;
+  active?: boolean;
+  fieldInfo?: VenueFieldInfo;
+  location?: {
+    city?: string;
+    stateAbbrev?: string;
+    country?: string;
+  };
+}
+
+export interface VenuesResponse {
+  venues?: VenueDetail[];
+}

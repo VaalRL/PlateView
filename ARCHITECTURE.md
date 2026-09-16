@@ -97,6 +97,7 @@ plateview/
 │   ├── types/                  # TypeScript 型別定義
 │   │   └── mlb.d.ts            # MLB API 回傳實體型別
 │   ├── utils/                  # 純粹工具函式 (Pure Functions)
+│   │   ├── ballpark.ts         # 球場牆距離 → 外野輪廓 SVG 路徑
 │   │   ├── lineup.ts           # 打序 (battingOrder) 解析與守備配置推導
 │   │   ├── timezone.ts         # UTC 轉本地時區與日期格式化
 │   │   └── statsFormatters.ts  # 棒球數據格式化 (AVG, ERA, WHIP, OPS)
@@ -134,6 +135,7 @@ graph TD
 | **球隊陣容/名單** | TanStack Query | 60 分鐘 | 無 | 賽季名單穩定 |
 | **球員生涯/賽季** | TanStack Query | 10 分鐘 | 無 | 賽後更新 |
 | **單場 Box / 守備配置** | TanStack Query | 30 分鐘 (Live 為 20 秒) | 30 秒 (僅限進行中賽事) | 首頁比分卡與球隊頁賽事列皆導向 `#/games/:gamePk`，不再原地展開 |
+| **球場尺寸 (fieldInfo)** | TanStack Query | 24 小時 | 無 | 全壘打牆距離，改建才變動；全聯盟僅 30 座球場 |
 | **使用者最愛/外觀** | `LocalStorage` | 永久 (本機) | 無 | 跨 Session 保持偏好設定 |
 
 ---

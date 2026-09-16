@@ -1,6 +1,13 @@
 import React from 'react';
 import { useLanguage } from '../../hooks/useLanguage';
-import { BoxscoreTeamSide } from '../../types/mlb';
+import { BoxscoreTeamSide, VenueFieldInfo } from '../../types/mlb';
+import {
+  buildFencePoints,
+  buildFencePath,
+  fenceRadiusAt,
+  fenceDistanceLabel,
+  polarToSvg,
+} from '../../utils/ballpark';
 import {
   FIELD_POSITIONS,
   FieldPosition,
@@ -15,6 +22,9 @@ interface FieldAlignmentDiagramProps {
   teamName: string;
   /** Highlighted with a pulsing ring, e.g. the pitcher currently on the mound */
   highlightPersonId?: number;
+  /** Published fence distances; without them the chart draws a generic arc */
+  fieldInfo?: VenueFieldInfo;
+  venueName?: string;
 }
 
 /**
@@ -30,6 +40,18 @@ const BASES = [
 ];
 const MOUND = { x: 200, y: 250 };
 
+const FENCE_RADIUS = 250;
+/** Outfielders play in front of the wall, not on it */
+const OUTFIELD_DEPTH = 0.82;
+/**
+ * The infield is drawn larger than scale so the names stay readable, which
+ * leaves a short porch too little room: without a floor, a 302-foot corner
+ * pushes its fielder onto the shortstop.
+ */
+const MIN_OUTFIELD_RADIUS = 172;
+/** Angles from straight-away centre for the three outfielders */
+const OUTFIELD_ANGLES: Record<'LF' | 'CF' | 'RF', number> = { LF: -32, CF: 0, RF: 32 };
+
 /** Node centres, offset from their base so the marker and the name stay clear */
 const NODE_COORDS: Record<FieldPosition, { x: number; y: number }> = {
   P: { x: 200, y: 250 },
@@ -38,9 +60,9 @@ const NODE_COORDS: Record<FieldPosition, { x: number; y: number }> = {
   '2B': { x: 246, y: 192 },
   SS: { x: 154, y: 192 },
   '3B': { x: 112, y: 236 },
-  LF: { x: 76, y: 128 },
-  CF: { x: 200, y: 80 },
-  RF: { x: 324, y: 128 },
+  LF: { x: 94, y: 152 },
+  CF: { x: 200, y: 122 },
+  RF: { x: 306, y: 152 },
 };
 
 /** Short surname-style label; SVG has no ellipsis so the text is trimmed here */
@@ -54,9 +76,10 @@ const PositionNode: React.FC<{
   position: FieldPosition;
   fielder?: Fielder;
   isHighlighted: boolean;
-}> = ({ position, fielder, isHighlighted }) => {
+  centre: { x: number; y: number };
+}> = ({ position, fielder, isHighlighted, centre }) => {
   const { t } = useLanguage();
-  const { x, y } = NODE_COORDS[position];
+  const { x, y } = centre;
 
   const node = (
     <g>
@@ -150,11 +173,29 @@ export const FieldAlignmentDiagram: React.FC<FieldAlignmentDiagramProps> = ({
   teamBox,
   teamName,
   highlightPersonId,
+  fieldInfo,
+  venueName,
 }) => {
   const { lang, t } = useLanguage();
   const alignment = buildFieldAlignment(teamBox);
   const dh: LineupEntry | null = findDesignatedHitter(teamBox);
   const filled = FIELD_POSITIONS.filter((pos) => alignment[pos]);
+
+  // A venue with published dimensions gets its own outfield wall; anything
+  // missing or malformed falls back to the generic arc rather than breaking
+  const fence = buildFencePoints(fieldInfo, FENCE_RADIUS);
+  const fencePath = fence ? buildFencePath(HOME, fence) : null;
+
+  /**
+   * Outfielders stand a fixed fraction in front of the wall, so a short porch
+   * pulls its fielder in. Without dimensions they keep their default spots.
+   */
+  const nodeCentre = (position: FieldPosition) => {
+    if (!fence || !(position in OUTFIELD_ANGLES)) return NODE_COORDS[position];
+    const angle = OUTFIELD_ANGLES[position as keyof typeof OUTFIELD_ANGLES];
+    const depth = Math.max(fenceRadiusAt(fence, angle) * OUTFIELD_DEPTH, MIN_OUTFIELD_RADIUS);
+    return polarToSvg(HOME, angle, depth);
+  };
 
   if (filled.length === 0) {
     return (
@@ -169,21 +210,33 @@ export const FieldAlignmentDiagram: React.FC<FieldAlignmentDiagramProps> = ({
         <span className="text-[10px] text-muted">{t('game.alignment_note')}</span>
       </div>
 
+      {fence && (
+        <div className="flex flex-wrap items-baseline gap-x-2 text-[10px] text-muted">
+          {venueName && <span className="font-semibold text-main">{venueName}</span>}
+          <span className="font-mono">{fenceDistanceLabel(fence)}</span>
+          <span>{t('game.fence_note')}</span>
+        </div>
+      )}
+
       <svg
         viewBox="0 0 400 400"
         role="img"
         aria-label={`${teamName} ${t('game.alignment_title')}`}
         className="w-full h-auto"
       >
-        {/* Outfield grass, bounded by the foul lines and the outfield arc */}
+        {/* Outfield grass, bounded by the foul lines and the outfield wall */}
         <path
-          d={`M ${HOME.x} ${HOME.y} L 23 141 A 250 250 0 0 1 377 141 Z`}
+          d={
+            fencePath
+              ? `M ${HOME.x} ${HOME.y} ${fencePath.replace('M', 'L')} Z`
+              : `M ${HOME.x} ${HOME.y} L 23 141 A 250 250 0 0 1 377 141 Z`
+          }
           className="fill-field-grass stroke-border"
           strokeWidth={1.5}
         />
-        {/* Warning track hugging the arc */}
+        {/* Warning track hugging the wall */}
         <path
-          d="M 23 141 A 250 250 0 0 1 377 141"
+          d={fencePath ?? 'M 23 141 A 250 250 0 0 1 377 141'}
           className="stroke-field-dirt"
           fill="none"
           strokeWidth={9}
@@ -199,22 +252,24 @@ export const FieldAlignmentDiagram: React.FC<FieldAlignmentDiagramProps> = ({
           className="fill-field-infield"
         />
         {/* Foul lines */}
-        <line
-          x1={HOME.x}
-          y1={HOME.y}
-          x2={23}
-          y2={141}
-          className="stroke-field-line"
-          strokeWidth={1.5}
-        />
-        <line
-          x1={HOME.x}
-          y1={HOME.y}
-          x2={377}
-          y2={141}
-          className="stroke-field-line"
-          strokeWidth={1.5}
-        />
+        {([-45, 45] as const).map((angle) => {
+          const end = polarToSvg(
+            HOME,
+            angle,
+            fence ? fenceRadiusAt(fence, angle) : FENCE_RADIUS
+          );
+          return (
+            <line
+              key={angle}
+              x1={HOME.x}
+              y1={HOME.y}
+              x2={end.x}
+              y2={end.y}
+              className="stroke-field-line"
+              strokeWidth={1.5}
+            />
+          );
+        })}
         {/* Pitcher's mound, bases and home plate */}
         <circle cx={MOUND.x} cy={MOUND.y} r={11} className="fill-field-dirt" />
         {BASES.map((base) => (
@@ -243,6 +298,7 @@ export const FieldAlignmentDiagram: React.FC<FieldAlignmentDiagramProps> = ({
             position={pos}
             fielder={alignment[pos]}
             isHighlighted={!!highlightPersonId && alignment[pos]?.personId === highlightPersonId}
+            centre={nodeCentre(pos)}
           />
         ))}
       </svg>

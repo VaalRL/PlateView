@@ -1,4 +1,4 @@
-import { ScheduleResponse, StandingsResponse } from '../types/mlb';
+import { ScheduleResponse, StandingsResponse, VenuesResponse } from '../types/mlb';
 import { PeopleResponse } from '../types/favorites';
 import { getCurrentMlbSeason } from '../utils/season';
 import {
@@ -100,6 +100,18 @@ export async function getGameSchedule(gamePk: number): Promise<ScheduleResponse>
  */
 export async function getGameBoxscore(gamePk: number) {
   return fetchMlb<any>(`/game/${gamePk}/boxscore`);
+}
+
+/**
+ * Fetch a venue's published field dimensions.
+ *
+ * `fieldInfo` carries the home run fence distance in feet at up to seven named
+ * angles; the alignment chart reconstructs the outfield shape from them.
+ */
+export async function getVenue(venueId: number): Promise<VenuesResponse> {
+  return fetchMlb<VenuesResponse>(`/venues/${venueId}`, {
+    hydrate: 'fieldInfo,location',
+  });
 }
 
 /**

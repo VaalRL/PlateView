@@ -7,6 +7,7 @@ import {
   getTeamSchedule,
   getGameSchedule,
   getGameBoxscore,
+  getVenue,
   getPlayerDetail,
   searchPeople,
   getLeaderboards,
@@ -100,6 +101,19 @@ export function useGameBoxscoreQuery(gamePk?: number, isLive: boolean = false) {
     enabled: !!gamePk,
     refetchInterval: isLive ? 30000 : false,
     staleTime: isLive ? 20000 : 1000 * 60 * 30, // 30 minutes for completed games
+  });
+}
+
+/**
+ * Venue dimensions. A ballpark is remodelled between seasons at most, and there
+ * are only 30 of them, so this is effectively static for the session.
+ */
+export function useVenueQuery(venueId?: number) {
+  return useQuery({
+    queryKey: ['venue', venueId],
+    queryFn: () => getVenue(venueId!),
+    enabled: !!venueId,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
   });
 }
 
