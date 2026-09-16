@@ -50,9 +50,9 @@
 * **日期切換**：點擊頂部日期條的「前一天」、「今日」、「後一天」或指定日期，即時切換賽事。
 * **比賽狀態與即時戰況**：
   * **進行中賽事**：30 秒自動輪詢更新比分、好壞球數、出局數（Outs 圓點）與動態壘包狀態（Bases Diamond）。
-  * **已結束賽事 (Final)**：點擊對戰卡片即可原地展開/收合 **MLB 官方每局比分板 (Linescore & Boxscore)** 與 R / H / E 詳細攻守數據。
+  * **點擊對戰卡片**：直接進入該場的 **逐場 Box 專頁** (`#/games/:gamePk`)，內含每局比分板 (Linescore)、守備配置圖、打序換人與完整 Box 數據；賽前場次則顯示雙方預定先發投手。
 * **全站無縫連結**：在對戰卡片中點擊球隊 Logo、先發投手 (SP)、勝/敗/救援投手姓名，均可一鍵跳轉至對應專屬頁面。
-* **逐場 Box 專頁**：展開任一場比賽的 Box 後，點擊底部「**開啟完整 Box 專頁（守備配置 / 打序）**」即可進入 `#/games/:gamePk` 專屬頁面（可直接分享網址），內含三個分頁：
+* **逐場 Box 專頁**：點擊首頁對戰卡片、或球隊頁的任一場賽事列，即進入 `#/games/:gamePk` 專屬頁面（可直接分享網址）。頁首為比分、賽況、球場、勝敗投與每局比分板，下方三個分頁：
   * **🛡️ 守備配置圖**：SVG 場地圖標示雙方 1–9 號守備位置與球員（替補以 `*` 標記），進行中比賽會高亮場上投手；窄螢幕另提供 1–9 條列。
   * **📋 打序與換人**：1–9 棒完整打序，同一棒次以箭頭串接先發與後續代打／代跑／雙重守備變換，另列板凳、牛棚與 MLB 官方換人註記。
   * **📊 完整 Box 數據**：所有打者與投手的逐場數據（不再截斷），並附官方註記（HR、SB、E 等分組說明）。
@@ -168,9 +168,9 @@ npm run lint         # 執行程式碼品質檢查
 ### 1. ⚾ Live Scoreboard & Daily Schedule
 * **Date Navigation**: Switch between past, present, and future dates effortlessly.
 * **Live Match State**: 30-second automated polling with count display (Balls, Strikes, Outs), real-time base runners diamond, and venue information.
-* **In-Game Linescores**: Click any completed game card to expand official inning-by-inning linescores and R/H/E boxscore summaries.
+* **In-Game Linescores**: Click any game card to open its detail page, carrying the official inning-by-inning linescore, R/H/E, defensive alignment and full box score — or the probable starters if the game has not begun.
 * **Direct Navigation**: Click on any team logo, probable starting pitcher, or decision pitcher to open their respective detail pages.
-* **Standalone Game Page**: Expand any box score and click **"Open full box score (alignment / lineup)"** to reach `#/games/:gamePk`, a shareable page with three tabs:
+* **Standalone Game Page**: Click a scoreboard card, or any row in a team's schedule, to reach `#/games/:gamePk` — a shareable page headed by the score, status, venue, decisions and linescore, with three tabs:
   * **🛡️ Defensive Alignment**: an SVG field chart placing both teams' fielders at scorekeeping positions 1-9 (substitutes marked `*`), highlighting the pitcher on the mound during live games, with a 1-9 list for narrow screens.
   * **📋 Lineup & Substitutions**: the full 1-9 batting order, with each slot chaining the starter to every pinch hitter, pinch runner and double switch, plus bench, bullpen and MLB's own substitution notes.
   * **📊 Full Box Score**: every batter and pitcher, untruncated, with the official remark groups (HR, SB, E and so on).

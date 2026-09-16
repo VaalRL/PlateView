@@ -9,7 +9,7 @@ import { FieldAlignmentDiagram } from '../components/game/FieldAlignmentDiagram'
 import { LineupOrderBoard } from '../components/game/LineupOrderBoard';
 import { BattingTable, PitchingTable } from '../components/game/BoxscoreTables';
 import teamsData from '../data/teams.json';
-import { BoxscorePlayerEntry, BoxscoreResponse, BoxscoreTeamSide } from '../types/mlb';
+import { BoxscorePlayerEntry, BoxscoreResponse, BoxscoreTeamSide, GameSchedule } from '../types/mlb';
 import { ArrowLeft, Loader2, MapPin, Info, Shield, ClipboardList, Table2 } from 'lucide-react';
 
 type GameTab = 'alignment' | 'lineup' | 'box';
@@ -68,6 +68,42 @@ const SubstitutionNotes: React.FC<{ teamBox: BoxscoreTeamSide; label: string }> 
           {note.value ? `-${note.value}` : ''}
         </p>
       ))}
+    </div>
+  );
+};
+
+/** Before first pitch there is no lineup, so the matchup is the probable starters. */
+const ProbablePitchers: React.FC<{ game: GameSchedule; awayName: string; homeName: string }> = ({
+  game,
+  awayName,
+  homeName,
+}) => {
+  const { t } = useLanguage();
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {(['away', 'home'] as const).map((side) => {
+        const pitcher = game.teams[side].probablePitcher;
+        return (
+          <div key={side} className="bg-page/60 p-4 rounded-xl border border-border/40">
+            <span className="text-muted block text-[11px] font-semibold">
+              {side === 'away' ? awayName : homeName} ({t(side === 'away' ? 'sb.sp_away' : 'sb.sp_home')})
+            </span>
+            {pitcher?.id ? (
+              <Link
+                to={`/players/${pitcher.id}`}
+                className="text-main font-bold text-sm block mt-1 hover:text-team-primary hover:underline"
+              >
+                {pitcher.fullName}
+              </Link>
+            ) : (
+              <span className="text-main font-bold text-sm block mt-1">
+                {pitcher?.fullName || t('sb.tbd')}
+              </span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -276,8 +312,13 @@ export const GameDetailPage: React.FC = () => {
       )}
 
       {!isBoxLoading && (isBoxError || !hasBoxscore) && (
-        <div className="bg-card border border-border rounded-2xl p-8 text-center text-sm text-muted">
-          {game.status.abstractGameState === 'Preview' ? t('game.no_lineup_yet') : t('game.error')}
+        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+          <p className="text-center text-sm text-muted">
+            {game.status.abstractGameState === 'Preview' ? t('game.no_lineup_yet') : t('game.error')}
+          </p>
+          {game.status.abstractGameState === 'Preview' && (
+            <ProbablePitchers game={game} awayName={awayName} homeName={homeName} />
+          )}
         </div>
       )}
 

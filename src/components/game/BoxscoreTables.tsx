@@ -11,8 +11,8 @@ interface TableProps {
 }
 
 /**
- * Batting and pitching tables shared by the collapsed `GameBoxscorePanel` and
- * the standalone game detail page, so both read the box score the same way.
+ * Batting and pitching tables for the game detail page. `limit` exists for any
+ * caller that needs a condensed view; the page itself renders every row.
  */
 export const BattingTable: React.FC<TableProps> = ({ teamBox, title, limit }) => {
   const { lang, t } = useLanguage();

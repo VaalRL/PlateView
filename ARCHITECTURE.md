@@ -79,7 +79,6 @@ plateview/
 │   │   ├── scoreboard/         # 比分板元件 (ScoreboardGrid, ScoreboardCard)
 │   │   ├── standings/          # 戰績表元件 (StandingsTable)
 │   │   ├── game/               # 逐場比賽元件 (FieldAlignmentDiagram, LineupOrderBoard, BoxscoreTables)
-│   │   ├── team/               # 球隊詳細資訊元件
 │   │   ├── player/             # 球員詳細數據元件
 │   │   └── favorite/           # 我的最愛頂部追蹤列 (FavoritesBar)
 │   ├── data/                   # 靜態資料檔
@@ -134,7 +133,7 @@ graph TD
 | **分區戰績榜** | TanStack Query | 15 分鐘 | 無 | 每日變更頻率低 |
 | **球隊陣容/名單** | TanStack Query | 60 分鐘 | 無 | 賽季名單穩定 |
 | **球員生涯/賽季** | TanStack Query | 10 分鐘 | 無 | 賽後更新 |
-| **單場 Box / 守備配置** | TanStack Query | 30 分鐘 (Live 為 20 秒) | 30 秒 (僅限進行中賽事) | 折疊面板與 `#/games/:gamePk` 共用同一把快取鍵 |
+| **單場 Box / 守備配置** | TanStack Query | 30 分鐘 (Live 為 20 秒) | 30 秒 (僅限進行中賽事) | 首頁比分卡與球隊頁賽事列皆導向 `#/games/:gamePk`，不再原地展開 |
 | **使用者最愛/外觀** | `LocalStorage` | 永久 (本機) | 無 | 跨 Session 保持偏好設定 |
 
 ---

@@ -1,23 +1,21 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { GameSchedule } from '../../types/mlb';
 import { formatBilingualGameTime } from '../../utils/timezone';
 import { getTeamLogoUrl } from '../../services/mlbApi';
 import { BasesDiamond } from './BasesDiamond';
-import { LinescoreTable } from './LinescoreTable';
 import { CountDisplay } from './CountDisplay';
-import { GameBoxscorePanel } from '../team/GameBoxscorePanel';
 import { useLanguage } from '../../hooks/useLanguage';
 import teamsData from '../../data/teams.json';
 import playersData from '../../data/players-zh-tw.json';
-import { ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { ChevronRight, AlertCircle } from 'lucide-react';
 
 interface ScoreboardCardProps {
   game: GameSchedule;
 }
 
 export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
-  const [showLinescore, setShowLinescore] = useState(false);
+  const navigate = useNavigate();
   const { lang, t } = useLanguage();
   const { status, teams, linescore } = game;
 
@@ -70,22 +68,17 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
     return person.fullName;
   };
 
-  const isClickable = isFinal || (linescore?.innings && linescore.innings.length > 0);
-
+  // Every game has a detail page, including previews (probable pitchers)
   const handleCardClick = () => {
-    if (isClickable) {
-      setShowLinescore((prev) => !prev);
-    }
+    navigate(`/games/${game.gamePk}`);
   };
 
   return (
     <div
       onClick={handleCardClick}
-      className={`bg-card border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group/card ${
+      className={`bg-card border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group/card cursor-pointer hover:border-team-primary/60 ${
         isLive
           ? 'border-red-500/60 shadow-[0_0_16px_rgba(239,68,68,0.12)] ring-1 ring-red-500/30'
-          : isFinal
-          ? 'border-border hover:border-team-primary/60 cursor-pointer'
           : 'border-border'
       }`}
     >
@@ -147,18 +140,12 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             </span>
           )}
 
-          {isFinal && (
-            <span
-              className="text-muted group-hover/card:text-team-primary transition-colors p-0.5"
-              title={showLinescore ? t('team.hide_boxscore') : t('team.view_boxscore')}
-            >
-              {showLinescore ? (
-                <ChevronUp className="w-3.5 h-3.5 text-team-primary" />
-              ) : (
-                <ChevronDown className="w-3.5 h-3.5 opacity-60 group-hover/card:opacity-100" />
-              )}
-            </span>
-          )}
+          <span
+            className="text-muted group-hover/card:text-team-primary transition-colors p-0.5"
+            title={t('game.open_full_box')}
+          >
+            <ChevronRight className="w-3.5 h-3.5 opacity-60 group-hover/card:opacity-100" />
+          </span>
         </div>
       </div>
 
@@ -434,48 +421,17 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
         </div>
       )}
 
-      {/* 4. Expandable Linescore & Box Score Panel */}
-      {isClickable && (
-        <div className="pt-2 mt-2 border-t border-border">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowLinescore(!showLinescore);
-            }}
-            className="w-full flex items-center justify-center gap-1.5 text-[11px] text-muted hover:text-team-primary transition-colors py-1 font-medium group"
-          >
-            <span>{showLinescore ? t('team.hide_boxscore') : t('team.view_boxscore')}</span>
-            {showLinescore ? (
-              <ChevronUp className="w-3.5 h-3.5 text-team-primary" />
-            ) : (
-              <ChevronDown className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
-            )}
-          </button>
-
-          {showLinescore && (
-            <div
-              className="mt-3 space-y-4 animate-in fade-in duration-200 cursor-default"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Inning-by-Inning Linescore Table */}
-              {linescore && (
-                <LinescoreTable
-                  linescore={linescore}
-                  awayAbbrev={awayTeamMeta?.abbrev || 'AWAY'}
-                  homeAbbrev={homeTeamMeta?.abbrev || 'HOME'}
-                  awayScore={teams.away.score}
-                  homeScore={teams.home.score}
-                  isLive={isLive}
-                />
-              )}
-
-              {/* Detailed Boxscore Panel (Batters & Pitchers) */}
-              <GameBoxscorePanel gamePk={game.gamePk} />
-            </div>
-          )}
-        </div>
-      )}
+      {/* 4. Link through to the standalone game page */}
+      <div className="pt-2 mt-2 border-t border-border">
+        <Link
+          to={`/games/${game.gamePk}`}
+          onClick={(e) => e.stopPropagation()}
+          className="w-full flex items-center justify-center gap-1.5 text-[11px] text-muted hover:text-team-primary transition-colors py-1 font-medium group"
+        >
+          <span>{t('game.open_full_box')}</span>
+          <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+        </Link>
+      </div>
     </div>
   );
 };

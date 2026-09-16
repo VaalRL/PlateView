@@ -196,8 +196,6 @@ export const translations = {
     'game.not_found': '找不到這場比賽 (gamePk 無效或資料尚未產生)。',
     'game.no_lineup_yet': '比賽尚未開打，先發打線與守備配置通常於開賽前不久公布。',
 
-    'team.view_boxscore': '展開比賽 Box',
-    'team.hide_boxscore': '收合比賽 Box',
     'team.boxscore_batting': '打擊成績 (Batting)',
     'team.boxscore_pitching': '投球成績 (Pitching)',
     'team.sp_tomorrow': '明日先發',
@@ -480,8 +478,6 @@ export const translations = {
     'game.not_found': 'Game not found (invalid gamePk or data not published yet).',
     'game.no_lineup_yet': 'Game has not started. Starting lineups are usually posted shortly before first pitch.',
 
-    'team.view_boxscore': 'View Box Score',
-    'team.hide_boxscore': 'Hide Box Score',
     'team.boxscore_batting': 'Batting',
     'team.boxscore_pitching': 'Pitching',
     'team.sp_tomorrow': "Tomorrow's SP",

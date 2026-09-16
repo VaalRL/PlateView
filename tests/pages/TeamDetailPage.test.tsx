@@ -169,4 +169,53 @@ describe('TeamDetailPage component', () => {
     // Only the two injured-list players carry the IL badge
     expect(screen.getAllByText('IL')).toHaveLength(2);
   });
+
+  it('opens the standalone game page when a schedule row is clicked', async () => {
+    const scheduleResponse = {
+      dates: [
+        {
+          date: '2026-09-15',
+          games: [
+            {
+              gamePk: 776633,
+              gameDate: '2026-09-16T00:10:00Z',
+              officialDate: '2026-09-15',
+              status: { abstractGameState: 'Final', detailedState: 'Final' },
+              teams: {
+                away: { score: 5, isWinner: true, team: { id: 119, name: 'Los Angeles Dodgers' } },
+                home: { score: 3, isWinner: false, team: { id: 134, name: 'Pittsburgh Pirates' } },
+              },
+              linescore: { innings: [{ num: 1, away: { runs: 2 }, home: { runs: 0 } }] },
+            },
+          ],
+        },
+      ],
+    };
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: unknown) => {
+        const url = String(input);
+        const body = url.includes('/schedule') ? scheduleResponse : {};
+        return { ok: true, status: 200, statusText: 'OK', json: async () => body } as Response;
+      })
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/teams/119']}>
+          <Routes>
+            <Route path="/teams/:teamId" element={<TeamDetailPage />} />
+            <Route path="/games/:gamePk" element={<div>GAME PAGE 776633</div>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    // The row no longer expands a box score in place
+    const row = await screen.findByText(/匹茲堡海盜|Pittsburgh Pirates/);
+    fireEvent.click(row);
+
+    expect(await screen.findByText('GAME PAGE 776633')).toBeInTheDocument();
+  });
 });

@@ -108,3 +108,12 @@
   - [x] 修正雙重守備變換的錯誤標示：「替下 ○○○」原取同棒次前一位，但顯示於守備位置旁；雙重守備變換時棒次與守位分開易主，會標出從未守過該位置的人。改為僅在前一位確實守過同一位置時才顯示
   - [x] 釐清範圍：以上皆為「單張 boxscore 快照內的消歧義」，非時間軸還原；逐局守備變動時點仍需 feed/live（v2）
   - [x] 測試由 106 項增至 141 項，全數通過；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過（主 bundle 372.13 → 376.89 kB，專頁為 18.14 kB lazy chunk）
+
+- [x] **Phase 11: Box 統一收斂至逐場專頁（2026-09-16）**
+  - [x] 首頁比分卡改為點擊直接進入 `#/games/:gamePk`，移除原地展開的 Linescore／Box 面板；卡片底部改為明確的「開啟完整 Box 專頁」連結
+  - [x] 所有狀態的比賽皆可點擊（原本僅 Final 或已有 innings 才可展開）；賽前場次於專頁顯示雙方預定先發投手，不再是死路
+  - [x] 球隊頁賽事列同樣改為導向專頁，移除 `expandedGamePk` 展開狀態與整段展開區塊（含原本只存在於此的賽前先發對決，已移入專頁）
+  - [x] 刪除失去用途的 `GameBoxscorePanel.tsx`（兩處呼叫皆已改為導向）；Phase 5 的 `seasonStats` 比率數據回歸測試移至新的 `BoxscoreTables.test.tsx`，覆蓋不流失
+  - [x] 清除孤兒翻譯鍵 `team.view_boxscore`／`team.hide_boxscore`
+  - [x] **主 bundle 反而縮小**：Box 表格與 `LinescoreTable` 隨之移出首頁 chunk、併入 lazy 專頁 chunk，376.89 → 366.52 kB（低於本次功能開發前的 372.13 kB）；專頁 chunk 18.19 → 26.78 kB
+  - [x] 測試由 141 項增至 145 項，全數通過；TypeScript、ESLint（0 errors，warnings 53 → 50）與 Vite 打包驗證通過

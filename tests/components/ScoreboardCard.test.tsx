@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ScoreboardCard } from '../../src/components/scoreboard/ScoreboardCard';
 import { GameSchedule } from '../../src/types/mlb';
@@ -129,22 +129,37 @@ describe('ScoreboardCard component', () => {
     expect(screen.getByText(/Postponed/)).toBeInTheDocument();
   });
 
-  it('expands linescore and boxscore when clicking completed game card', () => {
+  it('navigates to the standalone game page when the card is clicked', () => {
     render(
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <ScoreboardCard game={mockFinalGame} />
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route path="/" element={<ScoreboardCard game={mockFinalGame} />} />
+            <Route path="/games/:gamePk" element={<div>GAME PAGE</div>} />
+          </Routes>
         </MemoryRouter>
       </QueryClientProvider>
     );
 
-    // Initial state: not expanded
-    expect(screen.getByText('展開比賽 Box')).toBeInTheDocument();
+    // No inline expansion any more; the card is a doorway to the page
+    expect(screen.queryByText('展開比賽 Box')).not.toBeInTheDocument();
 
-    // Click card container to expand
     fireEvent.click(screen.getByText(/已結束/i));
 
-    // Expanded state
-    expect(screen.getByText('收合比賽 Box')).toBeInTheDocument();
+    expect(screen.getByText('GAME PAGE')).toBeInTheDocument();
+  });
+
+  it('offers an explicit link to the game page for previews too', () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <ScoreboardCard game={mockLiveGame} />
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(
+      screen.getByRole('link', { name: /完整 Box 專頁/ })
+    ).toHaveAttribute('href', `/games/${mockLiveGame.gamePk}`);
   });
 });
