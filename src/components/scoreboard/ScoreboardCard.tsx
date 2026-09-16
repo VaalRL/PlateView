@@ -68,15 +68,23 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
     return person.fullName;
   };
 
-  // Every game has a detail page, including previews (probable pitchers)
+  /**
+   * A game only has a detail page worth opening once it has started: before
+   * first pitch there is no box score, no lineup and no alignment, and the
+   * probable pitchers are already on this card.
+   */
+  const hasStarted = isLive || isFinal;
+
   const handleCardClick = () => {
-    navigate(`/games/${game.gamePk}`);
+    if (hasStarted) navigate(`/games/${game.gamePk}`);
   };
 
   return (
     <div
       onClick={handleCardClick}
-      className={`bg-card border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group/card cursor-pointer hover:border-team-primary/60 ${
+      className={`bg-card border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group/card ${
+        hasStarted ? 'cursor-pointer hover:border-team-primary/60' : ''
+      } ${
         isLive
           ? 'border-red-500/60 shadow-[0_0_16px_rgba(239,68,68,0.12)] ring-1 ring-red-500/30'
           : 'border-border'
@@ -140,12 +148,14 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             </span>
           )}
 
-          <span
-            className="text-muted group-hover/card:text-team-primary transition-colors p-0.5"
-            title={t('game.open_full_box')}
-          >
-            <ChevronRight className="w-3.5 h-3.5 opacity-60 group-hover/card:opacity-100" />
-          </span>
+          {hasStarted && (
+            <span
+              className="text-muted group-hover/card:text-team-primary transition-colors p-0.5"
+              title={t('game.open_full_box')}
+            >
+              <ChevronRight className="w-3.5 h-3.5 opacity-60 group-hover/card:opacity-100" />
+            </span>
+          )}
         </div>
       </div>
 
@@ -421,17 +431,19 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
         </div>
       )}
 
-      {/* 4. Link through to the standalone game page */}
-      <div className="pt-2 mt-2 border-t border-border">
-        <Link
-          to={`/games/${game.gamePk}`}
-          onClick={(e) => e.stopPropagation()}
-          className="w-full flex items-center justify-center gap-1.5 text-[11px] text-muted hover:text-team-primary transition-colors py-1 font-medium group"
-        >
-          <span>{t('game.open_full_box')}</span>
-          <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-        </Link>
-      </div>
+      {/* 4. Link through to the standalone game page, once there is one */}
+      {hasStarted && (
+        <div className="pt-2 mt-2 border-t border-border">
+          <Link
+            to={`/games/${game.gamePk}`}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full flex items-center justify-center gap-1.5 text-[11px] text-muted hover:text-team-primary transition-colors py-1 font-medium group"
+          >
+            <span>{t('game.open_full_box')}</span>
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+        </div>
+      )}
     </div>
   );
 };

@@ -50,7 +50,7 @@
 * **日期切換**：點擊頂部日期條的「前一天」、「今日」、「後一天」或指定日期，即時切換賽事。
 * **比賽狀態與即時戰況**：
   * **進行中賽事**：30 秒自動輪詢更新比分、好壞球數、出局數（Outs 圓點）與動態壘包狀態（Bases Diamond）。
-  * **點擊對戰卡片**：直接進入該場的 **逐場 Box 專頁** (`#/games/:gamePk`)，內含每局比分板 (Linescore)、守備配置圖、打序換人與完整 Box 數據；賽前場次則顯示雙方預定先發投手。
+  * **點擊對戰卡片**：**已開打或已結束**的比賽可直接進入該場的 **逐場 Box 專頁** (`#/games/:gamePk`)，內含每局比分板 (Linescore)、守備配置圖、打序換人與完整 Box 數據。賽前場次尚無這些資料，因此不提供專頁入口，改於卡片上直接顯示開打時間與雙方預定先發投手。
 * **全站無縫連結**：在對戰卡片中點擊球隊 Logo、先發投手 (SP)、勝/敗/救援投手姓名，均可一鍵跳轉至對應專屬頁面。
 * **逐場 Box 專頁**：點擊首頁對戰卡片、或球隊頁的任一場賽事列，即進入 `#/games/:gamePk` 專屬頁面（可直接分享網址）。頁首為比分、賽況、球場、勝敗投與每局比分板，下方三個分頁：
   * **🛡️ 守備配置與打序**：左側 SVG 場地圖標示 1–9 號守備位置（大圈＝守位代號、**小圈＝打序棒次**，替補以 `*` 標記，進行中比賽高亮場上投手）；右側並列同隊 1–9 棒打序，同一棒次以箭頭串接先發與後續代打／代跑／雙重守備變換，另含板凳、牛棚與 MLB 官方換人註記。**場上小圈的棒次即是右側打序的列號**，一眼看出「第幾棒守哪裡」。上方可切換客隊／主隊。**外野輪廓依該球場官方公布之全壘打牆距離繪製**，芬威、PNC、道奇球場點進去會是看得出差別的形狀，外野手站位也隨牆的深淺調整；圖上標示各角度距離（如 `325 · 389 · 410 · 399 · 375 · 320`）。
@@ -167,7 +167,7 @@ npm run lint         # 執行程式碼品質檢查
 ### 1. ⚾ Live Scoreboard & Daily Schedule
 * **Date Navigation**: Switch between past, present, and future dates effortlessly.
 * **Live Match State**: 30-second automated polling with count display (Balls, Strikes, Outs), real-time base runners diamond, and venue information.
-* **In-Game Linescores**: Click any game card to open its detail page, carrying the official inning-by-inning linescore, R/H/E, defensive alignment and full box score — or the probable starters if the game has not begun.
+* **In-Game Linescores**: Click a live or completed game card to open its detail page, carrying the official inning-by-inning linescore, R/H/E, defensive alignment and full box score. A game that has not started has none of those yet, so it offers no detail page and shows its first pitch time and probable starters on the card instead.
 * **Direct Navigation**: Click on any team logo, probable starting pitcher, or decision pitcher to open their respective detail pages.
 * **Standalone Game Page**: Click a scoreboard card, or any row in a team's schedule, to reach `#/games/:gamePk` — a shareable page headed by the score, status, venue, decisions and linescore, with three tabs:
   * **🛡️ Alignment & Lineup**: an SVG field chart on the left placing the fielders at scorekeeping positions 1-9 (large circle = position, **small circle = batting slot**, substitutes marked `*`, pitcher on the mound highlighted during live games), and the same team's 1-9 batting order beside it, each slot chaining the starter to every pinch hitter, pinch runner and double switch, plus bench, bullpen and MLB's own substitution notes. **A fielder's slot badge is the row number next to it**, so who bats where reads at a glance. A switcher picks the away or home team. **The outfield wall is drawn from the venue's published home run distances**, so Fenway, PNC and Dodger Stadium each come out a recognisably different shape and the outfielders play shallower in front of a short porch; the distances are quoted on the chart.

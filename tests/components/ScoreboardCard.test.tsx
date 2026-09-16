@@ -149,7 +149,7 @@ describe('ScoreboardCard component', () => {
     expect(screen.getByText('GAME PAGE')).toBeInTheDocument();
   });
 
-  it('offers an explicit link to the game page for previews too', () => {
+  it('offers an explicit link to the game page for a live game', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
@@ -161,5 +161,37 @@ describe('ScoreboardCard component', () => {
     expect(
       screen.getByRole('link', { name: /完整 Box 專頁/ })
     ).toHaveAttribute('href', `/games/${mockLiveGame.gamePk}`);
+  });
+
+  it('offers no game page before first pitch, since there is nothing in it yet', () => {
+    const mockPreviewGame: GameSchedule = {
+      ...mockLiveGame,
+      gamePk: 111213,
+      status: {
+        abstractGameState: 'Preview',
+        codedGameState: 'S',
+        detailedState: 'Scheduled',
+        statusCode: 'S',
+        abstractGameCode: 'P',
+      },
+      linescore: undefined,
+    };
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route path="/" element={<ScoreboardCard game={mockPreviewGame} />} />
+            <Route path="/games/:gamePk" element={<div>GAME PAGE</div>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(screen.queryByRole('link', { name: /完整 Box 專頁/ })).not.toBeInTheDocument();
+
+    // Clicking the card is inert too, rather than a hidden affordance
+    fireEvent.click(screen.getByText(/匹茲堡海盜/));
+    expect(screen.queryByText('GAME PAGE')).not.toBeInTheDocument();
   });
 });

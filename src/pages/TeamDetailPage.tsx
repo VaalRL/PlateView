@@ -320,6 +320,8 @@ export const TeamDetailPage: React.FC = () => {
                 const isFinal = g.status?.abstractGameState === 'Final';
                 const isLive = g.status?.abstractGameState === 'Live';
                 const isPreview = g.status?.abstractGameState === 'Preview';
+                // No box score before first pitch, so no detail page to open
+                const hasStarted = isFinal || isLive;
 
                 const isWinner = isHome ? g.teams.home.isWinner : g.teams.away.isWinner;
 
@@ -329,8 +331,10 @@ export const TeamDetailPage: React.FC = () => {
                     className="bg-card border border-border rounded-2xl p-4 shadow-sm hover:border-team-primary/40 transition-all overflow-hidden"
                   >
                     <div
-                      onClick={() => navigate(`/games/${g.gamePk}`)}
-                      className="cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 select-none"
+                      onClick={() => hasStarted && navigate(`/games/${g.gamePk}`)}
+                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 select-none ${
+                        hasStarted ? 'cursor-pointer' : ''
+                      }`}
                     >
                       {/* Left: Date, Matchup & Opponent */}
                       <div className="flex items-center gap-3.5">
@@ -473,13 +477,15 @@ export const TeamDetailPage: React.FC = () => {
                           </span>
                         )}
 
-                        <button
-                          type="button"
-                          className="p-1 rounded-lg text-muted hover:text-main hover:bg-page transition-colors"
-                          aria-label={t('game.open_full_box')}
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
+                        {hasStarted && (
+                          <button
+                            type="button"
+                            className="p-1 rounded-lg text-muted hover:text-main hover:bg-page transition-colors"
+                            aria-label={t('game.open_full_box')}
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
 
