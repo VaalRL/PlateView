@@ -114,10 +114,11 @@ describe('FieldAlignmentDiagram component', () => {
       </MemoryRouter>
     );
 
-    // Only the current occupant is charted, annotated with who he replaced
+    // Only the current occupant is charted
     expect(screen.getAllByText('Josh Smith').length).toBeGreaterThan(0);
-    // Rendered twice on purpose: the SVG tooltip and the narrow-screen list
-    expect(screen.getAllByText(/替下 Marcus Semien/).length).toBe(2);
+    // Who he came in for lives in the node's tooltip; the lineup board beside
+    // the chart spells the chain out in full, so the compact list stays clean
+    expect(screen.getAllByText(/替下 Marcus Semien/).length).toBe(1);
   });
 
   it('marks a slot as position-pending rather than leaving a hole on the field', () => {

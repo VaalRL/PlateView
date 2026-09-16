@@ -137,24 +137,29 @@ describe('GameDetailPage', () => {
     expect(screen.getByText('LAD')).toBeInTheDocument();
   });
 
-  it('opens on the defensive alignment tab with both teams charted', async () => {
+  it('opens on the away team with its chart and lineup on the same view', async () => {
     renderPage();
 
+    // Chart and order describe the same team side by side
     expect((await screen.findAllByText('Corey Seager')).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Nathan Eovaldi').length).toBeGreaterThan(0);
-    // The DH is listed but never placed on the field
-    expect(screen.getAllByText('Shohei Ohtani').length).toBeGreaterThan(0);
-  });
-
-  it('switches to the lineup tab and shows bench players', async () => {
-    renderPage();
-
-    fireEvent.click(await screen.findByText('📋 打序與換人'));
-
     expect(screen.getByText('板凳待命 (Bench)')).toBeInTheDocument();
     expect(screen.getByText('Bench Bat')).toBeInTheDocument();
     // MLB's own substitution footnote for the slot that turned over
     expect(screen.getByText(/Grounded out for Bench Bat in the 7th/)).toBeInTheDocument();
+
+    // The home team is behind the switcher, not rendered alongside
+    expect(screen.queryByText('Shohei Ohtani')).not.toBeInTheDocument();
+  });
+
+  it('switches the chart and the lineup together to the home team', async () => {
+    renderPage();
+
+    // The switcher is labelled with the localised team name
+    fireEvent.click(await screen.findByRole('button', { name: /洛杉磯道奇/ }));
+
+    expect(screen.getAllByText('Shohei Ohtani').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Corey Seager')).not.toBeInTheDocument();
   });
 
   it('switches to the full box tab and renders the untruncated tables plus official notes', async () => {

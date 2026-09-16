@@ -10,9 +10,10 @@ import { LineupOrderBoard } from '../components/game/LineupOrderBoard';
 import { BattingTable, PitchingTable } from '../components/game/BoxscoreTables';
 import teamsData from '../data/teams.json';
 import { BoxscorePlayerEntry, BoxscoreResponse, BoxscoreTeamSide, GameSchedule } from '../types/mlb';
-import { ArrowLeft, Loader2, MapPin, Info, Shield, ClipboardList, Table2 } from 'lucide-react';
+import { ArrowLeft, Loader2, MapPin, Info, Shield, Table2 } from 'lucide-react';
 
-type GameTab = 'alignment' | 'lineup' | 'box';
+type GameTab = 'lineup' | 'box';
+type GameSide = 'away' | 'home';
 
 /** Roster list shared by the bench and bullpen blocks */
 const PlayerChips: React.FC<{
@@ -116,7 +117,10 @@ export const GameDetailPage: React.FC = () => {
   const { gamePk } = useParams<{ gamePk: string }>();
   const pkNum = parseInt(gamePk || '0', 10);
   const { lang, t } = useLanguage();
-  const [tab, setTab] = useState<GameTab>('alignment');
+  const [tab, setTab] = useState<GameTab>('lineup');
+  // The chart and the order describe one team at a time; showing both at once
+  // buries the link between a fielder's slot badge and his lineup row
+  const [side, setSide] = useState<GameSide>('away');
 
   const {
     data: scheduleData,
@@ -179,9 +183,9 @@ export const GameDetailPage: React.FC = () => {
   // While live, the pitcher on the mound is worth calling out on the diagram
   const livePitcherId = isLive ? game.linescore?.defense?.pitcher?.id : undefined;
 
+
   const tabs: Array<{ id: GameTab; label: string; icon: React.ReactNode }> = [
-    { id: 'alignment', label: t('game.tab_alignment'), icon: <Shield className="w-3.5 h-3.5" /> },
-    { id: 'lineup', label: t('game.tab_lineup'), icon: <ClipboardList className="w-3.5 h-3.5" /> },
+    { id: 'lineup', label: t('game.tab_lineup'), icon: <Shield className="w-3.5 h-3.5" /> },
     { id: 'box', label: t('game.tab_box'), icon: <Table2 className="w-3.5 h-3.5" /> },
   ];
 
@@ -324,58 +328,70 @@ export const GameDetailPage: React.FC = () => {
 
       {!isBoxLoading && hasBoxscore && (
         <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-6">
-          {tab === 'alignment' && (
+          {tab === 'lineup' && (
             <>
+              {/* Which team is being described */}
+              <div className="flex gap-2">
+                {(['away', 'home'] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setSide(option)}
+                    aria-pressed={side === option}
+                    className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors ${
+                      side === option
+                        ? 'bg-team-primary/10 text-team-primary border-team-primary'
+                        : 'bg-page/60 text-muted border-border hover:text-main'
+                    }`}
+                  >
+                    <img
+                      src={getTeamLogoUrl(game.teams[option].team.id)}
+                      alt=""
+                      className="w-5 h-5"
+                      loading="lazy"
+                    />
+                    <span className="truncate">
+                      {option === 'away' ? awayName : homeName}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Chart and order side by side: the slot badge on a fielder is
+                  the same number as his row in the lineup next to it */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <FieldAlignmentDiagram
-                  teamBox={awayBox}
-                  teamName={awayName}
+                  teamBox={side === 'away' ? awayBox : homeBox}
+                  teamName={side === 'away' ? awayName : homeName}
                   highlightPersonId={livePitcherId}
                 />
-                <FieldAlignmentDiagram
-                  teamBox={homeBox}
-                  teamName={homeName}
-                  highlightPersonId={livePitcherId}
-                />
+                <div className="space-y-5">
+                  <LineupOrderBoard
+                    teamBox={side === 'away' ? awayBox : homeBox}
+                    teamName={side === 'away' ? awayName : homeName}
+                  />
+                  <PlayerChips
+                    ids={(side === 'away' ? awayBox : homeBox).bench || []}
+                    players={(side === 'away' ? awayBox : homeBox).players || {}}
+                    label={t('game.bench')}
+                  />
+                  <PlayerChips
+                    ids={(side === 'away' ? awayBox : homeBox).bullpen || []}
+                    players={(side === 'away' ? awayBox : homeBox).players || {}}
+                    label={t('game.bullpen')}
+                  />
+                  <SubstitutionNotes
+                    teamBox={side === 'away' ? awayBox : homeBox}
+                    label={t('game.notes')}
+                  />
+                </div>
               </div>
+
               <p className="flex items-start gap-1.5 text-[10px] text-muted border-t border-border/40 pt-3">
                 <Info className="w-3.5 h-3.5 shrink-0 mt-px" />
                 <span>{t('game.alignment_disclaimer')}</span>
               </p>
             </>
-          )}
-
-          {tab === 'lineup' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-5">
-                <LineupOrderBoard teamBox={awayBox} teamName={awayName} />
-                <PlayerChips
-                  ids={awayBox.bench || []}
-                  players={awayBox.players || {}}
-                  label={t('game.bench')}
-                />
-                <PlayerChips
-                  ids={awayBox.bullpen || []}
-                  players={awayBox.players || {}}
-                  label={t('game.bullpen')}
-                />
-                <SubstitutionNotes teamBox={awayBox} label={t('game.notes')} />
-              </div>
-              <div className="space-y-5">
-                <LineupOrderBoard teamBox={homeBox} teamName={homeName} />
-                <PlayerChips
-                  ids={homeBox.bench || []}
-                  players={homeBox.players || {}}
-                  label={t('game.bench')}
-                />
-                <PlayerChips
-                  ids={homeBox.bullpen || []}
-                  players={homeBox.players || {}}
-                  label={t('game.bullpen')}
-                />
-                <SubstitutionNotes teamBox={homeBox} label={t('game.notes')} />
-              </div>
-            </div>
           )}
 
           {tab === 'box' && (

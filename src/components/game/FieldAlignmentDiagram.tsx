@@ -92,6 +92,25 @@ const PositionNode: React.FC<{
       >
         {fielder?.positionNumber ?? ''}
       </text>
+      {fielder?.battingSlot != null && (
+        <g>
+          <circle
+            cx={x + 14}
+            cy={y - 13}
+            r={8}
+            className="fill-card stroke-border"
+            strokeWidth={1.5}
+          />
+          <text
+            x={x + 14}
+            y={y - 10}
+            textAnchor="middle"
+            className="text-[9px] font-bold fill-main"
+          >
+            {fielder.battingSlot}
+          </text>
+        </g>
+      )}
       <text x={x} y={y + 28} textAnchor="middle" className="text-[10px] font-bold fill-muted">
         {position}
       </text>
@@ -110,6 +129,9 @@ const PositionNode: React.FC<{
     <a href={`#/players/${fielder.personId}`} aria-label={`${position} ${fielder.fullName}`}>
       <title>
         {`${fielder.positionNumber} ${position} — ${fielder.fullName}` +
+          (fielder.battingSlot != null
+            ? ` · ${t('game.batting_slot', { slot: fielder.battingSlot })}`
+            : '') +
           (fielder.replacedName ? ` (${t('game.replaced_prefix')}${fielder.replacedName})` : '') +
           (fielder.isPending ? ` — ${t('game.position_pending')}` : '')}
       </title>
@@ -235,6 +257,11 @@ export const FieldAlignmentDiagram: React.FC<FieldAlignmentDiagramProps> = ({
                 {f.positionNumber}
               </span>
               <span className="font-mono text-muted w-6 shrink-0">{pos}</span>
+              {f.battingSlot != null && (
+                <span className="shrink-0 text-[9px] font-bold text-team-primary font-mono">
+                  {f.battingSlot}
+                </span>
+              )}
               <a
                 href={`#/players/${f.personId}`}
                 className="truncate text-main hover:text-team-primary hover:underline"
@@ -242,12 +269,6 @@ export const FieldAlignmentDiagram: React.FC<FieldAlignmentDiagramProps> = ({
                 {f.fullName}
               </a>
               {f.isSubstitute && <span className="text-[9px] text-amber-500 shrink-0">*</span>}
-              {f.replacedName && (
-                <span className="text-[9px] text-muted truncate shrink-0">
-                  {t('game.replaced_prefix')}
-                  {f.replacedName}
-                </span>
-              )}
               {f.isPending && (
                 <span className="text-[9px] text-team-primary shrink-0">
                   {t('game.position_pending')}
