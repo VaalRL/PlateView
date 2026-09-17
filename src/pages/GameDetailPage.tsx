@@ -9,6 +9,7 @@ import { FieldAlignmentDiagram } from '../components/game/FieldAlignmentDiagram'
 import { LineupOrderBoard } from '../components/game/LineupOrderBoard';
 import { BattingTable, PitchingTable } from '../components/game/BoxscoreTables';
 import teamsData from '../data/teams.json';
+import { LIVE_ACCENT } from '../constants/gameStatus';
 import { BoxscorePlayerEntry, BoxscoreResponse, BoxscoreTeamSide, GameSchedule } from '../types/mlb';
 import { ArrowLeft, Loader2, MapPin, Info, Shield, Table2 } from 'lucide-react';
 
@@ -235,7 +236,7 @@ export const GameDetailPage: React.FC = () => {
               {game.teams.away.score ?? '-'} : {game.teams.home.score ?? '-'}
             </div>
             <div
-              className={`text-[11px] font-semibold ${isLive ? 'text-red-500' : 'text-muted'}`}
+              className={`text-[11px] font-semibold ${isLive ? LIVE_ACCENT.text : 'text-muted'}`}
             >
               {game.status.detailedState}
               {isLive && game.linescore?.currentInningOrdinal

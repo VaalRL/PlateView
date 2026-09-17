@@ -12,6 +12,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { formatRateStat, formatEra, formatWhip } from '../utils/statsFormatters';
 import { formatBilingualGameTime, formatApiDate } from '../utils/timezone';
 import teamsData from '../data/teams.json';
+import { LIVE_ACCENT } from '../constants/gameStatus';
 import {
   Star,
   ArrowLeft,
@@ -466,7 +467,9 @@ export const TeamDetailPage: React.FC = () => {
                         )}
 
                         {isLive && (
-                          <span className="text-xs px-2.5 py-1 rounded-lg font-mono font-bold bg-red-500/20 border border-red-500/40 text-red-400 animate-pulse">
+                          <span
+                            className={`text-xs px-2.5 py-1 rounded-lg font-mono font-bold animate-pulse ${LIVE_ACCENT.badge}`}
+                          >
                             🔴 LIVE {myScore} - {oppScore}
                           </span>
                         )}

@@ -195,4 +195,26 @@ describe('ScoreboardCard component', () => {
     fireEvent.click(screen.getByText(/匹茲堡海盜/));
     expect(screen.queryByText('GAME PAGE')).not.toBeInTheDocument();
   });
+
+  it('marks a live game in a colour that does not read as a loss', () => {
+    const { container } = render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <ScoreboardCard game={mockLiveGame} />
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    // rose marks a defeat and emerald a win across the app, and red-500 sits
+    // close enough to rose-500 that a live game read as a loss. The outs
+    // indicator keeps its own rose, which means "out", not "lost".
+    const card = container.firstElementChild!;
+    expect(card.className).toContain('amber-500');
+    expect(card.className).not.toMatch(/red-500|rose-500|emerald-500/);
+
+    // The pulsing inning badge is the live marker (it shows "▼ 7th", not "LIVE")
+    const badge = container.querySelector('.animate-pulse')!;
+    expect(badge.className).toContain('amber-500');
+    expect(badge.className).not.toMatch(/red-500|rose-500|emerald-500/);
+  });
 });

@@ -6,6 +6,7 @@ import { GameSchedule } from '../../types/mlb';
 import { formatBilingualGameTime } from '../../utils/timezone';
 import teamsData from '../../data/teams.json';
 import { Radio, Flag, CalendarClock, ArrowRight } from 'lucide-react';
+import { LIVE_ACCENT } from '../../constants/gameStatus';
 
 interface FavoriteTeamSummaryCardProps {
   teamId: number;
@@ -85,7 +86,7 @@ export const FavoriteTeamSummaryCard: React.FC<FavoriteTeamSummaryCardProps> = (
       statusText = `${linescore?.inningHalf === 'Top' ? '▲' : '▼'} ${
         linescore?.currentInningOrdinal || linescore?.currentInning || ''
       }`;
-      statusClass = 'bg-red-500/15 text-red-500 border-red-500/30 animate-pulse';
+      statusClass = `${LIVE_ACCENT.badge} animate-pulse`;
     } else if (isFinal) {
       statusText = t('sb.final');
       statusClass = 'bg-page text-muted border-border/50';
@@ -141,7 +142,7 @@ export const FavoriteTeamSummaryCard: React.FC<FavoriteTeamSummaryCardProps> = (
         {view ? (
           <>
             {view.isLive ? (
-              <Radio className="w-4 h-4 text-red-500 shrink-0" />
+              <Radio className={`w-4 h-4 shrink-0 ${LIVE_ACCENT.text}`} />
             ) : view.isFinal ? (
               <Flag className="w-4 h-4 text-team-primary shrink-0" />
             ) : (

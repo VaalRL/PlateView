@@ -7,6 +7,7 @@ import { BasesDiamond } from './BasesDiamond';
 import { CountDisplay } from './CountDisplay';
 import { useLanguage } from '../../hooks/useLanguage';
 import teamsData from '../../data/teams.json';
+import { LIVE_ACCENT } from '../../constants/gameStatus';
 import playersData from '../../data/players-zh-tw.json';
 import { ChevronRight, AlertCircle } from 'lucide-react';
 
@@ -85,17 +86,17 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
       className={`bg-card border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group/card ${
         hasStarted ? 'cursor-pointer hover:border-team-primary/60' : ''
       } ${
-        isLive
-          ? 'border-red-500/60 shadow-[0_0_16px_rgba(239,68,68,0.12)] ring-1 ring-red-500/30'
-          : 'border-border'
+        isLive ? LIVE_ACCENT.card : 'border-border'
       }`}
     >
       {/* 1. Header Bar: Game Status + Venue (MLB.com layout) */}
       <div className="flex items-center justify-between pb-2.5 border-b border-border text-xs">
         {isLive && (
           <div className="flex items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-500/15 text-red-500 font-black tracking-wider text-[11px] animate-pulse">
-              <span className="w-2 h-2 rounded-full bg-red-500" />
+            <span
+              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md font-black tracking-wider text-[11px] animate-pulse ${LIVE_ACCENT.badge}`}
+            >
+              <span className={`w-2 h-2 rounded-full ${LIVE_ACCENT.dot}`} />
               {linescore?.inningHalf === 'Top' ? '▲' : '▼'}{' '}
               {linescore?.currentInningOrdinal || `${linescore?.currentInning || ''}${lang === 'zh' ? '局' : ''}`}
             </span>

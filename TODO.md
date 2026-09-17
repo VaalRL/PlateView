@@ -179,3 +179,14 @@
   - [x] 補測試釘住可見文字為 `Box`(而非完整敘述),避免日後改回長文字
   - [x] 以 Playwright 渲染賽前／進行中／已結束三種卡片狀態,深淺兩色確認
   - [x] 測試 172 項全數通過;TypeScript、ESLint（0 errors）與 Vite 打包驗證通過
+
+- [x] **Phase 18: 進行中標記改色與打序列補上 AVG／OPS（2026-09-17）**
+  - [x] **進行中比賽不再使用與敗投相同的紅色**:全站以 `emerald`(勝)、`rose`(敗)區分,而進行中原用 `red-500` —— `red-500` (#ef4444) 與 `rose-500` (#f43f5e) 肉眼幾乎無法分辨,進行中的比賽看起來像輸球。改用 `amber`,是三者中唯一不帶勝負語意的顏色
+  - [x] 顏色抽為 `src/constants/gameStatus.ts` 的 `LIVE_ACCENT`(卡片外框／徽章／圓點／文字四種用法),避免四個檔案各自散落色碼;套用於 `ScoreboardCard`、`GameDetailPage`、`TeamDetailPage` 與 `FavoriteTeamSummaryCard`,全專案已無 `red-500`
+  - [x] **保留**出局指示燈的 `rose-500`:那是「出局」語意(對打擊方不利),與勝敗標記無關
+  - [x] 守備配置與打序分頁的打序列新增右側對齊的 **AVG / OPS** 欄位與欄位標題,數字採等寬字體便於縱向比對
+  - [x] 比率數據取自 boxscore 的 `seasonStats`(單場 `stats` 不含比率數據,同 Phase 5 的既有發現);同一棒次已換人時顯示**當前在場者**的成績,被換下者的數據可由其球員頁查看
+  - [x] 無賽季成績者(如初登板新人)顯示 `-`,不會出現空白或 `undefined`
+  - [x] 補測試:斷言卡片與 LIVE 徽章不得出現 `red-500`／`rose-500`／`emerald-500`、打序列顯示 AVG／OPS、換人後取當前在場者、無資料時退回 `-`
+  - [x] 以 Playwright 並排渲染進行中／已結束卡片與打序列,深淺兩色確認
+  - [x] 測試由 172 項增至 176 項,全數通過;TypeScript、ESLint（0 errors）與 Vite 打包驗證通過
