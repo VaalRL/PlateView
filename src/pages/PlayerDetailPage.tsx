@@ -17,6 +17,7 @@ import {
 } from '../utils/statsFormatters';
 import playersData from '../data/players-zh-tw.json';
 import teamsData from '../data/teams.json';
+import { GameLogSplit } from '../types/favorites';
 import { Star, ArrowLeft, Activity, Calendar, Award, Zap } from 'lucide-react';
 
 export const PlayerDetailPage: React.FC = () => {
@@ -736,7 +737,9 @@ export const PlayerDetailPage: React.FC = () => {
                 <thead>
                   <tr className="border-b border-border text-muted text-[11px] bg-page/60">
                     <th className="py-3 px-4 font-medium">{lang === 'zh' ? '日期' : 'Date'}</th>
-                    <th className="py-3 px-3 font-medium">{lang === 'zh' ? '對手' : 'Opponent'}</th>
+                    <th className="py-3 px-3 font-medium">
+                      {lang === 'zh' ? '所屬 / 對戰' : 'Team / Matchup'}
+                    </th>
                     {effectiveRole === 'pitching' ? (
                       <>
                         <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '結果' : 'Dec'}</th>
@@ -763,34 +766,70 @@ export const PlayerDetailPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/30">
-                  {activeGameLogs.map((log: any, idx: number) => {
+                  {activeGameLogs.map((log: GameLogSplit, idx: number) => {
                     const oppTeam = teamsData.find((t) => t.id === log.opponent?.id);
-                    const oppDisplayName = lang === 'zh' ? oppTeam?.nameZh || log.opponent?.name : log.opponent?.name || 'MLB';
+                    const oppDisplayName =
+                      lang === 'zh' ? oppTeam?.nameZh || log.opponent?.name : log.opponent?.name || 'MLB';
+
+                    // The team he played FOR that day: the only way to read a
+                    // log that spans a mid-season trade
+                    const ownTeam = teamsData.find((t) => t.id === log.team?.id);
+                    const ownDisplayName =
+                      (lang === 'zh' ? ownTeam?.nameZh : ownTeam?.name) || log.team?.name || '';
+                    const gamePk = log.game?.gamePk;
 
                     return (
                       <tr key={idx} className="hover:bg-card-hover/50 transition-colors">
-                        <td className="py-2.5 px-4 text-main font-semibold">{log.date}</td>
-                        <td className="py-2.5 px-3">
-                          {oppTeam ? (
+                        <td className="py-2.5 px-4 text-main font-semibold">
+                          {gamePk ? (
                             <Link
-                              to={`/teams/${oppTeam.id}`}
-                              className="inline-flex items-center gap-1.5 hover:text-team-primary hover:underline font-semibold text-main transition-colors group"
+                              to={`/games/${gamePk}`}
+                              className="hover:text-team-primary hover:underline transition-colors"
+                              title={t('game.open_full_box')}
                             >
-                              <img
-                                src={getTeamLogoUrl(oppTeam.id)}
-                                alt={oppDisplayName}
-                                className="w-4 h-4 object-contain shrink-0 group-hover:scale-110 transition-transform"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).style.display = 'none';
-                                }}
-                              />
-                              <span className="truncate max-w-[110px] sm:max-w-none">{oppDisplayName}</span>
+                              {log.date}
                             </Link>
                           ) : (
-                            <span className="text-muted font-medium truncate max-w-[110px] sm:max-w-none">
-                              {oppDisplayName}
-                            </span>
+                            log.date
                           )}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <span className="inline-flex items-center gap-1.5">
+                            {/* The team he played for reads as an abbreviation,
+                                not a crest: a crest that fails to load would
+                                take the whole answer with it */}
+                            <span
+                              className="text-main text-[11px] font-bold shrink-0 w-8"
+                              title={ownDisplayName}
+                            >
+                              {ownTeam?.abbrev || log.team?.name?.slice(0, 3).toUpperCase() || '—'}
+                            </span>
+                            <span className="text-muted text-[10px] font-medium shrink-0">
+                              {log.isHome === false ? '@' : log.isHome ? 'vs' : '-'}
+                            </span>
+                            {oppTeam ? (
+                              <Link
+                                to={`/teams/${oppTeam.id}`}
+                                className="inline-flex items-center gap-1.5 hover:text-team-primary hover:underline font-semibold text-main transition-colors group"
+                              >
+                                <img
+                                  src={getTeamLogoUrl(oppTeam.id)}
+                                  alt={oppDisplayName}
+                                  className="w-4 h-4 object-contain shrink-0 group-hover:scale-110 transition-transform"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                                <span className="truncate max-w-[92px] sm:max-w-none">
+                                  {oppDisplayName}
+                                </span>
+                              </Link>
+                            ) : (
+                              <span className="text-muted font-medium truncate max-w-[92px] sm:max-w-none">
+                                {oppDisplayName}
+                              </span>
+                            )}
+                          </span>
                         </td>
                         {effectiveRole === 'pitching' ? (
                           <>

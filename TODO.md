@@ -190,3 +190,17 @@
   - [x] 補測試:斷言卡片與 LIVE 徽章不得出現 `red-500`／`rose-500`／`emerald-500`、打序列顯示 AVG／OPS、換人後取當前在場者、無資料時退回 `-`
   - [x] 以 Playwright 並排渲染進行中／已結束卡片與打序列,深淺兩色確認
   - [x] 測試由 172 項增至 176 項,全數通過;TypeScript、ESLint（0 errors）與 Vite 打包驗證通過
+
+- [x] **Phase 19: 球員逐場紀錄補上所屬球隊、主客場與逐場專頁連結（2026-09-21）**
+  - [x] **修正看不出「代表哪一隊出賽」**:逐場紀錄原本只讀 `log.opponent`,從未使用 `log.team`;季中被交易的球員整季紀錄混在一起,無從分辨哪幾場還在舊東家
+  - [x] 查證 API 確實提供(對照 `python-mlb-statsapi` 的 dataclass):`Split` 基底提供 `team`,`HittingGameLog`／`PitchingGameLog` 另有 `isHome`、`isWin`、`game`(含 `gamePk`)、`date`、`opponent`,打者另有 `positionsPlayed`
+  - [x] 「對手」欄改為「所屬 / 對戰」:`LAD vs 匹茲堡海盜`、`TEX @ 休士頓太空人`
+  - [x] **所屬球隊以隊伍縮寫文字呈現而非隊徽**:隊徽載入失敗時 `onError` 會將其隱藏,若只用隊徽,圖一失敗所屬球隊就完全消失,等於沒修(實際渲染後才發現);對手維持隊徽＋隊名,兩者視覺上也因此可區分
+  - [x] 日期欄連至 `#/games/:gamePk`,逐場紀錄與逐場 Box 專頁就此串接;無 `gamePk` 時退回純文字
+  - [x] `GameLogSplit` 型別補上 `team`／`opponent`／`isHome`／`isWin`／`game`／`positionsPlayed`,逐場列不再是 `any`
+  - [x] **型別化過程順帶抓出既有漏洞**:`GameLogStat` 缺少頁面實際讀取的 `runs`,以及 `getPitchingDecision()` 所需的 `wins`／`losses`／`saves`／`holds`／`blownSaves` 決勝計數欄位
+  - [x] 補測試:交易球員兩隊皆可辨識、主客場分別顯示 `vs`／`@`、日期連結指向正確 gamePk、無 gamePk 時不產生連結
+  - [x] 以 Playwright 渲染跨隊逐場紀錄,深淺兩色確認
+  - [x] 測試由 176 項增至 180 項,全數通過;TypeScript、ESLint（0 errors,warnings 50 → 49）與 Vite 打包驗證通過
+
+> 📌 **尚未使用但已可取得**:`positionsPlayed`(該場守備位置)與 `isWin`(球隊當場勝負),型別已備妥,需要時可直接用。
