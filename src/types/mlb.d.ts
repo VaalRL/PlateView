@@ -252,10 +252,16 @@ export interface BoxscoreBattingStats {
   atBats?: number;
   runs?: number;
   hits?: number;
+  doubles?: number;
+  triples?: number;
   rbi?: number;
   homeRuns?: number;
   baseOnBalls?: number;
   strikeOuts?: number;
+  stolenBases?: number;
+  /** Runners the batter stranded */
+  leftOnBase?: number;
+  totalBases?: number;
   avg?: string;
   ops?: string;
   /** Substitution marker (a, b, c...) tying the row to `note` */
@@ -268,9 +274,29 @@ export interface BoxscorePitchingStats {
   hits?: number;
   runs?: number;
   earnedRuns?: number;
+  homeRuns?: number;
   baseOnBalls?: number;
   strikeOuts?: number;
+  hitBatsmen?: number;
+  wildPitches?: number;
+  battersFaced?: number;
+  numberOfPitches?: number;
+  strikes?: number;
+  balls?: number;
+  /** Runners already on base when the reliever came in, and how many scored */
+  inheritedRunners?: number;
+  inheritedRunnersScored?: number;
   era?: string;
+  /**
+   * Per-game decision counters. More than one can fire in a single outing, so
+   * read them with getPitchingDecisions rather than collapsing to one label.
+   */
+  wins?: number;
+  losses?: number;
+  saves?: number;
+  saveOpportunities?: number;
+  holds?: number;
+  blownSaves?: number;
   [key: string]: BoxscoreStatValue;
 }
 

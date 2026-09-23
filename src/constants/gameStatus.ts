@@ -15,3 +15,19 @@ export const LIVE_ACCENT = {
   /** Inline text, e.g. the current inning */
   text: 'text-amber-600 dark:text-amber-400',
 } as const;
+
+/**
+ * Badge styling for a pitcher's decision in a box score.
+ *
+ * Grouped by outcome rather than given five separate hues: W and SV are good
+ * for the pitcher, L and BS are not, and a hold sits on the team colour. BS
+ * deliberately shares rose with L instead of taking amber, which now means a
+ * game is in progress.
+ */
+export const DECISION_ACCENT: Record<string, string> = {
+  W: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40',
+  SV: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
+  HLD: 'bg-team-primary/10 text-team-primary border-team-primary/30',
+  L: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/40',
+  BS: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25',
+};

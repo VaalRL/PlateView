@@ -170,9 +170,9 @@ describe('GameDetailPage', () => {
     expect(screen.getAllByText('AB').length).toBe(2);
     expect(screen.getAllByText('IP').length).toBe(2);
     expect(screen.getByText('官方註記 (Official Notes)')).toBeInTheDocument();
-    // Grouped official remarks render their title and each field
+    // Grouped official remarks render their title and each field. "HR" also
+    // names a pitching column now, so match the remark by its value.
     expect(screen.getByText('BATTING')).toBeInTheDocument();
-    expect(screen.getByText('HR')).toBeInTheDocument();
     expect(screen.getByText(/Seager \(30\)/)).toBeInTheDocument();
   });
 

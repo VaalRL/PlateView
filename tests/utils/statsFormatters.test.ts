@@ -11,6 +11,8 @@ import {
   formatWoba,
   formatPer9,
   getPitchingDecision,
+  getPitchingDecisions,
+  formatDecisionRecord,
 } from '../../src/utils/statsFormatters';
 import type { PitchingDecisionStat } from '../../src/utils/statsFormatters';
 
@@ -130,6 +132,61 @@ describe('statsFormatters utility tests', () => {
       expect(getPitchingDecision({})).toBe('-');
       // A split that carries other pitching stats but no decision counters
       expect(getPitchingDecision({ era: '2.84' } as PitchingDecisionStat)).toBe('-');
+    });
+  });
+
+  describe('getPitchingDecisions (box score badges)', () => {
+    it('reports every decision an outing earned, not just the first', () => {
+      // A reliever who coughs up the lead and is then credited with the win
+      // carries both counters; the singular helper drops the blown save
+      const vultureWin: PitchingDecisionStat = { wins: 1, blownSaves: 1, losses: 0, saves: 0, holds: 0 };
+
+      expect(getPitchingDecisions(vultureWin)).toEqual(['W', 'BS']);
+      expect(getPitchingDecision(vultureWin)).toBe('W');
+    });
+
+    it('orders them W, L, SV, HLD, BS', () => {
+      expect(getPitchingDecisions({ holds: 1, blownSaves: 1 })).toEqual(['HLD', 'BS']);
+    });
+
+    it('returns nothing for a no-decision outing', () => {
+      expect(getPitchingDecisions({ wins: 0, losses: 0, saves: 0, holds: 0, blownSaves: 0 })).toEqual(
+        []
+      );
+    });
+
+    it('returns nothing when the stat block has no counters at all', () => {
+      expect(getPitchingDecisions(undefined)).toEqual([]);
+      expect(getPitchingDecisions(null)).toEqual([]);
+      expect(getPitchingDecisions({})).toEqual([]);
+    });
+
+    it('keeps the single-label helper behaving exactly as before', () => {
+      expect(getPitchingDecision({ saves: 1 })).toBe('SV');
+      // Counters present but none fired is a no-decision, not "no data"
+      expect(getPitchingDecision({ wins: 0, losses: 0 })).toBe('ND');
+      expect(getPitchingDecision({})).toBe('-');
+      expect(getPitchingDecision(undefined)).toBe('-');
+    });
+  });
+
+  describe('formatDecisionRecord (season tally beside a badge)', () => {
+    it('quotes a win or a loss as the season record', () => {
+      expect(formatDecisionRecord('W', { wins: 12, losses: 6 })).toBe('12-6');
+      expect(formatDecisionRecord('L', { wins: 4, losses: 9 })).toBe('4-9');
+    });
+
+    it('quotes a save, hold or blown save as a single tally', () => {
+      expect(formatDecisionRecord('SV', { saves: 28 })).toBe('28');
+      expect(formatDecisionRecord('HLD', { holds: 12 })).toBe('12');
+      expect(formatDecisionRecord('BS', { blownSaves: 3 })).toBe('3');
+    });
+
+    it('stays empty rather than inventing a record it cannot read', () => {
+      expect(formatDecisionRecord('W', { wins: 12 })).toBe('');
+      expect(formatDecisionRecord('SV', {})).toBe('');
+      expect(formatDecisionRecord('W', undefined)).toBe('');
+      expect(formatDecisionRecord('ND', { wins: 1, losses: 1 })).toBe('');
     });
   });
 });

@@ -117,10 +117,25 @@ const DECISION_COUNTERS: [keyof PitchingDecisionStat, string][] = [
 ];
 
 /**
- * Derive a single game decision (W / L / SV / HLD / BS / ND) from a pitching game log split.
- * The MLB API reports per-game counters instead of a decision field; exactly one of them is
- * set on a decided appearance, so the first non-zero counter wins.
+ * Every decision a pitcher earned in one appearance, in W / L / SV / HLD / BS order.
+ *
+ * More than one can be true at once: a reliever who blows the save and is then
+ * credited with the win carries both `blownSaves` and `wins`. Returns an empty
+ * array when the stat block has no decision counters at all, and also when it
+ * has them but none fired (a no-decision outing).
+ */
+export function getPitchingDecisions(stat?: PitchingDecisionStat | null): string[] {
+  if (!stat) return [];
+  return DECISION_COUNTERS.filter(([key]) => (stat[key] ?? 0) > 0).map(([, label]) => label);
+}
+
+/**
+ * The single headline decision (W / L / SV / HLD / BS / ND) for a pitching game
+ * log split, where one compact label per row is all there is room for.
  * Returns "-" when the split carries no decision counters at all.
+ *
+ * A box score should use `getPitchingDecisions` instead: collapsing to one label
+ * silently drops the blown save from a blow-it-then-vulture-the-win outing.
  */
 export function getPitchingDecision(stat?: PitchingDecisionStat | null): string {
   if (!stat) return '-';
@@ -128,6 +143,37 @@ export function getPitchingDecision(stat?: PitchingDecisionStat | null): string 
   const reported = DECISION_COUNTERS.filter(([key]) => typeof stat[key] === 'number');
   if (reported.length === 0) return '-';
 
-  const decided = reported.find(([key]) => (stat[key] as number) > 0);
-  return decided ? decided[1] : 'ND';
+  return getPitchingDecisions(stat)[0] ?? 'ND';
+}
+
+/**
+ * The season tally a box score prints beside a decision, MLB style:
+ * `W (12-6)`, `L (4-9)`, `SV (28)`, `HLD (12)`, `BS (3)`.
+ * Returns an empty string when the season line does not carry the counter.
+ */
+export function formatDecisionRecord(
+  decision: string,
+  seasonStat?: PitchingDecisionStat | null
+): string {
+  if (!seasonStat) return '';
+
+  const tally = (key: keyof PitchingDecisionStat) =>
+    typeof seasonStat[key] === 'number' ? (seasonStat[key] as number) : null;
+
+  if (decision === 'W' || decision === 'L') {
+    const wins = tally('wins');
+    const losses = tally('losses');
+    return wins !== null && losses !== null ? `${wins}-${losses}` : '';
+  }
+
+  const single: Record<string, keyof PitchingDecisionStat> = {
+    SV: 'saves',
+    HLD: 'holds',
+    BS: 'blownSaves',
+  };
+  const key = single[decision];
+  if (!key) return '';
+
+  const value = tally(key);
+  return value !== null ? String(value) : '';
 }
