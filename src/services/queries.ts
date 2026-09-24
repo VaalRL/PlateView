@@ -16,6 +16,7 @@ import {
   getPostseasonSeries,
 } from './mlbApi';
 import { getCurrentMlbSeason } from '../utils/season';
+import { MLB_SPORT_ID } from '../constants/levels';
 import { formatApiDate } from '../utils/timezone';
 import { ScheduleResponse } from '../types/mlb';
 
@@ -25,10 +26,10 @@ export function scheduleHasLiveGames(data?: ScheduleResponse): boolean {
   return games.some((g) => g?.status?.abstractGameState === 'Live');
 }
 
-export function useScheduleQuery(date: string, enabled: boolean = true) {
+export function useScheduleQuery(date: string, enabled: boolean = true, sportId: number = MLB_SPORT_ID) {
   return useQuery({
-    queryKey: ['schedule', date],
-    queryFn: () => getSchedule(date),
+    queryKey: ['schedule', date, sportId],
+    queryFn: () => getSchedule(date, sportId),
     enabled,
     // Poll only while games are actually live; idle days stay quiet
     refetchInterval: (query) => (scheduleHasLiveGames(query.state.data) ? 30000 : false),
@@ -36,10 +37,11 @@ export function useScheduleQuery(date: string, enabled: boolean = true) {
   });
 }
 
-export function useStandingsQuery(season?: number) {
+export function useStandingsQuery(season?: number, leagueIds?: readonly number[], enabled: boolean = true) {
   return useQuery({
-    queryKey: ['standings', season],
-    queryFn: () => getStandings(season),
+    queryKey: ['standings', season, leagueIds?.join(',')],
+    queryFn: () => getStandings(season, leagueIds),
+    enabled,
     staleTime: 1000 * 60 * 15, // 15 minutes
   });
 }
@@ -75,7 +77,11 @@ export function useTeamDetailQuery(teamId?: number) {
   });
 }
 
-export function useTeamScheduleQuery(teamId?: number) {
+/**
+ * A team's recent and upcoming games. A minor league club's games live under
+ * its own sportId, so the query waits until the level is known.
+ */
+export function useTeamScheduleQuery(teamId?: number, sportId?: number) {
   // Query 35 days in the past up to 2 days ahead
   const pastDate = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000);
   const futureDate = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
@@ -83,9 +89,9 @@ export function useTeamScheduleQuery(teamId?: number) {
   const endDate = formatApiDate(futureDate);
 
   return useQuery({
-    queryKey: ['team-schedule', teamId, startDate, endDate],
-    queryFn: () => getTeamSchedule(teamId!, startDate, endDate),
-    enabled: !!teamId,
+    queryKey: ['team-schedule', teamId, startDate, endDate, sportId],
+    queryFn: () => getTeamSchedule(teamId!, startDate, endDate, sportId),
+    enabled: !!teamId && sportId !== undefined,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }

@@ -3,6 +3,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TeamDetailPage } from '../../src/pages/TeamDetailPage';
+import rochester from '../fixtures/team-rochester.json';
+import standingsAaa from '../fixtures/standings-aaa-2026.json';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
@@ -258,5 +260,65 @@ describe('TeamDetailPage component', () => {
     );
 
     expect(await screen.findByText('已賽 157/162')).toBeInTheDocument();
+  });
+
+  describe('a minor league club', () => {
+    let requested: URL[];
+
+    const renderRochester = () => {
+      requested = [];
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (input: unknown) => {
+          const url = new URL(String(input));
+          requested.push(url);
+          let body: unknown = {};
+          if (url.pathname.endsWith('/teams/534')) body = rochester;
+          else if (url.pathname.endsWith('/standings')) body = standingsAaa;
+          return { ok: true, status: 200, statusText: 'OK', json: async () => body } as Response;
+        })
+      );
+      render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={['/teams/534']}>
+            <Routes>
+              <Route path="/teams/:teamId" element={<TeamDetailPage />} />
+            </Routes>
+          </MemoryRouter>
+        </QueryClientProvider>
+      );
+    };
+
+    it('names the club, its level and its parent organization', async () => {
+      renderRochester();
+
+      expect(await screen.findByRole('heading', { name: 'Rochester Red Wings' })).toBeInTheDocument();
+      expect(screen.getByText('ROC')).toBeInTheDocument();
+      expect(screen.getByText('AAA')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /華盛頓國民/ })).toHaveAttribute('href', '/teams/120');
+      expect(screen.getByText(/International League East/)).toBeInTheDocument();
+    });
+
+    it('reads its schedule and standings from its own level', async () => {
+      renderRochester();
+
+      expect(await screen.findByText(/90 勝 58 敗/)).toBeInTheDocument();
+      const schedule = requested.find((u) => u.pathname.endsWith('/schedule'));
+      expect(schedule?.searchParams.get('sportId')).toBe('11');
+      const standings = requested.filter((u) => u.pathname.endsWith('/standings'));
+      expect(standings.map((u) => u.searchParams.get('leagueId'))).toEqual(['117']);
+    });
+
+    it('leaves out what only applies to a big league club', async () => {
+      renderRochester();
+      await screen.findByText(/90 勝 58 敗/);
+
+      // 162-game progress, favorites, and the 40-man / IL rosters are MLB concepts
+      expect(screen.queryByText(/已賽/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/收藏此球隊/)).not.toBeInTheDocument();
+      fireEvent.click(screen.getByText(/陣容名單/));
+      expect(screen.queryByText(/40 人名單/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/傷兵名單/)).not.toBeInTheDocument();
+    });
   });
 });

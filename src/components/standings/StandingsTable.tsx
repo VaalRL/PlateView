@@ -6,10 +6,11 @@ import { StandingRecord } from '../../types/mlb';
 import { useLanguage } from '../../hooks/useLanguage';
 import { formatSeasonProgress } from '../../utils/statsFormatters';
 import teamsData from '../../data/teams.json';
+import { MLB_LEVEL, MLB_SPORT_ID, type BrowsableLevel } from '../../constants/levels';
 
 type StandingsTab = 'ALL' | 'AL' | 'NL' | 'WC';
 
-export const StandingsTable: React.FC = () => {
+const MlbStandings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<StandingsTab>('ALL');
   const { data, isLoading, isError } = useStandingsQuery();
   const { lang, t } = useLanguage();
@@ -354,3 +355,98 @@ export const StandingsTable: React.FC = () => {
     </section>
   );
 };
+
+/**
+ * Division tables for a minor league level. Wild cards and the 162-game
+ * schedule are MLB concepts, so this view keeps to W / L / PCT / GB, with
+ * names as the API gives them (minor league clubs are not in teams.json).
+ */
+const MinorLeagueStandings: React.FC<{ level: BrowsableLevel }> = ({ level }) => {
+  const { data, isLoading, isError } = useStandingsQuery(undefined, level.leagueIds);
+  const { t } = useLanguage();
+  const records = data?.records || [];
+
+  return (
+    <section id="standings" className="mt-12 space-y-6 scroll-mt-20">
+      <div className="border-b border-border pb-3">
+        <h2 className="text-lg sm:text-xl font-extrabold text-main tracking-tight">
+          {t('standings.milb_title', { level: level.abbreviation })}
+        </h2>
+        <p className="text-xs text-muted mt-0.5">{t('standings.milb_subtitle')}</p>
+      </div>
+
+      {isLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-card border border-border rounded-xl p-4 h-64 animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {isError && (
+        <div className="bg-card border border-border rounded-xl p-8 text-center text-rose-500 text-sm">
+          {t('standings.load_error')}
+        </div>
+      )}
+
+      {!isLoading && !isError && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {records.map((divisionGroup) => (
+            <div
+              key={divisionGroup.division.id}
+              className="bg-card border border-border rounded-xl overflow-hidden shadow-sm flex flex-col"
+            >
+              <div className="bg-page/60 border-b border-border px-4 py-2.5 font-bold text-xs text-team-primary">
+                {divisionGroup.division.name}
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead>
+                    <tr className="border-b border-border/50 text-muted text-[11px]">
+                      <th className="py-2 px-3 font-medium">{t('standings.team')}</th>
+                      <th className="py-2 px-2 text-center font-medium">{t('standings.wins')}</th>
+                      <th className="py-2 px-2 text-center font-medium">{t('standings.losses')}</th>
+                      <th className="py-2 px-2 text-center font-medium">{t('standings.pct')}</th>
+                      <th className="py-2 px-2 text-center font-medium">{t('standings.gb')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30">
+                    {divisionGroup.teamRecords.map((rec) => (
+                      <tr key={rec.team.id} className="hover:bg-card-hover/50 transition-colors">
+                        <td className="py-2 px-3 flex items-center gap-2">
+                          <span className="font-mono text-muted text-[10px] w-3">{rec.divisionRank}</span>
+                          <img
+                            src={getTeamLogoUrl(rec.team.id)}
+                            alt=""
+                            className="w-4 h-4 object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                          <Link
+                            to={`/teams/${rec.team.id}`}
+                            className="font-semibold text-main hover:text-team-primary truncate max-w-[140px]"
+                          >
+                            {rec.team.name}
+                          </Link>
+                        </td>
+                        <td className="py-2 px-2 text-center font-mono font-medium">{rec.wins}</td>
+                        <td className="py-2 px-2 text-center font-mono text-muted">{rec.losses}</td>
+                        <td className="py-2 px-2 text-center font-mono">{rec.winningPercentage}</td>
+                        <td className="py-2 px-2 text-center font-mono text-muted">{rec.gamesBack}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+};
+
+/** Standings for the chosen level; MLB keeps its wild card view */
+export const StandingsTable: React.FC<{ level?: BrowsableLevel }> = ({ level = MLB_LEVEL }) =>
+  level.id === MLB_SPORT_ID ? <MlbStandings /> : <MinorLeagueStandings level={level} />;

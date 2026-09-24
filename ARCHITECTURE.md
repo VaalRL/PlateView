@@ -135,6 +135,7 @@ graph TD
 | **球隊陣容/名單** | TanStack Query | 60 分鐘 | 無 | 賽季名單穩定 |
 | **球員生涯/賽季** | TanStack Query | 10 分鐘 | 無 | 賽後更新 |
 | **單場 Box / 守備配置** | TanStack Query | 30 分鐘 (Live 為 20 秒) | 30 秒 (僅限進行中賽事) | 首頁比分卡與球隊頁賽事列皆導向 `#/games/:gamePk`，不再原地展開 |
+| **小聯盟比分／戰績** | TanStack Query | 同大聯盟 | 同大聯盟（僅限正在看的層級） | 首頁層級切換只查詢被選中的層級；層級與聯盟 id 見 `constants/levels.ts`（ADR 0005） |
 | **季後賽對戰樹** | TanStack Query | 當季 5 分鐘／往年 24 小時 | 無 | `/schedule/postseason/series` 以 `fields=` 精簡；晉級關係與種子由 `utils/postseason.ts` 推導（ADR 0004） |
 | **球場尺寸 (fieldInfo)** | TanStack Query | 24 小時 | 無 | 全壘打牆距離，改建才變動；全聯盟僅 30 座球場 |
 | **使用者最愛/外觀** | `LocalStorage` | 永久 (本機) | 無 | 跨 Session 保持偏好設定 |

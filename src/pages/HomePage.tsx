@@ -5,9 +5,12 @@ import { StandingsTable } from '../components/standings/StandingsTable';
 import { FavoritesBar } from '../components/favorite/FavoritesBar';
 import { useScheduleQuery } from '../services/queries';
 import { formatApiDate } from '../utils/timezone';
+import { LevelSelector } from '../components/common/LevelSelector';
+import { MLB_LEVEL, type BrowsableLevel } from '../constants/levels';
 
 export const HomePage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [level, setLevel] = useState<BrowsableLevel>(MLB_LEVEL);
   const dateStr = formatApiDate(selectedDate);
   const { data } = useScheduleQuery(dateStr);
   const games = data?.dates?.[0]?.games || [];
@@ -26,14 +29,20 @@ export const HomePage: React.FC = () => {
       {/* Pinned Favorites Bar — today's summary always uses the US game date */}
       <FavoritesBar games={games} />
 
+      {/* Level switcher: scores and standings follow it; favorites stay MLB */}
+      <div className="mb-3">
+        <LevelSelector value={level} onChange={setLevel} />
+      </div>
+
       {/* Main Scoreboard */}
       <ScoreboardGrid
         selectedDate={selectedDate}
         onDateChange={(newDate) => setSelectedDate(newDate)}
+        sportId={level.id}
       />
 
       {/* Division Standings */}
-      <StandingsTable />
+      <StandingsTable level={level} />
     </div>
   );
 };

@@ -9,11 +9,13 @@ import { useLanguage } from '../../hooks/useLanguage';
 interface ScoreboardGridProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
+  /** Level to show (1 = MLB, 11 = AAA ...); only this level is fetched and polled */
+  sportId?: number;
 }
 
-export const ScoreboardGrid: React.FC<ScoreboardGridProps> = ({ selectedDate, onDateChange }) => {
+export const ScoreboardGrid: React.FC<ScoreboardGridProps> = ({ selectedDate, onDateChange, sportId }) => {
   const dateStr = formatApiDate(selectedDate);
-  const { data, isLoading, isError, refetch, isFetching } = useScheduleQuery(dateStr);
+  const { data, isLoading, isError, refetch, isFetching } = useScheduleQuery(dateStr, true, sportId);
   const { lang, t } = useLanguage();
 
   const games = data?.dates?.[0]?.games || [];

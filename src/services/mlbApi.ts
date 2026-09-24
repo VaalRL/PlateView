@@ -2,7 +2,7 @@ import { ScheduleResponse, StandingsResponse, VenuesResponse } from '../types/ml
 import { PeopleResponse } from '../types/favorites';
 import { PostseasonSeriesResponse } from '../types/postseason';
 import { getCurrentMlbSeason } from '../utils/season';
-import { MLB_MILB_LEAGUE_LIST } from '../constants/levels';
+import { MLB_LEVEL, MLB_MILB_LEAGUE_LIST, MLB_SPORT_ID } from '../constants/levels';
 import {
   HITTING_LEADER_CATEGORIES,
   PITCHING_LEADER_CATEGORIES,
@@ -32,9 +32,9 @@ export async function fetchMlb<T>(endpoint: string, params: Record<string, strin
 /**
  * Fetch daily schedule and live scores
  */
-export async function getSchedule(date: string): Promise<ScheduleResponse> {
+export async function getSchedule(date: string, sportId: number = MLB_SPORT_ID): Promise<ScheduleResponse> {
   return fetchMlb<ScheduleResponse>('/schedule', {
-    sportId: 1,
+    sportId,
     date,
     hydrate: 'linescore,team,probablePitcher(note),decisions',
   });
@@ -43,9 +43,12 @@ export async function getSchedule(date: string): Promise<ScheduleResponse> {
 /**
  * Fetch division standings and wild card rankings
  */
-export async function getStandings(season: number = new Date().getFullYear()): Promise<StandingsResponse> {
+export async function getStandings(
+  season: number = new Date().getFullYear(),
+  leagueIds: readonly number[] = MLB_LEVEL.leagueIds
+): Promise<StandingsResponse> {
   return fetchMlb<StandingsResponse>('/standings', {
-    leagueId: '103,104',
+    leagueId: leagueIds.join(','),
     season,
     hydrate: 'division,conference',
   });
@@ -73,9 +76,14 @@ export async function getTeamDetail(teamId: number) {
 /**
  * Fetch team schedule and game results
  */
-export async function getTeamSchedule(teamId: number, startDate: string, endDate: string) {
+export async function getTeamSchedule(
+  teamId: number,
+  startDate: string,
+  endDate: string,
+  sportId: number = MLB_SPORT_ID
+) {
   return fetchMlb<any>('/schedule', {
-    sportId: 1,
+    sportId,
     teamId,
     startDate,
     endDate,

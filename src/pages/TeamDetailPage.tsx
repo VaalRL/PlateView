@@ -12,6 +12,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { formatRateStat, formatEra, formatWhip, formatSeasonProgress } from '../utils/statsFormatters';
 import { formatBilingualGameTime, formatApiDate } from '../utils/timezone';
 import teamsData from '../data/teams.json';
+import { BROWSABLE_LEVELS, MLB_SPORT_ID } from '../constants/levels';
 import { LIVE_ACCENT } from '../constants/gameStatus';
 import {
   Star,
@@ -50,11 +51,22 @@ export const TeamDetailPage: React.FC = () => {
     activeRosterTab === 'active' ? 'active' : '40Man'
   );
 
-  const { data: scheduleData, isLoading: isScheduleLoading, isError: isScheduleError } =
-    useTeamScheduleQuery(idNum);
-
+  // A club outside teams.json is a minor league affiliate: its level, name
+  // and league come from the team detail response instead
   const { data: teamDetail } = useTeamDetailQuery(idNum);
-  const { data: standingsData } = useStandingsQuery();
+  const detail = teamDetail?.teams?.[0];
+  const sportId: number | undefined = teamMeta ? MLB_SPORT_ID : detail?.sport?.id;
+  const isMinorLeague = sportId !== undefined && sportId !== MLB_SPORT_ID;
+  const parentOrg = isMinorLeague ? teamsData.find((t) => t.id === detail?.parentOrgId) : undefined;
+
+  const { data: scheduleData, isLoading: isScheduleLoading, isError: isScheduleError } =
+    useTeamScheduleQuery(idNum, sportId);
+
+  const { data: standingsData } = useStandingsQuery(
+    undefined,
+    isMinorLeague && detail?.league?.id ? [detail.league.id] : undefined,
+    sportId !== undefined
+  );
 
   const { isFavoriteTeam, toggleFavoriteTeam } = useFavorites();
   const isFav = isFavoriteTeam(idNum);
@@ -81,10 +93,14 @@ export const TeamDetailPage: React.FC = () => {
     if (found) teamRecord = found;
   });
 
-  const venueName = teamDetail?.teams?.[0]?.venue?.name || teamMeta?.name || 'MLB Stadium';
-  const teamTitle = lang === 'zh' ? teamMeta?.nameZh || 'MLB 球隊' : teamMeta?.name || 'MLB Team';
+  const venueName = detail?.venue?.name || teamMeta?.name || 'MLB Stadium';
+  const teamTitle = teamMeta
+    ? lang === 'zh' ? teamMeta.nameZh : teamMeta.name
+    : detail?.name || (lang === 'zh' ? 'MLB 球隊' : 'MLB Team');
   const teamSubTitle = lang === 'zh' ? teamMeta?.name : teamMeta?.nameZh;
-  const divisionText = lang === 'zh' ? teamMeta?.divisionZh : `${teamMeta?.league} ${teamMeta?.division}`;
+  const divisionText = teamMeta
+    ? lang === 'zh' ? teamMeta.divisionZh : `${teamMeta.league} ${teamMeta.division}`
+    : detail?.division?.name;
 
   // Parse and sort team recent schedule games
   const recentGames = useMemo(() => {
@@ -177,21 +193,35 @@ export const TeamDetailPage: React.FC = () => {
                 {teamTitle}
               </h1>
               <span className="text-xs font-mono px-2 py-0.5 rounded bg-page border border-border text-muted font-bold">
-                {teamMeta?.abbrev}
+                {teamMeta?.abbrev ?? detail?.abbreviation}
               </span>
               {teamRecord && (
                 <span className="text-xs font-mono px-2 py-0.5 rounded bg-team-primary/15 text-team-primary font-bold">
                   {teamRecord.wins} {t('standings.wins')} {teamRecord.losses} {t('standings.losses')} ({teamRecord.winningPercentage})
                 </span>
               )}
-              {teamRecord && (
+              {/* The 162-game denominator is MLB's; minor league schedules differ by league */}
+              {teamRecord && !isMinorLeague && (
                 <span className="text-xs font-mono px-2 py-0.5 rounded bg-page border border-border text-muted font-bold">
                   {t('team.season_progress', { progress: formatSeasonProgress(teamRecord.gamesPlayed) })}
                 </span>
               )}
             </div>
 
-            <p className="text-sm text-muted mt-1 font-medium">{teamSubTitle}</p>
+            {isMinorLeague ? (
+              <p className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-sm text-muted mt-1 font-medium">
+                <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 text-[10px] font-bold">
+                  {BROWSABLE_LEVELS.find((l) => l.id === sportId)?.abbreviation ?? detail?.sport?.name}
+                </span>
+                {parentOrg && (
+                  <Link to={`/teams/${parentOrg.id}`} className="text-team-primary hover:underline font-semibold">
+                    {t('team.affiliate_of', { parent: lang === 'zh' ? parentOrg.nameZh : parentOrg.name })}
+                  </Link>
+                )}
+              </p>
+            ) : (
+              <p className="text-sm text-muted mt-1 font-medium">{teamSubTitle}</p>
+            )}
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 mt-3 text-xs text-muted">
               <span className="flex items-center gap-1">
@@ -235,17 +265,20 @@ export const TeamDetailPage: React.FC = () => {
             </a>
           )}
 
-          <button
-            onClick={() => toggleFavoriteTeam(idNum)}
-            className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
-              isFav
-                ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 shadow-sm'
-                : 'bg-page border-border text-muted hover:text-main hover:border-team-primary'
-            }`}
-          >
-            <Star className={`w-4 h-4 ${isFav ? 'fill-amber-500 text-amber-500' : ''}`} />
-            <span>{isFav ? t('team.fav_active') : t('team.fav_btn')}</span>
-          </button>
+          {/* Favorites track MLB clubs only (the summary reads the MLB scoreboard) */}
+          {!isMinorLeague && (
+            <button
+              onClick={() => toggleFavoriteTeam(idNum)}
+              className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                isFav
+                  ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 shadow-sm'
+                  : 'bg-page border-border text-muted hover:text-main hover:border-team-primary'
+              }`}
+            >
+              <Star className={`w-4 h-4 ${isFav ? 'fill-amber-500 text-amber-500' : ''}`} />
+              <span>{isFav ? t('team.fav_active') : t('team.fav_btn')}</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -531,27 +564,32 @@ export const TeamDetailPage: React.FC = () => {
               >
                 {t('team.tab_active')}
               </button>
-              <button
-                onClick={() => setActiveRosterTab('40Man')}
-                className={`px-3 py-1.5 rounded-md transition-colors ${
-                  activeRosterTab === '40Man'
-                    ? 'bg-team-primary text-white shadow-sm'
-                    : 'text-muted hover:text-main'
-                }`}
-              >
-                {t('team.tab_40man')}
-              </button>
-              <button
-                onClick={() => setActiveRosterTab('il')}
-                className={`px-3 py-1.5 rounded-md transition-colors flex items-center gap-1 ${
-                  activeRosterTab === 'il'
-                    ? 'bg-team-primary text-white shadow-sm'
-                    : 'text-muted hover:text-main'
-                }`}
-              >
-                <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-                <span>{t('team.tab_il')}</span>
-              </button>
+              {/* 40-man and injured lists belong to the big league club */}
+              {!isMinorLeague && (
+                <>
+                  <button
+                    onClick={() => setActiveRosterTab('40Man')}
+                    className={`px-3 py-1.5 rounded-md transition-colors ${
+                      activeRosterTab === '40Man'
+                        ? 'bg-team-primary text-white shadow-sm'
+                        : 'text-muted hover:text-main'
+                    }`}
+                  >
+                    {t('team.tab_40man')}
+                  </button>
+                  <button
+                    onClick={() => setActiveRosterTab('il')}
+                    className={`px-3 py-1.5 rounded-md transition-colors flex items-center gap-1 ${
+                      activeRosterTab === 'il'
+                        ? 'bg-team-primary text-white shadow-sm'
+                        : 'text-muted hover:text-main'
+                    }`}
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                    <span>{t('team.tab_il')}</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
