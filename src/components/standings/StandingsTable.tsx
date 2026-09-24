@@ -389,7 +389,13 @@ const MinorLeagueStandings: React.FC<{ level: BrowsableLevel }> = ({ level }) =>
         </div>
       )}
 
-      {!isLoading && !isError && (
+      {!isLoading && !isError && records.length === 0 && (
+        <div className="bg-card border border-border rounded-xl p-8 text-center text-muted text-sm">
+          {t('standings.milb_empty')}
+        </div>
+      )}
+
+      {!isLoading && !isError && records.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {records.map((divisionGroup) => (
             <div

@@ -36,7 +36,11 @@ export const TeamDetailPage: React.FC = () => {
   const teamMeta = teamsData.find((t) => t.id === idNum);
 
   const [mainTab, setMainTab] = useState<MainViewTab>('schedule');
-  const [activeRosterTab, setActiveRosterTab] = useState<RosterTab>('active');
+  // Keyed to the team: the route stays mounted when only :teamId changes, and a
+  // tab left open on one club (e.g. IL) must not carry over to the next
+  const [rosterChoice, setRosterChoice] = useState<{ teamId: number; tab: RosterTab } | null>(null);
+  const activeRosterTab: RosterTab = rosterChoice?.teamId === idNum ? rosterChoice.tab : 'active';
+  const setActiveRosterTab = (tab: RosterTab) => setRosterChoice({ teamId: idNum, tab });
   const navigate = useNavigate();
   const { lang, t } = useLanguage();
 
@@ -53,10 +57,13 @@ export const TeamDetailPage: React.FC = () => {
 
   // A club outside teams.json is a minor league affiliate: its level, name
   // and league come from the team detail response instead
-  const { data: teamDetail } = useTeamDetailQuery(idNum);
+  const { data: teamDetail, isError: isDetailError, refetch: refetchDetail } = useTeamDetailQuery(idNum);
   const detail = teamDetail?.teams?.[0];
   const sportId: number | undefined = teamMeta ? MLB_SPORT_ID : detail?.sport?.id;
   const isMinorLeague = sportId !== undefined && sportId !== MLB_SPORT_ID;
+  // Without the detail a non-MLB club's level is unknown, so its schedule and
+  // standings cannot be requested: say so rather than show an empty schedule
+  const detailFailed = !teamMeta && isDetailError;
   const parentOrg = isMinorLeague ? teamsData.find((t) => t.id === detail?.parentOrgId) : undefined;
 
   const { data: scheduleData, isLoading: isScheduleLoading, isError: isScheduleError } =
@@ -343,7 +350,19 @@ export const TeamDetailPage: React.FC = () => {
             </div>
           )}
 
-          {!isScheduleLoading && !isScheduleError && (
+          {detailFailed && (
+            <div className="bg-card border border-border rounded-xl p-8 text-center text-rose-500 text-sm space-y-3">
+              <p>{t('team.detail_error')}</p>
+              <button
+                onClick={() => refetchDetail()}
+                className="px-3 py-1.5 rounded-lg bg-team-primary text-white text-xs font-semibold"
+              >
+                {t('game.retry')}
+              </button>
+            </div>
+          )}
+
+          {!isScheduleLoading && !isScheduleError && !detailFailed && (
             <div className="space-y-3">
               {recentGames.map((g: any) => {
                 const isHome = g.teams.home.team.id === idNum;

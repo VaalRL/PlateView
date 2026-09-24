@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TeamDetailPage } from '../../src/pages/TeamDetailPage';
 import rochester from '../fixtures/team-rochester.json';
@@ -320,5 +320,60 @@ describe('TeamDetailPage component', () => {
       expect(screen.queryByText(/40 人名單/)).not.toBeInTheDocument();
       expect(screen.queryByText(/傷兵名單/)).not.toBeInTheDocument();
     });
+  });
+
+  it('opens the next club on its active roster, not the tab left open on the last one', async () => {
+    const requested: URL[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: unknown) => {
+        const url = new URL(String(input));
+        requested.push(url);
+        const body = url.pathname.endsWith('/teams/534') ? rochester : {};
+        return { ok: true, status: 200, statusText: 'OK', json: async () => body } as Response;
+      })
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/teams/139']}>
+          <Link to="/teams/534">minor league club</Link>
+          <Routes>
+            <Route path="/teams/:teamId" element={<TeamDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    fireEvent.click(screen.getByText(/陣容名單/));
+    fireEvent.click(screen.getByText(/傷兵名單/));
+    fireEvent.click(screen.getByText('minor league club'));
+    await screen.findByRole('heading', { name: 'Rochester Red Wings' });
+
+    const rochesterRosters = requested.filter((u) => u.pathname.endsWith('/teams/534/roster'));
+    expect(rochesterRosters.map((u) => u.searchParams.get('rosterType'))).toEqual(['active']);
+  });
+
+  it('says so when a minor league club cannot be looked up, instead of an empty schedule', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: unknown) =>
+        String(input).includes('/teams/534?')
+          ? ({ ok: false, status: 503, statusText: 'Unavailable', json: async () => ({}) } as Response)
+          : ({ ok: true, status: 200, statusText: 'OK', json: async () => ({}) } as Response)
+      )
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/teams/534']}>
+          <Routes>
+            <Route path="/teams/:teamId" element={<TeamDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(await screen.findByText(/球隊資料載入失敗|載入失敗/)).toBeInTheDocument();
   });
 });

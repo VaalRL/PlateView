@@ -54,7 +54,10 @@ export const PlayerDetailPage: React.FC = () => {
   // Levels the player has a line at, this season and over his career. The
   // page opens on the level he is at now, so a player just optioned down or
   // called up sees the line he is building.
-  const [levelTab, setLevelTab] = useState<number | null>(null);
+  // Keyed to the player: the route stays mounted when only :personId changes
+  // (e.g. jumping from search), and one player's level means nothing for the next
+  const [levelChoice, setLevelChoice] = useState<{ personId: number; level: number } | null>(null);
+  const levelTab = levelChoice?.personId === idNum ? levelChoice.level : null;
   const { levels, defaultLevel } = useMemo(() => {
     const collect = (types: string[]) => {
       const found = new Map<number, StatLevel>();
@@ -343,7 +346,7 @@ export const PlayerDetailPage: React.FC = () => {
                   {levels.map((l) => (
                     <button
                       key={l.id}
-                      onClick={() => setLevelTab(l.id)}
+                      onClick={() => setLevelChoice({ personId: idNum, level: l.id })}
                       aria-pressed={level === l.id}
                       className={`px-3 py-1 rounded-md transition-colors ${
                         level === l.id ? 'bg-team-primary text-white shadow-sm' : 'text-muted hover:text-main'

@@ -79,4 +79,15 @@ describe('HomePage level switcher', () => {
     expect(screen.queryByText(/外卡榜/)).not.toBeInTheDocument();
     expect(screen.queryByText(/\/162/)).not.toBeInTheDocument();
   });
+
+  it('says a level has no standings rather than showing an empty grid', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, status: 200, statusText: 'OK', json: async () => ({ records: [] }) }) as Response)
+    );
+    renderHome();
+
+    fireEvent.click(within(screen.getByRole('group', { name: '聯盟層級' })).getByRole('button', { name: 'AA' }));
+    expect(await screen.findByText('此層級目前沒有戰績資料')).toBeInTheDocument();
+  });
 });

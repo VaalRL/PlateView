@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PlayerDetailPage } from '../../src/pages/PlayerDetailPage';
 // Real /people responses hydrated with leagueListId=mlb_milb (game logs trimmed)
@@ -291,5 +291,56 @@ describe('PlayerDetailPage game logs', () => {
       expect(within(rows[3]).getByText('2026-08-29')).toBeInTheDocument();
       expect(within(rows[3]).queryByText('AAA')).not.toBeInTheDocument();
     });
+  });
+
+  it('forgets the chosen level when moving on to another player', async () => {
+    // The route keeps the page mounted when only :personId changes (e.g. via search)
+    const mlbOnly = {
+      people: [
+        {
+          id: 1,
+          fullName: 'Big League Only',
+          primaryPosition: { type: 'Catcher' },
+          stats: [
+            {
+              group: { displayName: 'hitting' },
+              type: { displayName: 'season' },
+              splits: [{ sport: { id: 1, abbreviation: 'MLB' }, stat: { gamesPlayed: 140 } }],
+            },
+          ],
+        },
+      ],
+    };
+    const globalFetch = globalThis.fetch;
+    queryClient.clear();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: unknown) => ({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => (String(input).includes('/people/661531') ? promoted : mlbOnly),
+      }))
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/661531']}>
+          <Link to="/players/1">next player</Link>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    fireEvent.click(
+      within(await screen.findByRole('group', { name: '層級' })).getByRole('button', { name: 'AAA' })
+    );
+    fireEvent.click(screen.getByText('next player'));
+
+    // Not "no stats": the AAA choice belonged to the previous player
+    expect(await screen.findByText(/出賽 140 場/)).toBeInTheDocument();
+    vi.stubGlobal('fetch', globalFetch);
   });
 });
