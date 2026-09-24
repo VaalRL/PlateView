@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PlayerDetailPage } from '../../src/pages/PlayerDetailPage';
+// Real /people responses hydrated with leagueListId=mlb_milb (game logs trimmed)
+import promoted from '../fixtures/player-promoted-serven.json';
+import demoted from '../fixtures/player-demoted.json';
+import traded from '../fixtures/player-traded-halvorsen.json';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
@@ -192,5 +196,100 @@ describe('PlayerDetailPage game logs', () => {
     expect(screen.queryByRole('link', { name: '2026-08-02' })).not.toBeInTheDocument();
     // Neither home nor away is known, so the matchup stays neutral
     expect(screen.getByText('-')).toBeInTheDocument();
+  });
+
+  describe('players who move between the majors and the minors', () => {
+    const globalFetch = globalThis.fetch;
+
+    function renderPlayer(fixture: unknown, personId: number) {
+      queryClient.clear();
+      const fetchMock = vi.fn(async () => ({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => fixture,
+      }));
+      vi.stubGlobal('fetch', fetchMock);
+      render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={[`/players/${personId}`]}>
+            <Routes>
+              <Route path="/players/:personId" element={<PlayerDetailPage />} />
+            </Routes>
+          </MemoryRouter>
+        </QueryClientProvider>
+      );
+      return fetchMock;
+    }
+
+    afterEach(() => {
+      vi.stubGlobal('fetch', globalFetch);
+    });
+
+    it('requests every level in one call', async () => {
+      const fetchMock = renderPlayer(promoted, 661531);
+      await screen.findByText('出賽 28 場', { exact: false });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(String((fetchMock.mock.calls[0] as unknown[])[0])).toContain('leagueListId%3Dmlb_milb');
+    });
+
+    it('keeps minor league stats reachable after a call-up', async () => {
+      renderPlayer(promoted, 661531);
+
+      // Now with the Athletics: opens on his MLB line
+      expect(await screen.findByText(/出賽 28 場/)).toBeInTheDocument();
+
+      // His 61 AAA games this season are one tap away
+      const levels = screen.getByRole('group', { name: '層級' });
+      fireEvent.click(within(levels).getByRole('button', { name: 'AAA' }));
+      expect(screen.getByText(/出賽 61 場/)).toBeInTheDocument();
+    });
+
+    it('opens on the minor league line after being optioned down', async () => {
+      renderPlayer(demoted, 694680);
+
+      // Currently with AAA Salt Lake: 33 AAA games, not his 7 MLB games
+      expect(await screen.findByText(/出賽 33 場/)).toBeInTheDocument();
+      const levels = screen.getByRole('group', { name: '層級' });
+      expect(within(levels).getByRole('button', { name: 'AAA' })).toHaveAttribute('aria-pressed', 'true');
+
+      fireEvent.click(within(levels).getByRole('button', { name: 'MLB' }));
+      expect(screen.getByText(/出賽 7 場/)).toBeInTheDocument();
+    });
+
+    it('never labels big league stats with the current minor league club', async () => {
+      renderPlayer(demoted, 694680);
+      await screen.findByText(/出賽 33 場/);
+
+      fireEvent.click(within(screen.getByRole('group', { name: '層級' })).getByRole('button', { name: 'MLB' }));
+      // The old badge beside the stats title read "Triple-A" off the current
+      // club even while MLB stats were shown. The header may still say where
+      // he plays now.
+      const statsTitleRow = screen.getByText(/核心數據面板/).parentElement!;
+      expect(statsTitleRow).not.toHaveTextContent('Triple-A');
+      expect(statsTitleRow).not.toHaveTextContent('AAA');
+    });
+
+    it('combines both clubs when a player was traded within a level', async () => {
+      renderPlayer(traded, 678020);
+
+      fireEvent.click(
+        within(await screen.findByRole('group', { name: '層級' })).getByRole('button', { name: 'MLB' })
+      );
+      // Rockies 21 + Dodgers 11
+      expect(screen.getByText(/出賽 32 場/)).toBeInTheDocument();
+    });
+
+    it('lists games from every level newest first and marks the minor league ones', async () => {
+      renderPlayer(demoted, 694680);
+      await screen.findByText(/出賽 33 場/);
+
+      const rows = screen.getAllByRole('row').slice(1);
+      expect(within(rows[0]).getByText('2026-09-17')).toBeInTheDocument();
+      expect(within(rows[0]).getByText('AAA')).toBeInTheDocument();
+      // His last MLB outing (08-29, Angels) follows his three AAA games
+      expect(within(rows[3]).getByText('2026-08-29')).toBeInTheDocument();
+      expect(within(rows[3]).queryByText('AAA')).not.toBeInTheDocument();
+    });
   });
 });

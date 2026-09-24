@@ -52,6 +52,8 @@ export interface GameLogSplit {
   /** The team's result that day, not the pitcher's decision (see Phase 9) */
   isWin?: boolean;
   game?: { gamePk?: number; link?: string; gameNumber?: number };
+  /** Level the game was played at (1 = MLB, 11 = AAA ...); set when requested with leagueListId */
+  sport?: { id?: number; abbreviation?: string };
   /** Positions the player covered that game; hitting logs only */
   positionsPlayed?: Array<{ code?: string; abbreviation?: string; name?: string }>;
 }

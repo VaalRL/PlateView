@@ -4,6 +4,8 @@ import { getPlayerHeadshotUrl, getTeamLogoUrl } from '../../services/mlbApi';
 import { useLanguage } from '../../hooks/useLanguage';
 import { GameLogPerson } from '../../types/favorites';
 import teamsData from '../../data/teams.json';
+import { getLatestGameLog } from '../../utils/playerLevels';
+import { MLB_SPORT_ID } from '../../constants/levels';
 import { Flame, Shield, ArrowRight } from 'lucide-react';
 
 interface FavoritePlayerSummaryCardProps {
@@ -37,8 +39,10 @@ export const FavoritePlayerSummaryCard: React.FC<FavoritePlayerSummaryCardProps>
     (s) => s.group?.displayName === 'pitching' && s.type?.displayName === 'gameLog'
   );
 
-  const latestHitting = hittingGroup?.splits?.slice(-1)[0];
-  const latestPitching = pitchingGroup?.splits?.slice(-1)[0];
+  // The log spans every level and comes back grouped by level, so the last
+  // entry is not necessarily the latest game
+  const latestHitting = getLatestGameLog(hittingGroup?.splits ?? []);
+  const latestPitching = getLatestGameLog(pitchingGroup?.splits ?? []);
 
   // Determine primary active split (prioritize today's game)
   let activeSplit = latestHitting;
@@ -139,6 +143,11 @@ export const FavoritePlayerSummaryCard: React.FC<FavoritePlayerSummaryCardProps>
                   <Flame className="w-4 h-4 text-amber-500 shrink-0" />
                 ) : (
                   <Shield className="w-4 h-4 text-team-primary shrink-0" />
+                )}
+                {activeSplit.sport?.id !== undefined && activeSplit.sport.id !== MLB_SPORT_ID && (
+                  <span className="px-1 rounded bg-amber-500/15 text-amber-500 text-[9px] font-bold shrink-0">
+                    {activeSplit.sport.abbreviation}
+                  </span>
                 )}
                 <span className="font-mono text-sm font-black text-main tracking-tight">
                   {activeSplit.stat.summary ||

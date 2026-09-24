@@ -18,7 +18,21 @@ import {
 import playersData from '../data/players-zh-tw.json';
 import teamsData from '../data/teams.json';
 import { GameLogSplit } from '../types/favorites';
+import {
+  getStatLevels,
+  getLevelStat,
+  getDefaultLevel,
+  sortGameLogsByDate,
+  type PlayerStatGroup,
+  type StatLevel,
+} from '../utils/playerLevels';
+import { MLB_SPORT_ID } from '../constants/levels';
 import { Star, ArrowLeft, Activity, Calendar, Award, Zap } from 'lucide-react';
+
+function gameLogsOf(stats: PlayerStatGroup[], group: 'hitting' | 'pitching'): GameLogSplit[] {
+  const splits = stats.find((s) => s.group?.displayName === group && s.type?.displayName === 'gameLog')?.splits;
+  return sortGameLogsByDate((splits || []) as GameLogSplit[]);
+}
 
 export const PlayerDetailPage: React.FC = () => {
   const { personId } = useParams<{ personId: string }>();
@@ -35,68 +49,47 @@ export const PlayerDetailPage: React.FC = () => {
   const isFav = isFavoritePlayer(idNum);
   const person = data?.people?.[0];
 
-  const statsGroups = person?.stats || [];
+  const statsGroups: PlayerStatGroup[] = useMemo(() => person?.stats || [], [person]);
 
-  // Season Stats
-  const hittingSeasonStats = statsGroups.find(
-    (s: any) => s.group?.displayName === 'hitting' && s.type?.displayName === 'season'
-  )?.splits?.[0]?.stat;
+  // Levels the player has a line at, this season and over his career. The
+  // page opens on the level he is at now, so a player just optioned down or
+  // called up sees the line he is building.
+  const [levelTab, setLevelTab] = useState<number | null>(null);
+  const { levels, defaultLevel } = useMemo(() => {
+    const collect = (types: string[]) => {
+      const found = new Map<number, StatLevel>();
+      (['hitting', 'pitching'] as const).forEach((group) =>
+        types.forEach((type) => getStatLevels(statsGroups, group, type).forEach((l) => found.set(l.id, l)))
+      );
+      return [...found.values()].sort((a, b) => a.id - b.id);
+    };
+    const seasonLevels = collect(['season']);
+    const allLevels = collect(['season', 'career']);
+    return {
+      levels: allLevels,
+      defaultLevel: getDefaultLevel(
+        seasonLevels.length > 0 ? seasonLevels : allLevels,
+        person?.currentTeam?.sport?.id
+      ),
+    };
+  }, [statsGroups, person]);
+  const level = levelTab ?? defaultLevel;
+  const levelLabel = levels.find((l) => l.id === level)?.abbreviation;
 
-  const pitchingSeasonStats = statsGroups.find(
-    (s: any) => s.group?.displayName === 'pitching' && s.type?.displayName === 'season'
-  )?.splits?.[0]?.stat;
+  // Season, career, sabermetrics & advanced stats at the selected level
+  const hittingSeasonStats = getLevelStat(statsGroups, 'hitting', 'season', level);
+  const pitchingSeasonStats = getLevelStat(statsGroups, 'pitching', 'season', level);
+  const hittingCareerStats = getLevelStat(statsGroups, 'hitting', 'career', level);
+  const pitchingCareerStats = getLevelStat(statsGroups, 'pitching', 'career', level);
+  const hittingSabermetrics = getLevelStat(statsGroups, 'hitting', 'sabermetrics', level);
+  const pitchingSabermetrics = getLevelStat(statsGroups, 'pitching', 'sabermetrics', level);
+  const hittingAdvanced = getLevelStat(statsGroups, 'hitting', 'seasonAdvanced', level);
+  const pitchingAdvanced = getLevelStat(statsGroups, 'pitching', 'seasonAdvanced', level);
 
-  // Career Stats
-  const hittingCareerStats = statsGroups.find(
-    (s: any) => s.group?.displayName === 'hitting' && s.type?.displayName === 'career'
-  )?.splits?.[0]?.stat;
-
-  const pitchingCareerStats = statsGroups.find(
-    (s: any) => s.group?.displayName === 'pitching' && s.type?.displayName === 'career'
-  )?.splits?.[0]?.stat;
-
-  // Sabermetrics & Advanced Stats
-  const hittingSabermetrics = statsGroups.find(
-    (s: any) => s.group?.displayName === 'hitting' && s.type?.displayName === 'sabermetrics'
-  )?.splits?.[0]?.stat;
-
-  const pitchingSabermetrics = statsGroups.find(
-    (s: any) => s.group?.displayName === 'pitching' && s.type?.displayName === 'sabermetrics'
-  )?.splits?.[0]?.stat;
-
-  const hittingAdvanced = statsGroups.find(
-    (s: any) => s.group?.displayName === 'hitting' && s.type?.displayName === 'seasonAdvanced'
-  )?.splits?.[0]?.stat;
-
-  const pitchingAdvanced = statsGroups.find(
-    (s: any) => s.group?.displayName === 'pitching' && s.type?.displayName === 'seasonAdvanced'
-  )?.splits?.[0]?.stat;
-
-  // Game Logs
-  const hittingGameLogs = statsGroups.find(
-    (s: any) => s.group?.displayName === 'hitting' && s.type?.displayName === 'gameLog'
-  )?.splits || [];
-
-  const pitchingGameLogs = statsGroups.find(
-    (s: any) => s.group?.displayName === 'pitching' && s.type?.displayName === 'gameLog'
-  )?.splits || [];
-
-  // Sort game logs by date descending (most recent games first)
-  const sortedPitchingGameLogs = useMemo(() => {
-    return [...pitchingGameLogs].sort((a: any, b: any) => {
-      const dateA = a.date || '';
-      const dateB = b.date || '';
-      return dateB.localeCompare(dateA);
-    });
-  }, [pitchingGameLogs]);
-
-  const sortedHittingGameLogs = useMemo(() => {
-    return [...hittingGameLogs].sort((a: any, b: any) => {
-      const dateA = a.date || '';
-      const dateB = b.date || '';
-      return dateB.localeCompare(dateA);
-    });
-  }, [hittingGameLogs]);
+  // Game logs mix every level and the API groups them by level, so sort by
+  // date (most recent games first)
+  const sortedHittingGameLogs = useMemo(() => gameLogsOf(statsGroups, 'hitting'), [statsGroups]);
+  const sortedPitchingGameLogs = useMemo(() => gameLogsOf(statsGroups, 'pitching'), [statsGroups]);
 
   // True two-way player check (Ohtani or both significant hitting and pitching volume)
   const isTwoWay = useMemo(() => {
@@ -331,14 +324,37 @@ export const PlayerDetailPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-team-primary" />
               <h2 className="text-lg font-bold text-main">{t('player.stats_title')}</h2>
-              {person?.currentTeam?.sport?.name && person?.currentTeam?.sport?.id !== 1 && (
+              {/* The label comes from the stats shown, never from the current club */}
+              {levels.length === 1 && level !== MLB_SPORT_ID && levelLabel && (
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-500 font-bold border border-amber-500/30 shadow-sm">
-                  {person.currentTeam.sport.name}
+                  {levelLabel}
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Level Switcher (MLB / AAA / ...) for a player with more than one level */}
+              {levels.length > 1 && (
+                <div
+                  role="group"
+                  aria-label={t('player.level')}
+                  className="flex items-center p-1 bg-card border border-border rounded-lg text-xs font-semibold"
+                >
+                  {levels.map((l) => (
+                    <button
+                      key={l.id}
+                      onClick={() => setLevelTab(l.id)}
+                      aria-pressed={level === l.id}
+                      className={`px-3 py-1 rounded-md transition-colors ${
+                        level === l.id ? 'bg-team-primary text-white shadow-sm' : 'text-muted hover:text-main'
+                      }`}
+                    >
+                      {l.abbreviation}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Season vs Career Switcher */}
               <div className="flex items-center p-1 bg-card border border-border rounded-lg text-xs font-semibold">
                 <button
@@ -795,6 +811,11 @@ export const PlayerDetailPage: React.FC = () => {
                         </td>
                         <td className="py-2.5 px-3">
                           <span className="inline-flex items-center gap-1.5">
+                            {log.sport?.id !== undefined && log.sport.id !== MLB_SPORT_ID && (
+                              <span className="px-1 rounded bg-amber-500/15 text-amber-500 text-[9px] font-bold shrink-0">
+                                {log.sport.abbreviation}
+                              </span>
+                            )}
                             {/* The team he played for reads as an abbreviation,
                                 not a crest: a crest that fails to load would
                                 take the whole answer with it */}

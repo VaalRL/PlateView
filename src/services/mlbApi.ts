@@ -2,6 +2,7 @@ import { ScheduleResponse, StandingsResponse, VenuesResponse } from '../types/ml
 import { PeopleResponse } from '../types/favorites';
 import { PostseasonSeriesResponse } from '../types/postseason';
 import { getCurrentMlbSeason } from '../utils/season';
+import { MLB_MILB_LEAGUE_LIST } from '../constants/levels';
 import {
   HITTING_LEADER_CATEGORIES,
   PITCHING_LEADER_CATEGORIES,
@@ -132,46 +133,16 @@ export async function getVenue(venueId: number): Promise<VenuesResponse> {
 }
 
 /**
- * Fetch detailed player info, season stats, career stats, and game logs
+ * Fetch detailed player info, season stats, career stats, and game logs.
+ *
+ * `leagueListId=mlb_milb` returns every level in one response, each split
+ * tagged with its `sport`, so a player who moved between the majors and the
+ * minors keeps both lines (see docs/adr/0005-minor-league-support.md).
  */
 export async function getPlayerDetail(personId: number) {
-  const data = await fetchMlb<any>(`/people/${personId}`, {
-    hydrate:
-      'currentTeam(league,sport,parentOrg),team,stats(group=[hitting,pitching],type=[season,career,gameLog,sabermetrics,seasonAdvanced])',
+  return fetchMlb<any>(`/people/${personId}`, {
+    hydrate: `currentTeam(league,sport,parentOrg),team,stats(group=[hitting,pitching],type=[season,career,gameLog,sabermetrics,seasonAdvanced],leagueListId=${MLB_MILB_LEAGUE_LIST})`,
   });
-
-  const person = data?.people?.[0];
-  if (!person) return data;
-
-  const hasStats = person.stats && person.stats.some((s: any) => s.splits && s.splits.length > 0);
-
-  // If no stats found with default MLB sportId=1, check if player has a currentTeam with a minor league sportId
-  if (!hasStats && person.currentTeam) {
-    let teamSportId = person.currentTeam.sport?.id;
-    if (!teamSportId) {
-      try {
-        const teamRes = await fetchMlb<any>(`/teams/${person.currentTeam.id}`);
-        teamSportId = teamRes?.teams?.[0]?.sport?.id;
-      } catch {
-        // ignore fallback errors
-      }
-    }
-
-    if (teamSportId && teamSportId !== 1) {
-      try {
-        const milbData = await fetchMlb<any>(`/people/${personId}`, {
-          hydrate: `currentTeam(league,sport,parentOrg),team,stats(group=[hitting,pitching],type=[season,career,gameLog,sabermetrics,seasonAdvanced],sportId=${teamSportId})`,
-        });
-        if (milbData?.people?.[0]?.stats && milbData.people[0].stats.length > 0) {
-          person.stats = milbData.people[0].stats;
-        }
-      } catch {
-        // ignore fallback errors
-      }
-    }
-  }
-
-  return data;
 }
 
 /**
@@ -201,7 +172,8 @@ export async function getFavoritePlayersGameLog(personIds: number[]): Promise<Pe
   if (personIds.length === 0) return { people: [] };
   return fetchMlb<PeopleResponse>('/people', {
     personIds: personIds.join(','),
-    hydrate: `stats(group=[hitting,pitching],type=[gameLog],season=${getCurrentMlbSeason()})`,
+    // Every level, so a favorite optioned to the minors still shows his games
+    hydrate: `currentTeam,stats(group=[hitting,pitching],type=[gameLog],season=${getCurrentMlbSeason()},leagueListId=${MLB_MILB_LEAGUE_LIST})`,
   });
 }
 
