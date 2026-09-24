@@ -22,6 +22,15 @@ function seriesScore(series: BracketSeries): string {
   return wins[0] + wins[1] === 0 ? 'vs' : `${wins[0]}-${wins[1]}`;
 }
 
+/**
+ * Tile colour behind a cap logo. Mostly the primary colour, but a few cap logos
+ * are drawn in that same colour (the Giants' orange SF, the Pirates' gold P),
+ * so those teams carry the colour of their actual cap instead.
+ */
+function capTileColor(meta: { primaryColor?: string; capTileColor?: string } | undefined): string {
+  return meta?.capTileColor ?? meta?.primaryColor ?? '#334155';
+}
+
 /** A diamond in the team's colour with its cap logo; a grey one for a slot not yet decided */
 const TeamTile: React.FC<{ slot: SlotTile }> = ({ slot }) => {
   const { lang, t } = useLanguage();
@@ -79,7 +88,7 @@ const TeamTile: React.FC<{ slot: SlotTile }> = ({ slot }) => {
         {/* Opaque base: a dimmed, knocked-out tile must not let the lines show through */}
         <polygon points={diamond(TILE)} className="fill-card stroke-card" strokeWidth={3} />
         <g opacity={slot.eliminated ? 0.38 : 1}>
-          <polygon points={diamond(TILE)} fill={meta?.primaryColor ?? '#334155'} />
+          <polygon points={diamond(TILE)} fill={capTileColor(meta)} />
           <polygon points={diamond(TILE - 5)} fill="none" stroke="#fff" strokeWidth={2} />
           <image href={getTeamCapLogoUrl(slot.team.id)} x={-16} y={-16} width={32} height={32} />
           {seed}
@@ -185,7 +194,7 @@ export const BracketDiagram: React.FC<BracketDiagramProps> = ({
           <>
             <polygon
               points={diamond(CHAMPION_TILE)}
-              fill={championMeta?.primaryColor ?? '#334155'}
+              fill={capTileColor(championMeta)}
               className="stroke-amber-500"
               strokeWidth={4}
             />

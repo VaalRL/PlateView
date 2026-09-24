@@ -15,6 +15,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.5.2',
+    date: '2026-09-24',
+    changes: {
+      zh: [
+        '修正季後賽對戰樹中巨人隊只顯示一片橘色：帽徽與底色同色的球隊（巨人、海盜、紅襪、響尾蛇）改用實際球帽顏色當底色',
+      ],
+      en: [
+        'Fixed the Giants showing as a plain orange tile in the postseason bracket: teams whose cap logo matches their primary colour (Giants, Pirates, Red Sox, Diamondbacks) now sit on their actual cap colour',
+      ],
+    },
+  },
+  {
     version: '1.5.1',
     date: '2026-09-24',
     changes: {

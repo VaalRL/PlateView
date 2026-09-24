@@ -29,6 +29,8 @@ export interface Team {
   divisionZh?: string;
   primaryColor?: string;
   secondaryColor?: string;
+  /** Tile behind the cap-on-dark logo when the logo would vanish on primaryColor (SF, PIT, BOS, ARI) */
+  capTileColor?: string;
 }
 
 export interface Player {

@@ -1,7 +1,7 @@
 {
   "name": "plateview",
   "private": true,
-  "version": "1.5.1",
+  "version": "1.5.2",
   "type": "module",
   "description": "MLB Stats and Live Scoreboard SPA",
   "scripts": {

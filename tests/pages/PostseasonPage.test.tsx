@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LanguageProvider } from '../../src/hooks/useLanguage';
 import { PostseasonPage } from '../../src/pages/PostseasonPage';
+import ps2012 from '../fixtures/postseason-2012.json';
 import ps2025 from '../fixtures/postseason-2025.json';
 import ps2026 from '../fixtures/postseason-2026.json';
 import st2025 from '../fixtures/standings-2025.json';
@@ -112,6 +113,19 @@ describe('PostseasonPage', () => {
       expect(tile.closest('a')).toBeNull();
     });
     expect(screen.getByTestId('series-F_1')).toHaveTextContent('vs');
+  });
+
+  it('puts a cap logo drawn in the team colour on its real cap colour instead', async () => {
+    stubApi({ '2012': { series: ps2012, standings: {} } });
+    const { container } = renderAt('/postseason/2012');
+    expect(await screen.findByTestId('champion')).toHaveTextContent('舊金山巨人');
+
+    const tileFill = (team: number) =>
+      container.querySelector(`[data-series="W_1"][data-team="${team}"] g > polygon`)?.getAttribute('fill');
+    // Giants: orange SF cap logo, so the tile is the black of their cap, not the orange primary
+    expect(tileFill(137)).toBe('#27251F');
+    // Tigers: white D reads fine on the navy primary
+    expect(tileFill(116)).toBe('#0C2340');
   });
 
   it('switches seasons from the selector, back to 2012', async () => {
