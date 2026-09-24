@@ -193,6 +193,14 @@ export function getPlayerHeadshotUrl(personId: number): string {
 }
 
 /**
+ * Team cap logo drawn for a dark background, used on the team-coloured
+ * tiles of the postseason bracket
+ */
+export function getTeamCapLogoUrl(teamId: number): string {
+  return `https://www.mlbstatic.com/team-logos/team-cap-on-dark/${teamId}.svg`;
+}
+
+/**
  * Get MLB official team SVG logo URL
  */
 export function getTeamLogoUrl(teamId: number): string {

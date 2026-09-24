@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Medal, Trophy } from 'lucide-react';
+import { ArrowLeft, Medal } from 'lucide-react';
 import { usePostseasonQuery, useStandingsQuery } from '../services/queries';
 import { getTeamLogoUrl } from '../services/mlbApi';
 import { useLanguage } from '../hooks/useLanguage';
@@ -8,16 +8,14 @@ import { getCurrentMlbSeason } from '../utils/season';
 import {
   buildPostseasonBracket,
   getPostseasonSeasons,
-  type BracketLeague,
   type BracketSeries,
   type BracketTeam,
+  type PostseasonBracket,
 } from '../utils/postseason';
+import { BracketDiagram } from '../components/postseason/BracketDiagram';
 import { POSTSEASON_FIRST_SEASON } from '../constants/season';
 import type { TranslationKey } from '../i18n/translations';
 import teamsData from '../data/teams.json';
-
-/** Which way a league's subtree grows: side by side on wide screens the NL mirrors the AL */
-type Direction = 'ltr' | 'rtl';
 
 const TeamRow: React.FC<{ team: BracketTeam; isWinner: boolean; isLoser: boolean }> = ({
   team,
@@ -77,8 +75,8 @@ const SeriesCard: React.FC<{ series: BracketSeries }> = ({ series }) => {
 
   return (
     <div
-      data-testid={`series-${series.id}`}
-      className="w-40 shrink-0 bg-card border border-border rounded-lg shadow-sm overflow-hidden"
+      data-testid="selected-series"
+      className="w-full max-w-sm bg-card border border-border rounded-lg shadow-sm overflow-hidden"
     >
       <div className="flex items-center justify-between px-2 py-1 bg-page/60 border-b border-border text-[10px] text-muted">
         <span className="font-semibold text-team-primary">{t(`postseason.round_${series.round}` as TranslationKey)}</span>
@@ -110,46 +108,35 @@ const SeriesCard: React.FC<{ series: BracketSeries }> = ({ series }) => {
   );
 };
 
-/** A series with the earlier-round series that fed it, drawn as a horizontal tree */
-const BracketNode: React.FC<{ series: BracketSeries; direction: Direction }> = ({ series, direction }) => (
-  <div className={`flex items-center ${direction === 'rtl' ? 'xl:flex-row-reverse' : ''}`}>
-    {series.feeders.length > 0 && (
-      <>
-        <div className="flex flex-col gap-3">
-          {series.feeders.map((f) => (
-            <BracketNode key={f.id} series={f} direction={direction} />
-          ))}
-        </div>
-        <div className="w-3 h-px shrink-0 bg-border" aria-hidden="true" />
-      </>
-    )}
-    <SeriesCard series={series} />
-  </div>
-);
-
-const LeagueBracket: React.FC<{ league: BracketLeague; root: BracketSeries | null; direction: Direction }> = ({
-  league,
-  root,
-  direction,
-}) => {
-  const { t } = useLanguage();
-  if (!root) return null;
-  return (
-    <section className="space-y-2 min-w-0">
-      <h2 className={`text-sm font-bold text-main ${direction === 'rtl' ? 'xl:text-right' : ''}`}>
-        {t(league === 'AL' ? 'postseason.al' : 'postseason.nl')}
-      </h2>
-      <div className="overflow-x-auto pb-2">
-        <div className={`flex w-max ${direction === 'rtl' ? 'xl:ml-auto' : ''}`}>
-          <BracketNode series={root} direction={direction} />
-        </div>
-      </div>
-    </section>
-  );
+/** Every series in the bracket, World Series last */
+const allSeries = (bracket: PostseasonBracket): BracketSeries[] => {
+  const list: BracketSeries[] = [];
+  const walk = (s: BracketSeries | null) => {
+    if (!s) return;
+    s.feeders.forEach(walk);
+    list.push(s);
+  };
+  walk(bracket.AL);
+  walk(bracket.NL);
+  if (bracket.worldSeries) list.push(bracket.worldSeries);
+  return list;
 };
 
+/** The series whose latest game is the most recent one played, else the World Series */
+function latestSeriesId(bracket: PostseasonBracket): string | undefined {
+  let latest: { id: string; date: string } | undefined;
+  allSeries(bracket).forEach((s) =>
+    s.games
+      .filter((g) => g.status.abstractGameState !== 'Preview')
+      .forEach((g) => {
+        if (!latest || g.gameDate > latest.date) latest = { id: s.id, date: g.gameDate };
+      })
+  );
+  return latest?.id ?? bracket.worldSeries?.id;
+}
+
 export const PostseasonPage: React.FC = () => {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const params = useParams<{ season?: string }>();
   const currentSeason = getCurrentMlbSeason();
@@ -161,9 +148,16 @@ export const PostseasonPage: React.FC = () => {
 
   const seriesQuery = usePostseasonQuery(season);
   const standingsQuery = useStandingsQuery(season);
-  const bracket = buildPostseasonBracket(seriesQuery.data, standingsQuery.data);
-  const ws = bracket?.worldSeries;
-  const champion = ws?.winnerId ? teamsData.find((m) => m.id === ws.winnerId) : undefined;
+  const bracket = useMemo(
+    () => buildPostseasonBracket(seriesQuery.data, standingsQuery.data),
+    [seriesQuery.data, standingsQuery.data]
+  );
+
+  // Keyed to the season, like the level choice on the player page: a series
+  // picked in one season means nothing in the next
+  const [picked, setPicked] = useState<{ season: number; id: string } | null>(null);
+  const selectedId = (picked?.season === season ? picked.id : undefined) ?? (bracket ? latestSeriesId(bracket) : undefined);
+  const selected = bracket ? allSeries(bracket).find((s) => s.id === selectedId) : undefined;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
@@ -223,25 +217,21 @@ export const PostseasonPage: React.FC = () => {
       )}
 
       {bracket && (
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto_1fr] xl:items-center gap-6">
-          <LeagueBracket league="AL" root={bracket.AL} direction="ltr" />
-
-          {ws && (
-            <section className="flex flex-col items-center gap-3 xl:order-none order-last">
-              {champion && (
-                <div className="flex flex-col items-center gap-1 text-center">
-                  <Trophy className="w-6 h-6 text-amber-500" />
-                  <span className="text-[10px] font-semibold text-muted">{t('postseason.champion')}</span>
-                  <span data-testid="champion" className="text-sm font-black text-main">
-                    {lang === 'zh' ? champion.nameZh : champion.name}
-                  </span>
-                </div>
-              )}
-              <SeriesCard series={ws} />
-            </section>
+        <div className="bg-card border border-border rounded-2xl shadow-sm p-3 sm:p-5 space-y-4">
+          <div className="overflow-x-auto">
+            <BracketDiagram
+              bracket={bracket}
+              season={season}
+              selectedSeriesId={selectedId}
+              onSelectSeries={(id) => setPicked({ season, id })}
+            />
+          </div>
+          <p className="text-[11px] text-muted text-center">{t('postseason.select_hint')}</p>
+          {selected && (
+            <div className="flex justify-center">
+              <SeriesCard series={selected} />
+            </div>
           )}
-
-          <LeagueBracket league="NL" root={bracket.NL} direction="rtl" />
         </div>
       )}
     </div>

@@ -59,41 +59,59 @@ describe('PostseasonPage', () => {
   it('draws every round of a finished postseason and names the champion', async () => {
     renderAt('/postseason/2025');
 
-    expect(await screen.findByText(/世界大賽冠軍/)).toBeInTheDocument();
-    expect(screen.getByTestId('champion')).toHaveTextContent('洛杉磯道奇');
+    expect(await screen.findByTestId('champion')).toHaveTextContent('洛杉磯道奇');
+    // One score tag per series
     expect(screen.getAllByTestId(/^series-/)).toHaveLength(11);
-    expect(screen.getAllByText('外卡系列賽').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('分區系列賽').length).toBeGreaterThan(0);
+    expect(screen.getByText('美聯外卡賽')).toBeInTheDocument();
+    expect(screen.getByText('國聯分區賽')).toBeInTheDocument();
+    expect(screen.getByText('美聯冠軍賽')).toBeInTheDocument();
   });
 
-  it('shows seeds and series scores', async () => {
-    renderAt('/postseason/2025');
+  it('shows each team as a tile with its seed, linked to the team page', async () => {
+    const { container } = renderAt('/postseason/2025');
+    await screen.findByTestId('champion');
 
-    const ws = await screen.findByTestId('series-W_1');
-    expect(ws).toHaveTextContent('洛杉磯道奇');
-    expect(ws).toHaveTextContent('多倫多藍鳥');
-    expect(ws).toHaveTextContent('4');
-    expect(ws).toHaveTextContent('3');
-    // Dodgers were the NL #3 seed
-    expect(ws.querySelector('[data-seed="3"]')).not.toBeNull();
+    // Dodgers were the NL #3 seed and reached the World Series
+    const dodgersInWs = container.querySelector('[data-series="W_1"][data-team="119"]');
+    expect(dodgersInWs).toHaveAttribute('data-seed', '3');
+    expect(dodgersInWs?.closest('a')).toHaveAttribute('href', '/teams/119');
+    // Knocked-out teams are dimmed
+    expect(container.querySelector('[data-series="W_1"][data-team="141"]')).toHaveAttribute('data-eliminated', 'true');
+    expect(container.querySelector('[data-series="W_1"][data-team="119"]')).toHaveAttribute('data-eliminated', 'false');
   });
 
-  it('links each played game to its box score page', async () => {
+  it('shows the series score on the bracket and lists its games when selected', async () => {
     renderAt('/postseason/2025');
 
-    const ws = await screen.findByTestId('series-W_1');
-    const gameLinks = ws.querySelectorAll('a[href^="/games/"]');
-    expect(gameLinks).toHaveLength(7);
+    const wsTag = await screen.findByTestId('series-W_1');
+    expect(wsTag).toHaveTextContent('4-3');
+    fireEvent.click(wsTag);
+
+    const detail = screen.getByTestId('selected-series');
+    expect(detail).toHaveTextContent('洛杉磯道奇');
+    expect(detail).toHaveTextContent('多倫多藍鳥');
+    expect(detail.querySelectorAll('a[href^="/games/"]')).toHaveLength(7);
+  });
+
+  it('opens on the series played most recently', async () => {
+    renderAt('/postseason/2025');
+
+    expect(await screen.findByTestId('series-W_1')).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('shows undecided slots as TBD before the postseason starts', async () => {
-    renderAt('/postseason/2026');
+    const { container } = renderAt('/postseason/2026');
 
-    const ws = await screen.findByTestId('series-W_1');
-    expect(ws).toHaveTextContent('待定');
-    // A placeholder is not a club: no team page link
-    expect(ws.querySelector('a[href^="/teams/"]')).toBeNull();
-    expect(screen.queryByText(/世界大賽冠軍/)).not.toBeInTheDocument();
+    await screen.findByTestId('series-W_1');
+    expect(screen.getByTestId('champion')).toHaveTextContent('待定');
+    // Placeholders are grey tiles, not clubs: no team page link
+    const wsTiles = container.querySelectorAll('[data-series="W_1"]');
+    expect(wsTiles).toHaveLength(2);
+    wsTiles.forEach((tile) => {
+      expect(tile.getAttribute('aria-label')).toMatch(/^待定/);
+      expect(tile.closest('a')).toBeNull();
+    });
+    expect(screen.getByTestId('series-F_1')).toHaveTextContent('vs');
   });
 
   it('switches seasons from the selector, back to 2012', async () => {
@@ -104,7 +122,7 @@ describe('PostseasonPage', () => {
     expect(options.at(-1)).toBe('2012');
 
     fireEvent.change(select, { target: { value: '2025' } });
-    expect(await screen.findByText(/世界大賽冠軍/)).toBeInTheDocument();
+    expect(await screen.findByTestId('champion')).toHaveTextContent('洛杉磯道奇');
   });
 
   it('says so when a season has no postseason', async () => {

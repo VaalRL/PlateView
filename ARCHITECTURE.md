@@ -80,6 +80,7 @@ plateview/
 │   │   ├── standings/          # 戰績表元件 (StandingsTable)
 │   │   ├── game/               # 逐場比賽元件 (FieldAlignmentDiagram, LineupOrderBoard, BoxscoreTables)
 │   │   ├── player/             # 球員詳細數據元件
+│   │   ├── postseason/         # 季後賽晉級圖 (BracketDiagram，座標由 utils/bracketLayout.ts 計算)
 │   │   └── favorite/           # 我的最愛頂部追蹤列 (FavoritesBar)
 │   ├── data/                   # 靜態資料檔
 │   │   ├── teams.json          # 30 支球隊基本檔 (中英文、主色碼、分區)
