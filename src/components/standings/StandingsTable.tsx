@@ -27,7 +27,7 @@ const MlbStandings: React.FC = () => {
   const records = data?.records || [];
 
   const filteredRecords = records.filter((r) => {
-    const divId = r.division.id;
+    const divId = r.division?.id ?? 0;
     if (activeTab === 'AL') return [201, 202, 200].includes(divId);
     if (activeTab === 'NL') return [204, 205, 203].includes(divId);
     return true;
@@ -39,7 +39,7 @@ const MlbStandings: React.FC = () => {
     const allTeams: StandingRecord[] = [];
 
     records.forEach((div) => {
-      if (divIds.includes(div.division.id)) {
+      if (div.division && divIds.includes(div.division.id)) {
         div.teamRecords.forEach((tr) => {
           allTeams.push(tr);
         });
@@ -278,12 +278,12 @@ const MlbStandings: React.FC = () => {
       {!isLoading && !isError && activeTab !== 'WC' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRecords.map((divisionGroup) => {
-            const divInfo = divisionNameMap[divisionGroup.division.id];
-            const divTitle = divInfo ? divInfo[lang] : divisionGroup.division.name;
+            const divInfo = divisionGroup.division && divisionNameMap[divisionGroup.division.id];
+            const divTitle = divInfo ? divInfo[lang] : divisionGroup.division?.name;
 
             return (
               <div
-                key={divisionGroup.division.id}
+                key={divisionGroup.division?.id ?? `league-${divisionGroup.league.id}`}
                 className="bg-card border border-border rounded-xl overflow-hidden shadow-sm flex flex-col"
               >
                 <div className="bg-page/60 border-b border-border px-4 py-2.5 font-bold text-xs text-team-primary flex items-center justify-between">
@@ -399,11 +399,11 @@ const MinorLeagueStandings: React.FC<{ level: BrowsableLevel }> = ({ level }) =>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {records.map((divisionGroup) => (
             <div
-              key={divisionGroup.division.id}
+              key={divisionGroup.division?.id ?? `league-${divisionGroup.league.id}`}
               className="bg-card border border-border rounded-xl overflow-hidden shadow-sm flex flex-col"
             >
               <div className="bg-page/60 border-b border-border px-4 py-2.5 font-bold text-xs text-team-primary">
-                {divisionGroup.division.name}
+                {divisionGroup.division?.name ?? divisionGroup.league.name}
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
@@ -420,7 +420,9 @@ const MinorLeagueStandings: React.FC<{ level: BrowsableLevel }> = ({ level }) =>
                     {divisionGroup.teamRecords.map((rec) => (
                       <tr key={rec.team.id} className="hover:bg-card-hover/50 transition-colors">
                         <td className="py-2 px-3 flex items-center gap-2">
-                          <span className="font-mono text-muted text-[10px] w-3">{rec.divisionRank}</span>
+                          <span className="font-mono text-muted text-[10px] w-3">
+                            {rec.divisionRank ?? rec.leagueRank}
+                          </span>
                           <img
                             src={getTeamLogoUrl(rec.team.id)}
                             alt=""

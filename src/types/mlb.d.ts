@@ -216,7 +216,8 @@ export interface StandingRecord {
   streak?: {
     streakCode: string;
   };
-  divisionRank: string;
+  /** Absent when the league has no divisions */
+  divisionRank?: string;
   leagueRank: string;
   /** z/y = division winner, x = 2020 second-place qualifier, w = wild card; absent until clinched */
   clinchIndicator?: string;
@@ -233,10 +234,17 @@ export interface StandingRecord {
 }
 
 export interface StandingsDivision {
-  division: {
+  /** Absent for a league without divisions, e.g. the A+ Northwest League */
+  division?: {
     id: number;
     name: string;
     link: string;
+  };
+  /** name / abbreviation only with hydrate=league */
+  league: {
+    id: number;
+    name?: string;
+    abbreviation?: string;
   };
   teamRecords: StandingRecord[];
 }

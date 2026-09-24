@@ -50,7 +50,8 @@ export async function getStandings(
   return fetchMlb<StandingsResponse>('/standings', {
     leagueId: leagueIds.join(','),
     season,
-    hydrate: 'division,conference',
+    // league: a league with no divisions is headed by its own name
+    hydrate: 'division,conference,league',
   });
 }
 

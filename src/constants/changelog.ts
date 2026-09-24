@@ -15,6 +15,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.5.1',
+    date: '2026-09-24',
+    changes: {
+      zh: [
+        '修正切換到 A+ 層級時整頁空白：沒有分區的西北聯盟改以聯盟名稱顯示',
+        '無賽程提示不再寫「MLB」，小聯盟層級也適用',
+      ],
+      en: [
+        'Fixed a blank page when switching to A+: the Northwest League, which has no divisions, is now headed by its league name',
+        'The no-games message no longer says “MLB”, so it reads right for minor league levels too',
+      ],
+    },
+  },
+  {
     version: '1.5.0',
     date: '2026-09-24',
     changes: {

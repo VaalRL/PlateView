@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LanguageProvider } from '../../src/hooks/useLanguage';
 import { HomePage } from '../../src/pages/HomePage';
 import standingsAaa from '../fixtures/standings-aaa-2026.json';
+import standingsAplus from '../fixtures/standings-aplus-2026.json';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
@@ -23,9 +24,8 @@ describe('HomePage level switcher', () => {
       vi.fn(async (input: unknown) => {
         const url = new URL(String(input));
         requested.push(url);
-        const body = url.pathname.endsWith('/standings') && url.searchParams.get('leagueId') === '117,112'
-          ? standingsAaa
-          : {};
+        const leagueId = url.pathname.endsWith('/standings') ? url.searchParams.get('leagueId') : null;
+        const body = leagueId === '117,112' ? standingsAaa : leagueId === '116,118,126' ? standingsAplus : {};
         return { ok: true, status: 200, statusText: 'OK', json: async () => body } as Response;
       })
     );
@@ -78,6 +78,15 @@ describe('HomePage level switcher', () => {
 
     expect(screen.queryByText(/外卡榜/)).not.toBeInTheDocument();
     expect(screen.queryByText(/\/162/)).not.toBeInTheDocument();
+  });
+
+  it('heads a league without divisions (A+ Northwest League) by its league name', async () => {
+    renderHome();
+
+    fireEvent.click(within(screen.getByRole('group', { name: '聯盟層級' })).getByRole('button', { name: 'A+' }));
+
+    expect(await screen.findByText('Northwest League')).toBeInTheDocument();
+    expect(screen.getByText('South Atlantic League North')).toBeInTheDocument();
   });
 
   it('says a level has no standings rather than showing an empty grid', async () => {
