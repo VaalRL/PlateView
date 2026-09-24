@@ -343,4 +343,48 @@ describe('PlayerDetailPage game logs', () => {
     expect(await screen.findByText(/出賽 140 場/)).toBeInTheDocument();
     vi.stubGlobal('fetch', globalFetch);
   });
+
+  describe('league-relative stats at a minor league level', () => {
+    const globalFetch = globalThis.fetch;
+    afterEach(() => vi.stubGlobal('fetch', globalFetch));
+
+    const renderWith = (fixture: unknown, personId: number) => {
+      queryClient.clear();
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => ({ ok: true, status: 200, statusText: 'OK', json: async () => fixture }))
+      );
+      render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={[`/players/${personId}`]}>
+            <Routes>
+              <Route path="/players/:personId" element={<PlayerDetailPage />} />
+            </Routes>
+          </MemoryRouter>
+        </QueryClientProvider>
+      );
+    };
+
+    it('hides FIP and FIP+ on a minor league pitching line, which would use MLB constants', async () => {
+      renderWith(demoted, 694680); // opens on AAA
+      await screen.findByText(/出賽 33 場/);
+
+      expect(screen.queryByText(/\(FIP\)/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/\(FIP\+\)/)).not.toBeInTheDocument();
+      expect(screen.queryByText('100 為聯盟平均基準')).not.toBeInTheDocument();
+
+      // Back on his MLB line they return
+      fireEvent.click(within(screen.getByRole('group', { name: '層級' })).getByRole('button', { name: 'MLB' }));
+      expect(screen.getByText(/\(FIP\+\)/)).toBeInTheDocument();
+    });
+
+    it('hides wRC+ on a minor league hitting line', async () => {
+      renderWith(promoted, 661531);
+      await screen.findByText(/出賽 28 場/);
+      expect(screen.getByText(/\(wRC\+\)/)).toBeInTheDocument();
+
+      fireEvent.click(within(screen.getByRole('group', { name: '層級' })).getByRole('button', { name: 'AAA' }));
+      expect(screen.queryByText(/\(wRC\+\)/)).not.toBeInTheDocument();
+    });
+  });
 });

@@ -77,6 +77,9 @@ export const PlayerDetailPage: React.FC = () => {
     };
   }, [statsGroups, person]);
   const level = levelTab ?? defaultLevel;
+  // FIP, FIP+ and wRC+/OPS+ fall back to MLB league constants when the API has
+  // no sabermetrics, which is always the case below MLB, so they are hidden there
+  const showLeagueRelative = level === MLB_SPORT_ID;
   const levelLabel = levels.find((l) => l.id === level)?.abbreviation;
 
   // Season, career, sabermetrics & advanced stats at the selected level
@@ -480,10 +483,12 @@ export const PlayerDetailPage: React.FC = () => {
                       <Zap className="w-3.5 h-3.5 text-amber-400" />
                       <span>{t('player.advanced_stats_title')}</span>
                     </div>
-                    <span className="text-[10px] text-muted flex items-center gap-1">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400/80" />
-                      {t('stat.league_avg_hint')}
-                    </span>
+                    {showLeagueRelative && (
+                      <span className="text-[10px] text-muted flex items-center gap-1">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400/80" />
+                        {t('stat.league_avg_hint')}
+                      </span>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
@@ -504,29 +509,31 @@ export const PlayerDetailPage: React.FC = () => {
                     </div>
 
                     {/* wRC+ / OPS+ */}
-                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
-                      <span className="text-[10px] text-muted block font-medium">{t('stat.wrc_plus')}</span>
-                      <div className="flex items-baseline justify-center gap-1">
-                        <span
-                          className={`text-xl font-mono font-black ${
-                            (derivedOpsPlus ?? 0) >= 130
-                              ? 'text-emerald-400'
-                              : (derivedOpsPlus ?? 0) >= 100
-                              ? 'text-team-primary'
-                              : 'text-muted'
-                          }`}
-                        >
-                          {formatPlusStat(derivedOpsPlus)}
-                        </span>
-                        {derivedOpsPlus !== null && (
-                          <span className="text-[9px] font-mono text-muted">
-                            {derivedOpsPlus >= 100
-                              ? `+${Math.round(derivedOpsPlus - 100)}%`
-                              : `${Math.round(derivedOpsPlus - 100)}%`}
+                    {showLeagueRelative && (
+                      <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                        <span className="text-[10px] text-muted block font-medium">{t('stat.wrc_plus')}</span>
+                        <div className="flex items-baseline justify-center gap-1">
+                          <span
+                            className={`text-xl font-mono font-black ${
+                              (derivedOpsPlus ?? 0) >= 130
+                                ? 'text-emerald-400'
+                                : (derivedOpsPlus ?? 0) >= 100
+                                ? 'text-team-primary'
+                                : 'text-muted'
+                            }`}
+                          >
+                            {formatPlusStat(derivedOpsPlus)}
                           </span>
-                        )}
+                          {derivedOpsPlus !== null && (
+                            <span className="text-[9px] font-mono text-muted">
+                              {derivedOpsPlus >= 100
+                                ? `+${Math.round(derivedOpsPlus - 100)}%`
+                                : `${Math.round(derivedOpsPlus - 100)}%`}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* OPS */}
                     <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
@@ -637,10 +644,12 @@ export const PlayerDetailPage: React.FC = () => {
                       <Zap className="w-3.5 h-3.5 text-amber-400" />
                       <span>{t('player.advanced_stats_title')}</span>
                     </div>
-                    <span className="text-[10px] text-muted flex items-center gap-1">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400/80" />
-                      {t('stat.league_avg_hint')}
-                    </span>
+                    {showLeagueRelative && (
+                      <span className="text-[10px] text-muted flex items-center gap-1">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400/80" />
+                        {t('stat.league_avg_hint')}
+                      </span>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
@@ -660,38 +669,42 @@ export const PlayerDetailPage: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* FIP */}
-                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
-                      <span className="text-[10px] text-muted block font-medium">{t('stat.fip')}</span>
-                      <span className="text-xl font-mono font-black text-team-primary">
-                        {formatFip(derivedFip)}
-                      </span>
-                    </div>
-
-                    {/* FIP+ */}
-                    <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
-                      <span className="text-[10px] text-muted block font-medium">{t('stat.fip_plus')}</span>
-                      <div className="flex items-baseline justify-center gap-1">
-                        <span
-                          className={`text-xl font-mono font-black ${
-                            (derivedFipPlus ?? 0) >= 125
-                              ? 'text-emerald-400'
-                              : (derivedFipPlus ?? 0) >= 100
-                              ? 'text-team-primary'
-                              : 'text-muted'
-                          }`}
-                        >
-                          {formatPlusStat(derivedFipPlus)}
-                        </span>
-                        {derivedFipPlus !== null && (
-                          <span className="text-[9px] font-mono text-muted">
-                            {derivedFipPlus >= 100
-                              ? `+${Math.round(derivedFipPlus - 100)}%`
-                              : `${Math.round(derivedFipPlus - 100)}%`}
+                    {showLeagueRelative && (
+                      <>
+                        {/* FIP */}
+                        <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                          <span className="text-[10px] text-muted block font-medium">{t('stat.fip')}</span>
+                          <span className="text-xl font-mono font-black text-team-primary">
+                            {formatFip(derivedFip)}
                           </span>
-                        )}
-                      </div>
-                    </div>
+                        </div>
+
+                        {/* FIP+ */}
+                        <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
+                          <span className="text-[10px] text-muted block font-medium">{t('stat.fip_plus')}</span>
+                          <div className="flex items-baseline justify-center gap-1">
+                            <span
+                              className={`text-xl font-mono font-black ${
+                                (derivedFipPlus ?? 0) >= 125
+                                  ? 'text-emerald-400'
+                                  : (derivedFipPlus ?? 0) >= 100
+                                  ? 'text-team-primary'
+                                  : 'text-muted'
+                              }`}
+                            >
+                              {formatPlusStat(derivedFipPlus)}
+                            </span>
+                            {derivedFipPlus !== null && (
+                              <span className="text-[9px] font-mono text-muted">
+                                {derivedFipPlus >= 100
+                                  ? `+${Math.round(derivedFipPlus - 100)}%`
+                                  : `${Math.round(derivedFipPlus - 100)}%`}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
 
                     {/* xFIP */}
                     <div className="p-2.5 bg-page/80 rounded-xl text-center border border-border/40 hover:border-amber-500/30 transition-colors">
