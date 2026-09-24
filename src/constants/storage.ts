@@ -18,9 +18,10 @@ export const DEFAULT_FAVORITE_TEAMS: readonly number[] = [119];
 /** Default: Ohtani, Skenes */
 export const DEFAULT_FAVORITE_PLAYERS: readonly number[] = [660271, 694973];
 
-export const DEFAULT_THEME_MODE = 'dark';
+/** First-visit defaults; a saved choice always wins. System preferences are not consulted. */
+export const DEFAULT_THEME_MODE = 'light';
 export const DEFAULT_THEME_TEAM = 'lad';
-export const DEFAULT_LANGUAGE = 'zh';
+export const DEFAULT_LANGUAGE = 'en';
 
 /**
  * Dispatched after favorites/settings are persisted so other live hook

@@ -24,6 +24,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
         '分區榜顯示各隊 162 場例行賽的進度',
         '修正球員在大小聯盟之間升降時，各層級數據遺失的問題',
         '小聯盟數據列不再顯示以大聯盟為基準的指標',
+        '初次開啟改為英文與淺色主題，之後沿用你上次選擇的語言與主題',
       ],
       en: [
         'Postseason bracket back to 2012, laid out after MLB’s Postseason Picture',
@@ -31,6 +32,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
         'Standings show how far into the 162-game season each team is',
         'Fixed stats from other levels disappearing when a player moves between MLB and the minors',
         'MLB-relative stats are hidden on minor league lines',
+        'First visits open in English with the light theme; your last language and theme choice is remembered',
       ],
     },
   },

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-TW" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
@@ -9,8 +9,20 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="format-detection" content="telephone=no" />
-    <title>PlateView ⚾ | MLB 大聯盟數據查詢與即時比分</title>
-    <meta name="description" content="極簡、零延遲、純開源的 MLB 大聯盟數據查詢與即時比分看板" />
+    <title>PlateView ⚾ | MLB Live Scores &amp; Stats</title>
+    <meta name="description" content="A lightweight, zero-latency, open-source MLB live scoreboard and stats explorer" />
+    <script>
+      // Apply the saved theme and language before first paint so a returning
+      // visitor never sees a flash of the light / English defaults.
+      try {
+        var root = document.documentElement;
+        if (localStorage.getItem('plateview_mode') === 'dark') {
+          root.classList.add('dark');
+          root.setAttribute('data-mode', 'dark');
+        }
+        if (localStorage.getItem('plateview_lang') === 'zh') root.lang = 'zh-TW';
+      } catch (e) {}
+    </script>
   </head>
   <body class="bg-page text-main min-h-screen transition-colors duration-200 antialiased selection:bg-team-primary selection:text-white">
     <div id="root"></div>

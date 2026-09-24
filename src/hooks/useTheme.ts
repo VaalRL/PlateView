@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   STORAGE_KEYS,
+  DEFAULT_THEME_MODE,
   DEFAULT_THEME_TEAM,
   FAVORITES_UPDATED_EVENT,
 } from '../constants/storage';
@@ -12,10 +13,10 @@ export function useTheme() {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.themeMode);
       if (saved === 'light' || saved === 'dark') return saved;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'dark';
     } catch {
-      return 'dark';
+      // Storage unavailable: fall through to the default
     }
+    return DEFAULT_THEME_MODE;
   });
 
   const [team, setTeam] = useState<string>(() => {

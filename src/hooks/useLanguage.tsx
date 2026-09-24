@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { translations, Language, TranslationKey } from '../i18n/translations';
-import { STORAGE_KEYS, FAVORITES_UPDATED_EVENT } from '../constants/storage';
+import { STORAGE_KEYS, FAVORITES_UPDATED_EVENT, DEFAULT_LANGUAGE } from '../constants/storage';
 
 interface LanguageContextType {
   lang: Language;
@@ -13,18 +13,22 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [lang, setLangState] = useState<Language>(() => {
-    if (typeof window !== 'undefined') {
+    try {
       const saved = localStorage.getItem(STORAGE_KEYS.language);
       if (saved === 'zh' || saved === 'en') return saved;
-      // Default to Traditional Chinese
-      return 'zh';
+    } catch {
+      // Storage unavailable: fall through to the default
     }
-    return 'zh';
+    return DEFAULT_LANGUAGE;
   });
 
   const setLang = (newLang: Language) => {
     setLangState(newLang);
-    localStorage.setItem(STORAGE_KEYS.language, newLang);
+    try {
+      localStorage.setItem(STORAGE_KEYS.language, newLang);
+    } catch {
+      // Ignore storage error; the choice still applies for this visit
+    }
     document.documentElement.setAttribute('lang', newLang === 'zh' ? 'zh-TW' : 'en');
   };
 
@@ -78,13 +82,13 @@ export function useLanguage(): LanguageContextType {
   const ctx = useContext(LanguageContext);
   if (!ctx) {
     // Graceful fallback for components rendered outside of Provider in isolated tests
-    const defaultLang: Language = 'zh';
+    const defaultLang: Language = DEFAULT_LANGUAGE;
     return {
       lang: defaultLang,
       setLang: () => {},
       toggleLang: () => {},
       t: (key: TranslationKey, params?: Record<string, string | number>) => {
-        let text: string = translations.zh[key] || key;
+        let text: string = translations[defaultLang][key] || translations.zh[key] || key;
         if (params) {
           Object.entries(params).forEach(([paramKey, val]) => {
             text = text.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), String(val));
