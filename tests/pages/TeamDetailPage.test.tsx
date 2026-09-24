@@ -218,4 +218,45 @@ describe('TeamDetailPage component', () => {
 
     expect(await screen.findByText('GAME PAGE 776633')).toBeInTheDocument();
   });
+
+  it('shows how far into the 162-game season the team is', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: unknown) => {
+        const url = String(input);
+        const body = url.includes('/standings')
+          ? {
+              records: [
+                {
+                  division: { id: 201, name: 'American League East', link: '' },
+                  teamRecords: [
+                    {
+                      team: { id: 139, name: 'Tampa Bay Rays' },
+                      divisionRank: '1',
+                      gamesPlayed: 157,
+                      wins: 96,
+                      losses: 61,
+                      winningPercentage: '.611',
+                    },
+                  ],
+                },
+              ],
+            }
+          : {};
+        return { ok: true, status: 200, statusText: 'OK', json: async () => body } as Response;
+      })
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/teams/139']}>
+          <Routes>
+            <Route path="/teams/:teamId" element={<TeamDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(await screen.findByText('已賽 157/162')).toBeInTheDocument();
+  });
 });

@@ -9,7 +9,7 @@ import {
 import { getTeamLogoUrl, getPlayerHeadshotUrl } from '../services/mlbApi';
 import { useFavorites } from '../hooks/useFavorites';
 import { useLanguage } from '../hooks/useLanguage';
-import { formatRateStat, formatEra, formatWhip } from '../utils/statsFormatters';
+import { formatRateStat, formatEra, formatWhip, formatSeasonProgress } from '../utils/statsFormatters';
 import { formatBilingualGameTime, formatApiDate } from '../utils/timezone';
 import teamsData from '../data/teams.json';
 import { LIVE_ACCENT } from '../constants/gameStatus';
@@ -182,6 +182,11 @@ export const TeamDetailPage: React.FC = () => {
               {teamRecord && (
                 <span className="text-xs font-mono px-2 py-0.5 rounded bg-team-primary/15 text-team-primary font-bold">
                   {teamRecord.wins} {t('standings.wins')} {teamRecord.losses} {t('standings.losses')} ({teamRecord.winningPercentage})
+                </span>
+              )}
+              {teamRecord && (
+                <span className="text-xs font-mono px-2 py-0.5 rounded bg-page border border-border text-muted font-bold">
+                  {t('team.season_progress', { progress: formatSeasonProgress(teamRecord.gamesPlayed) })}
                 </span>
               )}
             </div>

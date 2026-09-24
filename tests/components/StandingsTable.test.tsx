@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -37,5 +37,56 @@ describe('StandingsTable component', () => {
     const wcButton = screen.getByText(/外卡榜/);
     fireEvent.click(wcButton);
     expect(wcButton).toHaveClass('bg-team-primary');
+  });
+
+  describe('season progress column', () => {
+    const globalFetch = globalThis.fetch;
+
+    beforeEach(() => {
+      queryClient.clear();
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => ({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: async () => ({
+            records: [
+              {
+                division: { id: 201, name: 'American League East', link: '' },
+                teamRecords: [
+                  {
+                    team: { id: 139, name: 'Tampa Bay Rays' },
+                    divisionRank: '1',
+                    gamesPlayed: 157,
+                    gamesBack: '-',
+                    wins: 96,
+                    losses: 61,
+                    winningPercentage: '.611',
+                  },
+                ],
+              },
+            ],
+          }),
+        }))
+      );
+    });
+
+    afterEach(() => {
+      vi.stubGlobal('fetch', globalFetch);
+    });
+
+    it('shows games played by each team out of the 162-game season', async () => {
+      render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <StandingsTable />
+          </MemoryRouter>
+        </QueryClientProvider>
+      );
+
+      expect(await screen.findByText('157/162')).toBeInTheDocument();
+      expect(screen.getByText('場次')).toBeInTheDocument();
+    });
   });
 });

@@ -4,6 +4,7 @@ import { useStandingsQuery } from '../../services/queries';
 import { getTeamLogoUrl } from '../../services/mlbApi';
 import { StandingRecord } from '../../types/mlb';
 import { useLanguage } from '../../hooks/useLanguage';
+import { formatSeasonProgress } from '../../utils/statsFormatters';
 import teamsData from '../../data/teams.json';
 
 type StandingsTab = 'ALL' | 'AL' | 'NL' | 'WC';
@@ -297,6 +298,7 @@ export const StandingsTable: React.FC = () => {
                         <th className="py-2 px-2 text-center font-medium">{t('standings.losses')}</th>
                         <th className="py-2 px-2 text-center font-medium">{t('standings.pct')}</th>
                         <th className="py-2 px-2 text-center font-medium">{t('standings.gb')}</th>
+                        <th className="py-2 px-2 text-center font-medium">{t('standings.gp')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/30">
@@ -334,6 +336,9 @@ export const StandingsTable: React.FC = () => {
                             </td>
                             <td className="py-2 px-2 text-center font-mono text-muted">
                               {rec.gamesBack === '-' ? '-' : rec.gamesBack}
+                            </td>
+                            <td className="py-2 px-2 text-center font-mono text-muted">
+                              {formatSeasonProgress(rec.gamesPlayed)}
                             </td>
                           </tr>
                         );

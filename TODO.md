@@ -217,3 +217,10 @@
   - [x] 修正既有測試的 `HR` 斷言:新增的投手 HR 欄位與官方註記的 HR 標籤撞名,改以註記內容比對
   - [x] 以 Playwright 渲染完整 Box 表格,深淺兩色確認
   - [x] 測試由 180 項增至 194 項,全數通過;TypeScript、ESLint（0 errors）與 Vite 打包驗證通過
+
+- [x] **Phase 21: 戰績表與球隊頁標示賽季進度（2026-09-24）**
+  - [x] 新增 `formatSeasonProgress()` 至既有 `statsFormatters.ts`（SSOT），輸出 `145/162`；缺值、負數、NaN 回傳 `-`
+  - [x] 分母抽為 `src/constants/season.ts` 的 `MLB_REGULAR_SEASON_GAMES`，不硬寫在元件內
+  - [x] 分子讀 standings 既有的 `gamesPlayed`，不多發請求；**明確不採用**「數球隊賽程」（延賽重複列出，實測光芒 2026 例行賽出現 164 場）與 `leagueRecord` 勝＋敗（季後賽期間會變成系列賽戰績）
+  - [x] 分區戰績表新增「場次／GP」欄；球隊頁標題列新增「已賽 157/162」徽章
+  - [x] 測試由 194 項增至 199 項，全數通過；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過

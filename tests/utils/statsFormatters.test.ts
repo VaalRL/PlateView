@@ -13,6 +13,7 @@ import {
   getPitchingDecision,
   getPitchingDecisions,
   formatDecisionRecord,
+  formatSeasonProgress,
 } from '../../src/utils/statsFormatters';
 import type { PitchingDecisionStat } from '../../src/utils/statsFormatters';
 
@@ -187,6 +188,24 @@ describe('statsFormatters utility tests', () => {
       expect(formatDecisionRecord('SV', {})).toBe('');
       expect(formatDecisionRecord('W', undefined)).toBe('');
       expect(formatDecisionRecord('ND', { wins: 1, losses: 1 })).toBe('');
+    });
+  });
+
+  describe('formatSeasonProgress (games played out of the regular season)', () => {
+    it('shows games played over the 162-game MLB schedule by default', () => {
+      expect(formatSeasonProgress(145)).toBe('145/162');
+      expect(formatSeasonProgress(0)).toBe('0/162');
+    });
+
+    it('accepts a different season length', () => {
+      expect(formatSeasonProgress(60, 60)).toBe('60/60');
+    });
+
+    it('returns - when games played is missing or invalid', () => {
+      expect(formatSeasonProgress(undefined)).toBe('-');
+      expect(formatSeasonProgress(null)).toBe('-');
+      expect(formatSeasonProgress(-1)).toBe('-');
+      expect(formatSeasonProgress(Number.NaN)).toBe('-');
     });
   });
 });

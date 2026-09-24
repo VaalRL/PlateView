@@ -1,3 +1,5 @@
+import { MLB_REGULAR_SEASON_GAMES } from '../constants/season';
+
 /**
  * Format batting average (AVG / OBP / SLG): returns e.g. ".310" or "1.025" or "---"
  */
@@ -38,6 +40,19 @@ export function formatWhip(whip?: string | number | null): string {
 export function formatRecord(wins?: number | null, losses?: number | null): string {
   if (wins === undefined || wins === null || losses === undefined || losses === null) return '-';
   return `${wins}-${losses}`;
+}
+
+/**
+ * Format season progress as games played out of the regular season, e.g. "145/162"
+ */
+export function formatSeasonProgress(
+  gamesPlayed?: number | null,
+  totalGames: number = MLB_REGULAR_SEASON_GAMES
+): string {
+  if (gamesPlayed === undefined || gamesPlayed === null || !Number.isFinite(gamesPlayed) || gamesPlayed < 0) {
+    return '-';
+  }
+  return `${gamesPlayed}/${totalGames}`;
 }
 
 /**
