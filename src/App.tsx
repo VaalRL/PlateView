@@ -17,6 +17,9 @@ const PlayerDetailPage = lazy(() =>
 const LeaderboardsPage = lazy(() =>
   import('./pages/LeaderboardsPage').then((m) => ({ default: m.LeaderboardsPage }))
 );
+const PostseasonPage = lazy(() =>
+  import('./pages/PostseasonPage').then((m) => ({ default: m.PostseasonPage }))
+);
 const GameDetailPage = lazy(() =>
   import('./pages/GameDetailPage').then((m) => ({ default: m.GameDetailPage }))
 );
@@ -51,6 +54,7 @@ export const App: React.FC = () => {
                   <Route path="/players/:personId" element={<PlayerDetailPage />} />
                   <Route path="/leaders" element={<LeaderboardsPage />} />
                   <Route path="/games/:gamePk" element={<GameDetailPage />} />
+                  <Route path="/postseason/:season?" element={<PostseasonPage />} />
                 </Routes>
               </Suspense>
             </main>

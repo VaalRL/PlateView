@@ -13,7 +13,9 @@ import {
   getLeaderboards,
   getPeopleBatch,
   getFavoritePlayersGameLog,
+  getPostseasonSeries,
 } from './mlbApi';
+import { getCurrentMlbSeason } from '../utils/season';
 import { formatApiDate } from '../utils/timezone';
 import { ScheduleResponse } from '../types/mlb';
 
@@ -39,6 +41,19 @@ export function useStandingsQuery(season?: number) {
     queryKey: ['standings', season],
     queryFn: () => getStandings(season),
     staleTime: 1000 * 60 * 15, // 15 minutes
+  });
+}
+
+/**
+ * Postseason series for the bracket. A past postseason never changes; the
+ * current one moves at most a few times a day, and live scores are the
+ * scoreboard's job, so the bracket does not poll.
+ */
+export function usePostseasonQuery(season: number) {
+  return useQuery({
+    queryKey: ['postseason', season],
+    queryFn: () => getPostseasonSeries(season),
+    staleTime: season < getCurrentMlbSeason() ? 1000 * 60 * 60 * 24 : 1000 * 60 * 5, // 24 hours or 5 minutes
   });
 }
 

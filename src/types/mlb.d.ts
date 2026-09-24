@@ -218,6 +218,8 @@ export interface StandingRecord {
   };
   divisionRank: string;
   leagueRank: string;
+  /** z/y = division winner, x = 2020 second-place qualifier, w = wild card; absent until clinched */
+  clinchIndicator?: string;
   wildCardRank?: string;
   gamesPlayed: number;
   gamesBack: string;

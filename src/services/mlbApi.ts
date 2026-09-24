@@ -1,5 +1,6 @@
 import { ScheduleResponse, StandingsResponse, VenuesResponse } from '../types/mlb';
 import { PeopleResponse } from '../types/favorites';
+import { PostseasonSeriesResponse } from '../types/postseason';
 import { getCurrentMlbSeason } from '../utils/season';
 import {
   HITTING_LEADER_CATEGORIES,
@@ -100,6 +101,22 @@ export async function getGameSchedule(gamePk: number): Promise<ScheduleResponse>
  */
 export async function getGameBoxscore(gamePk: number) {
   return fetchMlb<any>(`/game/${gamePk}/boxscore`);
+}
+
+/**
+ * Fetch every postseason series of a season with its games.
+ *
+ * `fields=` trims the response to what the bracket reads (about 20 KB instead
+ * of 65 KB for a full postseason); see docs/adr/0004-postseason-bracket.md.
+ */
+export async function getPostseasonSeries(season: number): Promise<PostseasonSeriesResponse> {
+  return fetchMlb<PostseasonSeriesResponse>('/schedule/postseason/series', {
+    season,
+    sportId: 1,
+    fields:
+      'series,series,id,gameType,games,gamePk,gameDate,officialDate,status,abstractGameState,detailedState,' +
+      'teams,away,home,team,id,name,isWinner,score,description,gamesInSeries,seriesGameNumber,ifNecessary',
+  });
 }
 
 /**
