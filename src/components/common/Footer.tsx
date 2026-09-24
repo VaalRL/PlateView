@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Heart, Github } from 'lucide-react';
 import { PlateViewLogo } from './PlateViewLogo';
 import { useLanguage } from '../../hooks/useLanguage';
+import { ChangelogModal } from './ChangelogModal';
+import { CHANGELOG } from '../../constants/changelog';
 
 export const Footer: React.FC = () => {
   const { lang, t } = useLanguage();
+  const [changelogOpen, setChangelogOpen] = useState(false);
 
   return (
     <footer className="mt-16 border-t border-border bg-card/50 py-10 transition-colors">
@@ -14,7 +17,15 @@ export const Footer: React.FC = () => {
           <div className="flex items-center gap-2">
             <PlateViewLogo className="w-5 h-5 shrink-0" />
             <span className="font-bold text-main">PlateView ⚾</span>
-            <span className="text-xs text-muted">v1.0.0</span>
+            <button
+              type="button"
+              onClick={() => setChangelogOpen(true)}
+              title={t('changelog.open')}
+              aria-label={`${t('changelog.open')} (v${CHANGELOG[0].version})`}
+              className="text-xs text-muted hover:text-main underline decoration-dotted underline-offset-2 transition-colors"
+            >
+              v{CHANGELOG[0].version}
+            </button>
           </div>
 
           <span className="text-border text-xs">&bull;</span>
@@ -84,6 +95,8 @@ export const Footer: React.FC = () => {
           MIT License &bull; Data directly fetched from MLB Stats API &bull; Built with React & Vite
         </div>
       </div>
+
+      <ChangelogModal isOpen={changelogOpen} onClose={() => setChangelogOpen(false)} />
     </footer>
   );
 };

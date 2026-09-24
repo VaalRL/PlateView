@@ -310,6 +310,9 @@ export const translations = {
     'offline.online': '網路已連線，已恢復 MLB 即時數據同步。',
 
     // Footer & Sponsor
+    'changelog.title': '更新歷程',
+    'changelog.open': '查看更新歷程',
+    'changelog.latest': '最新',
     'footer.sponsor_title': '喜歡 PlateView 嗎？',
     'footer.sponsor_desc': '若本工具對您看球與數據查詢有所幫助，歡迎請開發者喝杯咖啡支持持續維護！',
     'footer.sponsor_btn': '☕ 請我喝杯咖啡 (Buy Me a Coffee)',
@@ -625,6 +628,9 @@ export const translations = {
     'offline.online': 'Back online. Live data sync restored.',
 
     // Footer & Sponsor
+    'changelog.title': 'Release history',
+    'changelog.open': 'View release history',
+    'changelog.latest': 'Latest',
     'footer.sponsor_title': 'Enjoying PlateView?',
     'footer.sponsor_desc': 'If you find this baseball analytics tool helpful, consider supporting its maintenance with a cup of coffee!',
     'footer.sponsor_btn': '☕ Buy Me a Coffee',
