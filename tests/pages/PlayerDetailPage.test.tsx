@@ -230,7 +230,9 @@ describe('PlayerDetailPage game logs', () => {
       const fetchMock = renderPlayer(promoted, 661531);
       await screen.findByText('出賽 28 場', { exact: false });
       // One call for every level, plus one for the postseason game log
-      const urls = fetchMock.mock.calls.map((c) => decodeURIComponent(String((c as unknown[])[0])));
+      const urls = fetchMock.mock.calls
+        .map((c) => decodeURIComponent(String((c as unknown[])[0])))
+        .filter((u) => u.includes('/people'));
       expect(urls.filter((u) => !u.includes('gameType=P'))).toHaveLength(1);
       urls.forEach((u) => expect(u).toContain('leagueListId=mlb_milb'));
     });

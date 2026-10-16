@@ -1,6 +1,7 @@
 import { ScheduleResponse, StandingsResponse, VenuesResponse } from '../types/mlb';
 import { PeopleResponse } from '../types/favorites';
 import { PostseasonSeriesResponse } from '../types/postseason';
+import { TransactionsResponse } from '../types/transactions';
 import { getCurrentMlbSeason } from '../utils/season';
 import { MLB_LEVEL, MLB_MILB_LEAGUE_LIST, MLB_SPORT_ID } from '../constants/levels';
 import { mergeGameLogs, type PlayerStatGroup } from '../utils/playerLevels';
@@ -157,6 +158,14 @@ export async function getPlayerDetail(personId: number) {
     fetchPostseasonGameLogs(String(personId)),
   ]);
   return withPostseasonGameLogs(detail, postseason);
+}
+
+/**
+ * Every roster move on a player's record (trades, signings, options,
+ * releases, injured list ...), across MLB and the minors.
+ */
+export async function getPlayerTransactions(personId: number): Promise<TransactionsResponse> {
+  return fetchMlb<TransactionsResponse>('/transactions', { playerId: personId });
 }
 
 /**
