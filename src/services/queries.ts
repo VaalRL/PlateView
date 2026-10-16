@@ -10,6 +10,7 @@ import {
   getVenue,
   getPlayerDetail,
   getPlayerTransactions,
+  getPersonSummary,
   searchPeople,
   getLeaderboards,
   getPeopleBatch,
@@ -158,6 +159,16 @@ export function usePlayerTransactionsQuery(personId?: number) {
   });
 }
 
+/** A player's name, position and current club, for the hover card */
+export function usePersonSummaryQuery(personId?: number) {
+  return useQuery({
+    queryKey: ['person-summary', personId],
+    queryFn: () => getPersonSummary(personId!),
+    enabled: !!personId,
+    staleTime: 1000 * 60 * 30, // 30 minutes
+  });
+}
+
 export function usePeopleSearchQuery(query: string) {
   return useQuery({
     queryKey: ['people-search', query],
@@ -167,17 +178,21 @@ export function usePeopleSearchQuery(query: string) {
   });
 }
 
-export function useLeaderboardsQuery(params: {
-  statGroup: 'hitting' | 'pitching';
-  categories?: string[];
-  leagueId?: number;
-  season?: number;
-  limit?: number;
-}) {
+export function useLeaderboardsQuery(
+  params: {
+    statGroup: 'hitting' | 'pitching';
+    categories?: string[];
+    leagueId?: number;
+    season?: number;
+    limit?: number;
+  },
+  enabled: boolean = true
+) {
   const { statGroup, categories, leagueId, season, limit } = params;
   return useQuery({
     queryKey: ['leaderboards', statGroup, categories, leagueId, season, limit],
     queryFn: () => getLeaderboards(params),
+    enabled,
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
 }

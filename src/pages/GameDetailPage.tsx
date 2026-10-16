@@ -12,6 +12,8 @@ import teamsData from '../data/teams.json';
 import { LIVE_ACCENT } from '../constants/gameStatus';
 import { BoxscorePlayerEntry, BoxscoreResponse, BoxscoreTeamSide, GameSchedule } from '../types/mlb';
 import { ArrowLeft, Loader2, MapPin, Info, Shield, Table2 } from 'lucide-react';
+import { PlayerHoverCard } from '../components/common/PlayerHoverCard';
+import { TeamHoverCard } from '../components/common/TeamHoverCard';
 
 type GameTab = 'lineup' | 'box';
 type GameSide = 'away' | 'home';
@@ -36,16 +38,17 @@ const PlayerChips: React.FC<{
           const p = players['ID' + id];
           if (!p?.person?.id) return null;
           return (
-            <Link
-              key={id}
-              to={`/players/${p.person.id}`}
-              className="text-[11px] px-2 py-0.5 rounded-full bg-page border border-border/60 text-main hover:border-team-primary hover:text-team-primary transition-colors"
-            >
-              {p.person.fullName}
-              <span className="ml-1 font-mono text-[9px] text-muted">
-                {p.position?.abbreviation}
-              </span>
-            </Link>
+            <PlayerHoverCard personId={p.person.id} key={id}>
+              <Link
+                to={`/players/${p.person.id}`}
+                className="text-[11px] px-2 py-0.5 rounded-full bg-page border border-border/60 text-main hover:border-team-primary hover:text-team-primary transition-colors"
+              >
+                {p.person.fullName}
+                <span className="ml-1 font-mono text-[9px] text-muted">
+                  {p.position?.abbreviation}
+                </span>
+              </Link>
+            </PlayerHoverCard>
           );
         })}
       </div>
@@ -92,12 +95,14 @@ const ProbablePitchers: React.FC<{ game: GameSchedule; awayName: string; homeNam
               {side === 'away' ? awayName : homeName} ({t(side === 'away' ? 'sb.sp_away' : 'sb.sp_home')})
             </span>
             {pitcher?.id ? (
-              <Link
-                to={`/players/${pitcher.id}`}
-                className="text-main font-bold text-sm block mt-1 hover:text-team-primary hover:underline"
-              >
-                {pitcher.fullName}
-              </Link>
+              <PlayerHoverCard personId={pitcher.id}>
+                <Link
+                  to={`/players/${pitcher.id}`}
+                  className="text-main font-bold text-sm block mt-1 hover:text-team-primary hover:underline"
+                >
+                  {pitcher.fullName}
+                </Link>
+              </PlayerHoverCard>
             ) : (
               <span className="text-main font-bold text-sm block mt-1">
                 {pitcher?.fullName || t('sb.tbd')}
@@ -198,22 +203,24 @@ export const GameDetailPage: React.FC = () => {
     const teamGame = game.teams[side];
     const name = side === 'away' ? awayName : homeName;
     return (
-      <Link to={`/teams/${teamGame.team.id}`} className="flex items-center gap-2.5 min-w-0 group">
-        <img
-          src={getTeamLogoUrl(teamGame.team.id)}
-          alt={teamGame.team.name}
-          className="w-10 h-10 shrink-0"
-          loading="lazy"
-        />
-        <div className="min-w-0">
-          <div className="text-sm font-bold text-main truncate group-hover:text-team-primary transition-colors">
-            {name}
+      <TeamHoverCard teamId={teamGame.team.id} name={teamGame.team.name}>
+        <Link to={`/teams/${teamGame.team.id}`} className="flex items-center gap-2.5 min-w-0 group">
+          <img
+            src={getTeamLogoUrl(teamGame.team.id)}
+            alt={teamGame.team.name}
+            className="w-10 h-10 shrink-0"
+            loading="lazy"
+          />
+          <div className="min-w-0">
+            <div className="text-sm font-bold text-main truncate group-hover:text-team-primary transition-colors">
+              {name}
+            </div>
+            <div className="text-[11px] text-muted font-mono">
+              {teamGame.leagueRecord?.wins ?? '-'}-{teamGame.leagueRecord?.losses ?? '-'}
+            </div>
           </div>
-          <div className="text-[11px] text-muted font-mono">
-            {teamGame.leagueRecord?.wins ?? '-'}-{teamGame.leagueRecord?.losses ?? '-'}
-          </div>
-        </div>
-      </Link>
+        </Link>
+      </TeamHoverCard>
     );
   };
 
@@ -258,25 +265,31 @@ export const GameDetailPage: React.FC = () => {
           {game.decisions?.winner && (
             <span className="font-mono">
               {t('game.decision_win')}:{' '}
-              <Link to={`/players/${game.decisions.winner.id}`} className="hover:text-team-primary hover:underline">
-                {game.decisions.winner.fullName}
-              </Link>
+              <PlayerHoverCard personId={game.decisions.winner.id}>
+                <Link to={`/players/${game.decisions.winner.id}`} className="hover:text-team-primary hover:underline">
+                  {game.decisions.winner.fullName}
+                </Link>
+              </PlayerHoverCard>
             </span>
           )}
           {game.decisions?.loser && (
             <span className="font-mono">
               {t('game.decision_loss')}:{' '}
-              <Link to={`/players/${game.decisions.loser.id}`} className="hover:text-team-primary hover:underline">
-                {game.decisions.loser.fullName}
-              </Link>
+              <PlayerHoverCard personId={game.decisions.loser.id}>
+                <Link to={`/players/${game.decisions.loser.id}`} className="hover:text-team-primary hover:underline">
+                  {game.decisions.loser.fullName}
+                </Link>
+              </PlayerHoverCard>
             </span>
           )}
           {game.decisions?.save && (
             <span className="font-mono">
               {t('game.decision_save')}:{' '}
-              <Link to={`/players/${game.decisions.save.id}`} className="hover:text-team-primary hover:underline">
-                {game.decisions.save.fullName}
-              </Link>
+              <PlayerHoverCard personId={game.decisions.save.id}>
+                <Link to={`/players/${game.decisions.save.id}`} className="hover:text-team-primary hover:underline">
+                  {game.decisions.save.fullName}
+                </Link>
+              </PlayerHoverCard>
             </span>
           )}
         </div>

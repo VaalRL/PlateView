@@ -26,6 +26,8 @@ import {
   TrendingUp,
   ChevronRight,
 } from 'lucide-react';
+import { PlayerHoverCard } from '../components/common/PlayerHoverCard';
+import { TeamHoverCard } from '../components/common/TeamHoverCard';
 
 type MainViewTab = 'roster' | 'schedule';
 type RosterTab = 'active' | '40Man' | 'il';
@@ -221,9 +223,11 @@ export const TeamDetailPage: React.FC = () => {
                   {BROWSABLE_LEVELS.find((l) => l.id === sportId)?.abbreviation ?? detail?.sport?.name}
                 </span>
                 {parentOrg && (
-                  <Link to={`/teams/${parentOrg.id}`} className="text-team-primary hover:underline font-semibold">
-                    {t('team.affiliate_of', { parent: lang === 'zh' ? parentOrg.nameZh : parentOrg.name })}
-                  </Link>
+                  <TeamHoverCard teamId={parentOrg.id}>
+                    <Link to={`/teams/${parentOrg.id}`} className="text-team-primary hover:underline font-semibold">
+                      {t('team.affiliate_of', { parent: lang === 'zh' ? parentOrg.nameZh : parentOrg.name })}
+                    </Link>
+                  </TeamHoverCard>
                 )}
               </p>
             ) : (
@@ -425,13 +429,15 @@ export const TeamDetailPage: React.FC = () => {
                             <span>
                               <strong className="text-emerald-500 font-bold">W:</strong>{' '}
                               {g.decisions.winner.id ? (
-                                <Link
-                                  to={`/players/${g.decisions.winner.id}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="hover:underline hover:text-team-primary text-main"
-                                >
-                                  {g.decisions.winner.fullName}
-                                </Link>
+                                <PlayerHoverCard personId={g.decisions.winner.id}>
+                                  <Link
+                                    to={`/players/${g.decisions.winner.id}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="hover:underline hover:text-team-primary text-main"
+                                  >
+                                    {g.decisions.winner.fullName}
+                                  </Link>
+                                </PlayerHoverCard>
                               ) : (
                                 <span>{g.decisions.winner.fullName}</span>
                               )}
@@ -441,13 +447,15 @@ export const TeamDetailPage: React.FC = () => {
                             <span>
                               <strong className="text-rose-500 font-bold">L:</strong>{' '}
                               {g.decisions.loser.id ? (
-                                <Link
-                                  to={`/players/${g.decisions.loser.id}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="hover:underline hover:text-team-primary text-main"
-                                >
-                                  {g.decisions.loser.fullName}
-                                </Link>
+                                <PlayerHoverCard personId={g.decisions.loser.id}>
+                                  <Link
+                                    to={`/players/${g.decisions.loser.id}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="hover:underline hover:text-team-primary text-main"
+                                  >
+                                    {g.decisions.loser.fullName}
+                                  </Link>
+                                </PlayerHoverCard>
                               ) : (
                                 <span>{g.decisions.loser.fullName}</span>
                               )}
@@ -457,13 +465,15 @@ export const TeamDetailPage: React.FC = () => {
                             <span>
                               <strong className="text-amber-500 font-bold">SV:</strong>{' '}
                               {g.decisions.save.id ? (
-                                <Link
-                                  to={`/players/${g.decisions.save.id}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="hover:underline hover:text-team-primary text-main"
-                                >
-                                  {g.decisions.save.fullName}
-                                </Link>
+                                <PlayerHoverCard personId={g.decisions.save.id}>
+                                  <Link
+                                    to={`/players/${g.decisions.save.id}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="hover:underline hover:text-team-primary text-main"
+                                  >
+                                    {g.decisions.save.fullName}
+                                  </Link>
+                                </PlayerHoverCard>
                               ) : (
                                 <span>{g.decisions.save.fullName}</span>
                               )}
@@ -477,13 +487,15 @@ export const TeamDetailPage: React.FC = () => {
                           <span className="font-semibold text-main">
                             <span className="text-muted font-normal">{t('sb.sp_away')}:</span>{' '}
                             {g.teams?.away?.probablePitcher?.id ? (
-                              <Link
-                                to={`/players/${g.teams.away.probablePitcher.id}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="hover:underline hover:text-team-primary text-main"
-                              >
-                                {g.teams.away.probablePitcher.fullName}
-                              </Link>
+                              <PlayerHoverCard personId={g.teams.away.probablePitcher.id}>
+                                <Link
+                                  to={`/players/${g.teams.away.probablePitcher.id}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="hover:underline hover:text-team-primary text-main"
+                                >
+                                  {g.teams.away.probablePitcher.fullName}
+                                </Link>
+                              </PlayerHoverCard>
                             ) : (
                               <span className="text-main font-medium">{g.teams?.away?.probablePitcher?.fullName || t('sb.tbd')}</span>
                             )}
@@ -492,13 +504,15 @@ export const TeamDetailPage: React.FC = () => {
                           <span className="font-semibold text-main">
                             <span className="text-muted font-normal">{t('sb.sp_home')}:</span>{' '}
                             {g.teams?.home?.probablePitcher?.id ? (
-                              <Link
-                                to={`/players/${g.teams.home.probablePitcher.id}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="hover:underline hover:text-team-primary text-main"
-                              >
-                                {g.teams.home.probablePitcher.fullName}
-                              </Link>
+                              <PlayerHoverCard personId={g.teams.home.probablePitcher.id}>
+                                <Link
+                                  to={`/players/${g.teams.home.probablePitcher.id}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="hover:underline hover:text-team-primary text-main"
+                                >
+                                  {g.teams.home.probablePitcher.fullName}
+                                </Link>
+                              </PlayerHoverCard>
                             ) : (
                               <span className="text-main font-medium">{g.teams?.home?.probablePitcher?.fullName || t('sb.tbd')}</span>
                             )}
@@ -651,79 +665,80 @@ export const TeamDetailPage: React.FC = () => {
                     const displayName = item.person.fullName;
 
                     return (
-                      <Link
-                        key={item.person.id}
-                        to={`/players/${item.person.id}`}
-                        className="py-2.5 px-2 flex items-center justify-between hover:bg-card-hover/70 rounded-lg transition-colors group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="relative shrink-0">
-                            <img
-                              src={getPlayerHeadshotUrl(item.person.id)}
-                              alt={item.person.fullName}
-                              className="w-10 h-10 rounded-full bg-page object-cover border border-border group-hover:scale-105 transition-transform"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src =
-                                  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="%2394a3b8" viewBox="0 0 16 16"%3E%3Cpath d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"%3E%3C/path%3E%3Cpath fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"%3E%3C/path%3E%3C/svg%3E';
-                              }}
-                            />
-                            {starterInfo && (
-                              <span
-                                className="absolute -top-1 -right-1 text-[10px] w-4 h-4 bg-amber-500 text-black rounded-full flex items-center justify-center font-bold shadow ring-2 ring-card"
-                                title={
-                                  starterInfo.isTomorrow
-                                    ? t('team.sp_tomorrow')
-                                    : starterInfo.isToday
-                                    ? t('team.sp_today')
-                                    : t('team.sp_probable')
-                                }
-                              >
-                                🔥
-                              </span>
-                            )}
-                          </div>
-                          <div>
-                            <div className="text-sm font-semibold text-main group-hover:text-team-primary flex flex-wrap items-center gap-1.5">
-                              <span>{displayName}</span>
+                      <PlayerHoverCard personId={item.person.id} key={item.person.id}>
+                        <Link
+                          to={`/players/${item.person.id}`}
+                          className="py-2.5 px-2 flex items-center justify-between hover:bg-card-hover/70 rounded-lg transition-colors group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="relative shrink-0">
+                              <img
+                                src={getPlayerHeadshotUrl(item.person.id)}
+                                alt={item.person.fullName}
+                                className="w-10 h-10 rounded-full bg-page object-cover border border-border group-hover:scale-105 transition-transform"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src =
+                                    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="%2394a3b8" viewBox="0 0 16 16"%3E%3Cpath d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"%3E%3C/path%3E%3Cpath fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"%3E%3C/path%3E%3C/svg%3E';
+                                }}
+                              />
                               {starterInfo && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-500 border border-amber-500/30 font-bold flex items-center gap-1 shadow-sm">
-                                  <span>🔥</span>
-                                  <span>
-                                    {starterInfo.isTomorrow
+                                <span
+                                  className="absolute -top-1 -right-1 text-[10px] w-4 h-4 bg-amber-500 text-black rounded-full flex items-center justify-center font-bold shadow ring-2 ring-card"
+                                  title={
+                                    starterInfo.isTomorrow
                                       ? t('team.sp_tomorrow')
                                       : starterInfo.isToday
                                       ? t('team.sp_today')
-                                      : t('team.sp_probable')}
-                                  </span>
-                                </span>
-                              )}
-                              {isOnInjuredList(item.status) && (
-                                <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
-                                  IL
+                                      : t('team.sp_probable')
+                                  }
+                                >
+                                  🔥
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-muted">
-                              #{item.jerseyNumber || '--'} &bull; {item.position?.abbreviation} &bull;{' '}
-                              {item.person?.pitchHand?.code || 'R'}
+                            <div>
+                              <div className="text-sm font-semibold text-main group-hover:text-team-primary flex flex-wrap items-center gap-1.5">
+                                <span>{displayName}</span>
+                                {starterInfo && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-500 border border-amber-500/30 font-bold flex items-center gap-1 shadow-sm">
+                                    <span>🔥</span>
+                                    <span>
+                                      {starterInfo.isTomorrow
+                                        ? t('team.sp_tomorrow')
+                                        : starterInfo.isToday
+                                        ? t('team.sp_today')
+                                        : t('team.sp_probable')}
+                                    </span>
+                                  </span>
+                                )}
+                                {isOnInjuredList(item.status) && (
+                                  <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
+                                    IL
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-muted">
+                                #{item.jerseyNumber || '--'} &bull; {item.position?.abbreviation} &bull;{' '}
+                                {item.person?.pitchHand?.code || 'R'}
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="text-right font-mono text-xs">
-                          {seasonPitching ? (
-                            <div>
-                              <span className="font-bold text-main">{formatEra(seasonPitching.era)} ERA</span>
-                              <span className="text-muted text-[11px] block">
-                                {seasonPitching.wins}-{seasonPitching.losses} &bull;{' '}
-                                {formatWhip(seasonPitching.whip)} WHIP
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-muted text-[11px]">{item.status?.description || 'Active'}</span>
-                          )}
-                        </div>
-                      </Link>
+                          <div className="text-right font-mono text-xs">
+                            {seasonPitching ? (
+                              <div>
+                                <span className="font-bold text-main">{formatEra(seasonPitching.era)} ERA</span>
+                                <span className="text-muted text-[11px] block">
+                                  {seasonPitching.wins}-{seasonPitching.losses} &bull;{' '}
+                                  {formatWhip(seasonPitching.whip)} WHIP
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-muted text-[11px]">{item.status?.description || 'Active'}</span>
+                            )}
+                          </div>
+                        </Link>
+                      </PlayerHoverCard>
                     );
                   })}
                   {pitchers.length === 0 && (
@@ -755,50 +770,51 @@ export const TeamDetailPage: React.FC = () => {
                     const displayName = item.person.fullName;
 
                     return (
-                      <Link
-                        key={item.person.id}
-                        to={`/players/${item.person.id}`}
-                        className="py-2.5 px-2 flex items-center justify-between hover:bg-card-hover/70 rounded-lg transition-colors group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={getPlayerHeadshotUrl(item.person.id)}
-                            alt={item.person.fullName}
-                            className="w-10 h-10 rounded-full bg-page object-cover border border-border group-hover:scale-105 transition-transform shrink-0"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="%2394a3b8" viewBox="0 0 16 16"%3E%3Cpath d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"%3E%3C/path%3E%3Cpath fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"%3E%3C/path%3E%3C/svg%3E';
-                            }}
-                          />
-                          <div>
-                            <div className="text-sm font-semibold text-main group-hover:text-team-primary flex flex-wrap items-center gap-1.5">
-                              <span>{displayName}</span>
-                              {isOnInjuredList(item.status) && (
-                                <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
-                                  IL
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-xs text-muted">
-                              #{item.jerseyNumber || '--'} &bull; {item.position?.abbreviation} &bull;{' '}
-                              {item.person?.batSide?.code || 'R'}
+                      <PlayerHoverCard personId={item.person.id} key={item.person.id}>
+                        <Link
+                          to={`/players/${item.person.id}`}
+                          className="py-2.5 px-2 flex items-center justify-between hover:bg-card-hover/70 rounded-lg transition-colors group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={getPlayerHeadshotUrl(item.person.id)}
+                              alt={item.person.fullName}
+                              className="w-10 h-10 rounded-full bg-page object-cover border border-border group-hover:scale-105 transition-transform shrink-0"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="%2394a3b8" viewBox="0 0 16 16"%3E%3Cpath d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"%3E%3C/path%3E%3Cpath fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"%3E%3C/path%3E%3C/svg%3E';
+                              }}
+                            />
+                            <div>
+                              <div className="text-sm font-semibold text-main group-hover:text-team-primary flex flex-wrap items-center gap-1.5">
+                                <span>{displayName}</span>
+                                {isOnInjuredList(item.status) && (
+                                  <span className="text-[10px] px-1 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">
+                                    IL
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-muted">
+                                #{item.jerseyNumber || '--'} &bull; {item.position?.abbreviation} &bull;{' '}
+                                {item.person?.batSide?.code || 'R'}
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="text-right font-mono text-xs">
-                          {seasonHitting ? (
-                            <div>
-                              <span className="font-bold text-main">{formatRateStat(seasonHitting.avg)}</span>
-                              <span className="text-muted text-[11px] block">
-                                {seasonHitting.homeRuns} HR &bull; {formatRateStat(seasonHitting.ops)} OPS
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-muted text-[11px]">{item.status?.description || 'Active'}</span>
-                          )}
-                        </div>
-                      </Link>
+                          <div className="text-right font-mono text-xs">
+                            {seasonHitting ? (
+                              <div>
+                                <span className="font-bold text-main">{formatRateStat(seasonHitting.avg)}</span>
+                                <span className="text-muted text-[11px] block">
+                                  {seasonHitting.homeRuns} HR &bull; {formatRateStat(seasonHitting.ops)} OPS
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-muted text-[11px]">{item.status?.description || 'Active'}</span>
+                            )}
+                          </div>
+                        </Link>
+                      </PlayerHoverCard>
                     );
                   })}
                   {positionPlayers.length === 0 && (

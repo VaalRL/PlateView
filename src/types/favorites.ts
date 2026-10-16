@@ -75,7 +75,14 @@ export interface GameLogPerson {
   id: number;
   fullName: string;
   primaryPosition?: { abbreviation?: string };
-  currentTeam?: { id?: number; name?: string };
+  currentTeam?: {
+    id?: number;
+    name?: string;
+    /** With hydrate=currentTeam(sport,parentOrg) */
+    sport?: { id?: number; name?: string };
+    parentOrgId?: number;
+    parentOrgName?: string;
+  };
   stats?: GameLogStatGroup[];
 }
 

@@ -10,6 +10,8 @@ import playersData from '../../data/players-zh-tw.json';
 import { FavoritesBackupModal } from './FavoritesBackupModal';
 import { FavoritesSummaryDrawer } from './FavoritesSummaryDrawer';
 import { getEasternDateStr } from '../../utils/timezone';
+import { PlayerHoverCard } from '../common/PlayerHoverCard';
+import { TeamHoverCard } from '../common/TeamHoverCard';
 
 interface FavoritesBarProps {
   games?: GameSchedule[];
@@ -120,23 +122,24 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
                 const teamDisplayName = lang === 'zh' ? team.nameZh : team.name;
 
                 return (
-                  <Link
-                    key={team.id}
-                    to={`/teams/${team.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-page border border-border text-xs font-medium hover:border-team-primary transition-all group"
-                  >
-                    <span
-                      className="w-2 h-2 rounded-full group-hover:scale-125 transition-transform"
-                      style={{ backgroundColor: team.primaryColor }}
-                    />
-                    <span className="font-semibold text-main">{teamDisplayName}</span>
-                    {gameSummary && (
-                      <span className="text-[10px] text-muted font-mono bg-card px-1.5 py-0.5 rounded border border-border/50">
-                        {gameSummary}
-                      </span>
-                    )}
-                  </Link>
+                  <TeamHoverCard teamId={team.id} key={team.id}>
+                    <Link
+                      to={`/teams/${team.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-page border border-border text-xs font-medium hover:border-team-primary transition-all group"
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full group-hover:scale-125 transition-transform"
+                        style={{ backgroundColor: team.primaryColor }}
+                      />
+                      <span className="font-semibold text-main">{teamDisplayName}</span>
+                      {gameSummary && (
+                        <span className="text-[10px] text-muted font-mono bg-card px-1.5 py-0.5 rounded border border-border/50">
+                          {gameSummary}
+                        </span>
+                      )}
+                    </Link>
+                  </TeamHoverCard>
                 );
               })}
 
@@ -145,23 +148,24 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
                 const playerDisplayName = player.nameEn;
 
                 return (
-                  <Link
-                    key={player.id}
-                    to={`/players/${player.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
-                      isStarting
-                        ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 font-bold shadow-[0_0_8px_rgba(245,158,11,0.2)]'
-                        : 'bg-team-primary/10 border-team-primary/20 text-team-primary hover:bg-team-primary/20'
-                    }`}
-                  >
-                    <span>⭐ {playerDisplayName}</span>
-                    {isStarting && (
-                      <span className="text-[10px] bg-amber-500 text-black px-1 rounded font-bold">
-                        {t('fav.today_starter')}
-                      </span>
-                    )}
-                  </Link>
+                  <PlayerHoverCard personId={player.id} key={player.id}>
+                    <Link
+                      to={`/players/${player.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+                        isStarting
+                          ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 font-bold shadow-[0_0_8px_rgba(245,158,11,0.2)]'
+                          : 'bg-team-primary/10 border-team-primary/20 text-team-primary hover:bg-team-primary/20'
+                      }`}
+                    >
+                      <span>⭐ {playerDisplayName}</span>
+                      {isStarting && (
+                        <span className="text-[10px] bg-amber-500 text-black px-1 rounded font-bold">
+                          {t('fav.today_starter')}
+                        </span>
+                      )}
+                    </Link>
+                  </PlayerHoverCard>
                 );
               })}
             </div>

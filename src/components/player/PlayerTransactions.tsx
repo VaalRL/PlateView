@@ -5,6 +5,7 @@ import { usePlayerTransactionsQuery } from '../../services/queries';
 import { getTeamLogoUrl } from '../../services/mlbApi';
 import { useLanguage } from '../../hooks/useLanguage';
 import teamsData from '../../data/teams.json';
+import { TeamHoverCard } from '../common/TeamHoverCard';
 import type { TransactionTeam } from '../../types/transactions';
 import { isTrade, sortTransactions, transactionDate, transactionTypeLabel } from '../../utils/transactions';
 
@@ -17,20 +18,22 @@ const TeamLabel: React.FC<{ team: TransactionTeam; lang: 'zh' | 'en' }> = ({ tea
   const name = (lang === 'zh' ? meta?.nameZh : meta?.name) || team.name || '—';
   if (team.id === undefined) return <span className="text-main font-semibold">{name}</span>;
   return (
-    <Link
-      to={`/teams/${team.id}`}
-      className="inline-flex items-center gap-1.5 font-semibold text-main hover:text-team-primary hover:underline transition-colors"
-    >
-      <img
-        src={getTeamLogoUrl(team.id)}
-        alt=""
-        className="w-4 h-4 object-contain shrink-0"
-        onError={(e) => {
-          (e.target as HTMLImageElement).style.display = 'none';
-        }}
-      />
-      <span>{name}</span>
-    </Link>
+    <TeamHoverCard teamId={team.id} name={team.name}>
+      <Link
+        to={`/teams/${team.id}`}
+        className="inline-flex items-center gap-1.5 font-semibold text-main hover:text-team-primary hover:underline transition-colors"
+      >
+        <img
+          src={getTeamLogoUrl(team.id)}
+          alt=""
+          className="w-4 h-4 object-contain shrink-0"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
+        <span>{name}</span>
+      </Link>
+    </TeamHoverCard>
   );
 };
 

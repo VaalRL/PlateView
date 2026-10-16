@@ -7,6 +7,8 @@ import teamsData from '../../data/teams.json';
 import { getLatestGameLog, isPostseasonGameType } from '../../utils/playerLevels';
 import { MLB_SPORT_ID } from '../../constants/levels';
 import { Flame, Shield, ArrowRight } from 'lucide-react';
+import { PlayerHoverCard } from '../common/PlayerHoverCard';
+import { TeamHoverCard } from '../common/TeamHoverCard';
 
 interface FavoritePlayerSummaryCardProps {
   person: GameLogPerson;
@@ -85,29 +87,33 @@ export const FavoritePlayerSummaryCard: React.FC<FavoritePlayerSummaryCardProps>
             </Link>
 
             <div className="min-w-0">
-              <Link
-                to={`/players/${person.id}`}
-                className="text-sm font-bold text-main truncate hover:text-team-primary transition-colors block"
-                title={playerName}
-              >
-                {playerName}
-              </Link>
+              <PlayerHoverCard personId={person.id}>
+                <Link
+                  to={`/players/${person.id}`}
+                  className="text-sm font-bold text-main truncate hover:text-team-primary transition-colors block"
+                  title={playerName}
+                >
+                  {playerName}
+                </Link>
+              </PlayerHoverCard>
               <div className="flex items-center gap-1.5 text-[11px] text-muted">
                 {teamId && (
-                  <Link
-                    to={`/teams/${teamId}`}
-                    className="hover:text-team-primary flex items-center gap-1 transition-colors truncate"
-                  >
-                    <img
-                      src={getTeamLogoUrl(teamId)}
-                      alt={teamName}
-                      className="w-3 h-3 object-contain shrink-0"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                    <span className="truncate">{teamName}</span>
-                  </Link>
+                  <TeamHoverCard teamId={teamId}>
+                    <Link
+                      to={`/teams/${teamId}`}
+                      className="hover:text-team-primary flex items-center gap-1 transition-colors truncate"
+                    >
+                      <img
+                        src={getTeamLogoUrl(teamId)}
+                        alt={teamName}
+                        className="w-3 h-3 object-contain shrink-0"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                      <span className="truncate">{teamName}</span>
+                    </Link>
+                  </TeamHoverCard>
                 )}
               </div>
             </div>

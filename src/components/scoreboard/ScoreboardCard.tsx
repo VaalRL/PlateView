@@ -10,6 +10,8 @@ import teamsData from '../../data/teams.json';
 import { LIVE_ACCENT } from '../../constants/gameStatus';
 import playersData from '../../data/players-zh-tw.json';
 import { ChevronRight, AlertCircle } from 'lucide-react';
+import { PlayerHoverCard } from '../common/PlayerHoverCard';
+import { TeamHoverCard } from '../common/TeamHoverCard';
 
 interface ScoreboardCardProps {
   game: GameSchedule;
@@ -175,36 +177,38 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             {/* Away Team Row */}
             <tr className="group">
               <td className="py-2 pl-1">
-                <Link
-                  to={`/teams/${teams.away.team.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-2.5 hover:text-team-primary transition-colors"
-                >
-                  <img
-                    src={getTeamLogoUrl(teams.away.team.id)}
-                    alt={awayName}
-                    className="w-6 h-6 object-contain shrink-0 drop-shadow-sm group-hover:scale-105 transition-transform"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                  <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2">
-                    <span
-                      className={`text-sm ${
-                        isAwayWinner
-                          ? 'font-black text-main'
-                          : isFinal
-                          ? 'font-medium text-muted'
-                          : 'font-bold text-main'
-                      }`}
-                    >
-                      {awayName}
-                    </span>
-                    <span className="text-[10px] text-muted font-mono">
-                      ({teams.away.leagueRecord.wins}-{teams.away.leagueRecord.losses})
-                    </span>
-                  </div>
-                </Link>
+                <TeamHoverCard teamId={teams.away.team.id}>
+                  <Link
+                    to={`/teams/${teams.away.team.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-2.5 hover:text-team-primary transition-colors"
+                  >
+                    <img
+                      src={getTeamLogoUrl(teams.away.team.id)}
+                      alt={awayName}
+                      className="w-6 h-6 object-contain shrink-0 drop-shadow-sm group-hover:scale-105 transition-transform"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                    <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2">
+                      <span
+                        className={`text-sm ${
+                          isAwayWinner
+                            ? 'font-black text-main'
+                            : isFinal
+                            ? 'font-medium text-muted'
+                            : 'font-bold text-main'
+                        }`}
+                      >
+                        {awayName}
+                      </span>
+                      <span className="text-[10px] text-muted font-mono">
+                        ({teams.away.leagueRecord.wins}-{teams.away.leagueRecord.losses})
+                      </span>
+                    </div>
+                  </Link>
+                </TeamHoverCard>
               </td>
 
               {/* Away Runs */}
@@ -234,36 +238,38 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             {/* Home Team Row */}
             <tr className="group">
               <td className="py-2 pl-1">
-                <Link
-                  to={`/teams/${teams.home.team.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-2.5 hover:text-team-primary transition-colors"
-                >
-                  <img
-                    src={getTeamLogoUrl(teams.home.team.id)}
-                    alt={homeName}
-                    className="w-6 h-6 object-contain shrink-0 drop-shadow-sm group-hover:scale-105 transition-transform"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                  <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2">
-                    <span
-                      className={`text-sm ${
-                        isHomeWinner
-                          ? 'font-black text-main'
-                          : isFinal
-                          ? 'font-medium text-muted'
-                          : 'font-bold text-main'
-                      }`}
-                    >
-                      {homeName}
-                    </span>
-                    <span className="text-[10px] text-muted font-mono">
-                      ({teams.home.leagueRecord.wins}-{teams.home.leagueRecord.losses})
-                    </span>
-                  </div>
-                </Link>
+                <TeamHoverCard teamId={teams.home.team.id}>
+                  <Link
+                    to={`/teams/${teams.home.team.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-2.5 hover:text-team-primary transition-colors"
+                  >
+                    <img
+                      src={getTeamLogoUrl(teams.home.team.id)}
+                      alt={homeName}
+                      className="w-6 h-6 object-contain shrink-0 drop-shadow-sm group-hover:scale-105 transition-transform"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                    <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2">
+                      <span
+                        className={`text-sm ${
+                          isHomeWinner
+                            ? 'font-black text-main'
+                            : isFinal
+                            ? 'font-medium text-muted'
+                            : 'font-bold text-main'
+                        }`}
+                      >
+                        {homeName}
+                      </span>
+                      <span className="text-[10px] text-muted font-mono">
+                        ({teams.home.leagueRecord.wins}-{teams.home.leagueRecord.losses})
+                      </span>
+                    </div>
+                  </Link>
+                </TeamHoverCard>
               </td>
 
               {/* Home Runs */}
@@ -301,14 +307,16 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
               {t('sb.pitcher_short')}:
             </span>
             {linescore.defense?.pitcher?.id ? (
-              <Link
-                to={`/players/${linescore.defense.pitcher.id}`}
-                onClick={(e) => e.stopPropagation()}
-                className="font-semibold text-main hover:text-team-primary hover:underline transition-colors"
-                title={linescore.defense.pitcher.fullName}
-              >
-                {getPlayerDisplayName(linescore.defense.pitcher)}
-              </Link>
+              <PlayerHoverCard personId={linescore.defense.pitcher.id}>
+                <Link
+                  to={`/players/${linescore.defense.pitcher.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="font-semibold text-main hover:text-team-primary hover:underline transition-colors"
+                  title={linescore.defense.pitcher.fullName}
+                >
+                  {getPlayerDisplayName(linescore.defense.pitcher)}
+                </Link>
+              </PlayerHoverCard>
             ) : (
               <span className="font-semibold text-main">
                 {linescore.defense?.pitcher?.fullName || 'Pitcher'}
@@ -320,14 +328,16 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
               {t('sb.batter_short')}:
             </span>
             {linescore.offense?.batter?.id ? (
-              <Link
-                to={`/players/${linescore.offense.batter.id}`}
-                onClick={(e) => e.stopPropagation()}
-                className="font-semibold text-main hover:text-team-primary hover:underline transition-colors"
-                title={linescore.offense.batter.fullName}
-              >
-                {getPlayerDisplayName(linescore.offense.batter)}
-              </Link>
+              <PlayerHoverCard personId={linescore.offense.batter.id}>
+                <Link
+                  to={`/players/${linescore.offense.batter.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="font-semibold text-main hover:text-team-primary hover:underline transition-colors"
+                  title={linescore.offense.batter.fullName}
+                >
+                  {getPlayerDisplayName(linescore.offense.batter)}
+                </Link>
+              </PlayerHoverCard>
             ) : (
               <span className="font-semibold text-main">
                 {linescore.offense?.batter?.fullName || 'Batter'}
@@ -342,14 +352,16 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
           <div className="truncate">
             <span className="opacity-75">{t('sb.sp_away')}: </span>
             {teams.away.probablePitcher?.id ? (
-              <Link
-                to={`/players/${teams.away.probablePitcher.id}`}
-                onClick={(e) => e.stopPropagation()}
-                className="font-medium text-main hover:text-team-primary hover:underline transition-colors"
-                title={teams.away.probablePitcher.fullName}
-              >
-                {getPlayerDisplayName(teams.away.probablePitcher)}
-              </Link>
+              <PlayerHoverCard personId={teams.away.probablePitcher.id}>
+                <Link
+                  to={`/players/${teams.away.probablePitcher.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="font-medium text-main hover:text-team-primary hover:underline transition-colors"
+                  title={teams.away.probablePitcher.fullName}
+                >
+                  {getPlayerDisplayName(teams.away.probablePitcher)}
+                </Link>
+              </PlayerHoverCard>
             ) : (
               <span className="font-medium text-main">
                 {teams.away.probablePitcher?.fullName || t('sb.tbd')}
@@ -359,14 +371,16 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
           <div className="truncate text-right">
             <span className="opacity-75">{t('sb.sp_home')}: </span>
             {teams.home.probablePitcher?.id ? (
-              <Link
-                to={`/players/${teams.home.probablePitcher.id}`}
-                onClick={(e) => e.stopPropagation()}
-                className="font-medium text-main hover:text-team-primary hover:underline transition-colors"
-                title={teams.home.probablePitcher.fullName}
-              >
-                {getPlayerDisplayName(teams.home.probablePitcher)}
-              </Link>
+              <PlayerHoverCard personId={teams.home.probablePitcher.id}>
+                <Link
+                  to={`/players/${teams.home.probablePitcher.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="font-medium text-main hover:text-team-primary hover:underline transition-colors"
+                  title={teams.home.probablePitcher.fullName}
+                >
+                  {getPlayerDisplayName(teams.home.probablePitcher)}
+                </Link>
+              </PlayerHoverCard>
             ) : (
               <span className="font-medium text-main">
                 {teams.home.probablePitcher?.fullName || t('sb.tbd')}
@@ -382,14 +396,16 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             <span>
               <strong className="text-emerald-500 font-bold">{t('sb.win_short')}:</strong>{' '}
               {game.decisions.winner.id ? (
-                <Link
-                  to={`/players/${game.decisions.winner.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-main hover:text-team-primary hover:underline transition-colors font-medium"
-                  title={game.decisions.winner.fullName}
-                >
-                  {getPlayerDisplayName(game.decisions.winner)}
-                </Link>
+                <PlayerHoverCard personId={game.decisions.winner.id}>
+                  <Link
+                    to={`/players/${game.decisions.winner.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-main hover:text-team-primary hover:underline transition-colors font-medium"
+                    title={game.decisions.winner.fullName}
+                  >
+                    {getPlayerDisplayName(game.decisions.winner)}
+                  </Link>
+                </PlayerHoverCard>
               ) : (
                 <span>{game.decisions.winner.fullName}</span>
               )}
@@ -399,14 +415,16 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             <span>
               <strong className="text-rose-500 font-bold">{t('sb.loss_short')}:</strong>{' '}
               {game.decisions.loser.id ? (
-                <Link
-                  to={`/players/${game.decisions.loser.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-main hover:text-team-primary hover:underline transition-colors font-medium"
-                  title={game.decisions.loser.fullName}
-                >
-                  {getPlayerDisplayName(game.decisions.loser)}
-                </Link>
+                <PlayerHoverCard personId={game.decisions.loser.id}>
+                  <Link
+                    to={`/players/${game.decisions.loser.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-main hover:text-team-primary hover:underline transition-colors font-medium"
+                    title={game.decisions.loser.fullName}
+                  >
+                    {getPlayerDisplayName(game.decisions.loser)}
+                  </Link>
+                </PlayerHoverCard>
               ) : (
                 <span>{game.decisions.loser.fullName}</span>
               )}
@@ -416,14 +434,16 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
             <span>
               <strong className="text-amber-500 font-bold">{t('sb.save_short')}:</strong>{' '}
               {game.decisions.save.id ? (
-                <Link
-                  to={`/players/${game.decisions.save.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-main hover:text-team-primary hover:underline transition-colors font-medium"
-                  title={game.decisions.save.fullName}
-                >
-                  {getPlayerDisplayName(game.decisions.save)}
-                </Link>
+                <PlayerHoverCard personId={game.decisions.save.id}>
+                  <Link
+                    to={`/players/${game.decisions.save.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-main hover:text-team-primary hover:underline transition-colors font-medium"
+                    title={game.decisions.save.fullName}
+                  >
+                    {getPlayerDisplayName(game.decisions.save)}
+                  </Link>
+                </PlayerHoverCard>
               ) : (
                 <span>{game.decisions.save.fullName}</span>
               )}

@@ -15,6 +15,26 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.6.0',
+    date: '2026-10-16',
+    changes: {
+      zh: [
+        '滑鼠停在球員或球隊上會顯示資料卡：大聯盟球隊的分區排名、勝率與戰績，小聯盟球隊所屬的大聯盟體系，球員目前所屬球隊與有上榜的排行榜名次',
+        '球員頁新增轉隊記錄：交易、簽約、升降、DFA、釋出、傷兵名單等異動，與逐場紀錄以分頁切換',
+        '逐場紀錄可看本季全部場次，新增賽事、層級、主客場、對手、月份篩選，並顯示篩選後的合計成績',
+        '收藏摘要與球員逐場紀錄納入季後賽出賽，並標示「季後」',
+        '球員體型同時顯示公分／公斤與英呎／磅',
+      ],
+      en: [
+        'Hover over a player or team for a quick card: a big league club’s division rank, win percentage and record, a minor league club’s parent organization, and a player’s current club and leaderboard ranks',
+        'Player pages add a transactions tab (trades, signings, call-ups and options, DFAs, releases, injured list) beside the game logs',
+        'Game logs cover the whole season, with filters for game type, level, home/away, opponent and month, and totals for the filtered games',
+        'Postseason games now appear in the favorites summary and player game logs, marked PS',
+        'Player height and weight show in metric and imperial',
+      ],
+    },
+  },
+  {
     version: '1.5.2',
     date: '2026-09-24',
     changes: {
