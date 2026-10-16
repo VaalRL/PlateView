@@ -4,7 +4,7 @@ import { getPlayerHeadshotUrl, getTeamLogoUrl } from '../../services/mlbApi';
 import { useLanguage } from '../../hooks/useLanguage';
 import { GameLogPerson } from '../../types/favorites';
 import teamsData from '../../data/teams.json';
-import { getLatestGameLog } from '../../utils/playerLevels';
+import { getLatestGameLog, isPostseasonGameType } from '../../utils/playerLevels';
 import { MLB_SPORT_ID } from '../../constants/levels';
 import { Flame, Shield, ArrowRight } from 'lucide-react';
 
@@ -143,6 +143,14 @@ export const FavoritePlayerSummaryCard: React.FC<FavoritePlayerSummaryCardProps>
                   <Flame className="w-4 h-4 text-amber-500 shrink-0" />
                 ) : (
                   <Shield className="w-4 h-4 text-team-primary shrink-0" />
+                )}
+                {isPostseasonGameType(activeSplit.gameType) && (
+                  <span
+                    className="px-1 rounded bg-team-primary/15 text-team-primary text-[9px] font-bold shrink-0"
+                    title={t('player.postseason_title')}
+                  >
+                    {t('player.postseason_badge')}
+                  </span>
                 )}
                 {activeSplit.sport?.id !== undefined && activeSplit.sport.id !== MLB_SPORT_ID && (
                   <span className="px-1 rounded bg-amber-500/15 text-amber-500 text-[9px] font-bold shrink-0">

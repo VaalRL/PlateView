@@ -281,3 +281,9 @@
   - [x] 不複製 MLB 字標、世界大賽標誌與贊助商標誌；ADR 0004 補上外觀段落
   - [x] 以瀏覽器確認 2020／2025／2026 深淺兩色與手機寬度（圖內橫向捲動、頁面無橫向捲動）
   - [x] 測試由 251 項增至 264 項，全數通過；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過
+
+- [x] **Phase 28: 收藏摘要與球員逐場紀錄納入季後賽（2026-10-16）**
+  - [x] 球員數據請求未指定 `gameType` 時 API 只回例行賽 (`R`)，季後賽期間收藏摘要與球員頁逐場紀錄都看不到季後賽出賽
+  - [x] `getPlayerDetail`、`getFavoritePlayersGameLog` 另發一個 `gameType=P` 的 gameLog 請求並合併；只收 `gameType` 為季後賽（P/F/D/L/W）的場次，避免 API 忽略參數時例行賽重複；該請求失敗時只少季後賽場次，不影響頁面
+  - [x] 本季／生涯／進階數據維持只算例行賽；季後賽場次在逐場紀錄與收藏卡片加上「季後」標籤
+  - [x] 測試由 280 項增至 290 項，全數通過；TypeScript、ESLint（0 errors）驗證通過；此環境連不到 statsapi.mlb.com，`gameType=P` 的實際回應尚未以真實 API 確認

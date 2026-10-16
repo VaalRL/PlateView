@@ -3,6 +3,7 @@ import { PeopleResponse } from '../types/favorites';
 import { PostseasonSeriesResponse } from '../types/postseason';
 import { getCurrentMlbSeason } from '../utils/season';
 import { MLB_LEVEL, MLB_MILB_LEAGUE_LIST, MLB_SPORT_ID } from '../constants/levels';
+import { mergeGameLogs, type PlayerStatGroup } from '../utils/playerLevels';
 import {
   HITTING_LEADER_CATEGORIES,
   PITCHING_LEADER_CATEGORIES,
@@ -149,9 +150,13 @@ export async function getVenue(venueId: number): Promise<VenuesResponse> {
  * minors keeps both lines (see docs/adr/0005-minor-league-support.md).
  */
 export async function getPlayerDetail(personId: number) {
-  return fetchMlb<any>(`/people/${personId}`, {
-    hydrate: `currentTeam(league,sport,parentOrg),team,stats(group=[hitting,pitching],type=[season,career,gameLog,sabermetrics,seasonAdvanced],leagueListId=${MLB_MILB_LEAGUE_LIST})`,
-  });
+  const [detail, postseason] = await Promise.all([
+    fetchMlb<any>(`/people/${personId}`, {
+      hydrate: `currentTeam(league,sport,parentOrg),team,stats(group=[hitting,pitching],type=[season,career,gameLog,sabermetrics,seasonAdvanced],leagueListId=${MLB_MILB_LEAGUE_LIST})`,
+    }),
+    fetchPostseasonGameLogs(String(personId)),
+  ]);
+  return withPostseasonGameLogs(detail, postseason);
 }
 
 /**
@@ -179,11 +184,48 @@ export async function getPeopleBatch(personIds: number[]): Promise<PeopleRespons
  */
 export async function getFavoritePlayersGameLog(personIds: number[]): Promise<PeopleResponse> {
   if (personIds.length === 0) return { people: [] };
-  return fetchMlb<PeopleResponse>('/people', {
-    personIds: personIds.join(','),
-    // Every level, so a favorite optioned to the minors still shows his games
-    hydrate: `currentTeam,stats(group=[hitting,pitching],type=[gameLog],season=${getCurrentMlbSeason()},leagueListId=${MLB_MILB_LEAGUE_LIST})`,
-  });
+  const season = getCurrentMlbSeason();
+  const [logs, postseason] = await Promise.all([
+    fetchMlb<PeopleResponse>('/people', {
+      personIds: personIds.join(','),
+      // Every level, so a favorite optioned to the minors still shows his games
+      hydrate: `currentTeam,stats(group=[hitting,pitching],type=[gameLog],season=${season},leagueListId=${MLB_MILB_LEAGUE_LIST})`,
+    }),
+    fetchPostseasonGameLogs(personIds.join(','), season),
+  ]);
+  return withPostseasonGameLogs(logs, postseason);
+}
+
+/**
+ * Postseason game logs for one or more players. Stats default to the regular
+ * season, so these need a request of their own (`gameType=P`). A failure here
+ * only costs the postseason games, never the page, so it resolves to null.
+ */
+async function fetchPostseasonGameLogs(personIds: string, season?: number): Promise<PeopleResponse | null> {
+  const seasonParam = season === undefined ? '' : `,season=${season}`;
+  try {
+    return await fetchMlb<PeopleResponse>('/people', {
+      personIds,
+      hydrate: `stats(group=[hitting,pitching],type=[gameLog],gameType=P${seasonParam},leagueListId=${MLB_MILB_LEAGUE_LIST})`,
+    });
+  } catch {
+    return null;
+  }
+}
+
+/** Fold each player's postseason game log into the main response */
+function withPostseasonGameLogs<T extends { people?: Array<{ id: number; stats?: PlayerStatGroup[] }> }>(
+  response: T,
+  postseason: PeopleResponse | null
+): T {
+  if (!postseason?.people?.length || !response.people) return response;
+  return {
+    ...response,
+    people: response.people.map((person) => {
+      const extra = postseason.people.find((p) => p.id === person.id)?.stats;
+      return extra?.length ? { ...person, stats: mergeGameLogs(person.stats, extra) } : person;
+    }),
+  };
 }
 
 /**

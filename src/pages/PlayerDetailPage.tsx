@@ -24,6 +24,7 @@ import {
   getLevelStat,
   getDefaultLevel,
   sortGameLogsByDate,
+  isPostseasonGameType,
   type PlayerStatGroup,
   type StatLevel,
 } from '../utils/playerLevels';
@@ -828,6 +829,14 @@ export const PlayerDetailPage: React.FC = () => {
                         </td>
                         <td className="py-2.5 px-3">
                           <span className="inline-flex items-center gap-1.5">
+                            {isPostseasonGameType(log.gameType) && (
+                              <span
+                                className="px-1 rounded bg-team-primary/15 text-team-primary text-[9px] font-bold shrink-0"
+                                title={t('player.postseason_title')}
+                              >
+                                {t('player.postseason_badge')}
+                              </span>
+                            )}
                             {log.sport?.id !== undefined && log.sport.id !== MLB_SPORT_ID && (
                               <span className="px-1 rounded bg-amber-500/15 text-amber-500 text-[9px] font-bold shrink-0">
                                 {log.sport.abbreviation}
