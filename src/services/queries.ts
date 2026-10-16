@@ -9,6 +9,7 @@ import {
   getGameBoxscore,
   getVenue,
   getPlayerDetail,
+  getPlayerTransactions,
   searchPeople,
   getLeaderboards,
   getPeopleBatch,
@@ -144,6 +145,16 @@ export function usePlayerDetailQuery(personId?: number) {
     queryFn: () => getPlayerDetail(personId!),
     enabled: !!personId,
     staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+}
+
+/** A player's roster moves; they change a few times a season at most */
+export function usePlayerTransactionsQuery(personId?: number) {
+  return useQuery({
+    queryKey: ['player-transactions', personId],
+    queryFn: () => getPlayerTransactions(personId!),
+    enabled: !!personId,
+    staleTime: 1000 * 60 * 30, // 30 minutes
   });
 }
 

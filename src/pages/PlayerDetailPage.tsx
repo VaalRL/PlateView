@@ -29,6 +29,7 @@ import {
   type StatLevel,
 } from '../utils/playerLevels';
 import { MLB_SPORT_ID } from '../constants/levels';
+import { PlayerTransactions } from '../components/player/PlayerTransactions';
 import { Star, ArrowLeft, Activity, Calendar, Award, Zap } from 'lucide-react';
 
 function gameLogsOf(stats: PlayerStatGroup[], group: 'hitting' | 'pitching'): GameLogSplit[] {
@@ -925,6 +926,8 @@ export const PlayerDetailPage: React.FC = () => {
               </table>
             </div>
           </div>
+
+          <PlayerTransactions personId={idNum} />
         </>
       )}
     </div>

@@ -287,3 +287,10 @@
   - [x] `getPlayerDetail`、`getFavoritePlayersGameLog` 另發一個 `gameType=P` 的 gameLog 請求並合併；只收 `gameType` 為季後賽（P/F/D/L/W）的場次，避免 API 忽略參數時例行賽重複；該請求失敗時只少季後賽場次，不影響頁面
   - [x] 本季／生涯／進階數據維持只算例行賽；季後賽場次在逐場紀錄與收藏卡片加上「季後」標籤
   - [x] 測試由 280 項增至 290 項，全數通過；TypeScript、ESLint（0 errors）驗證通過；此環境連不到 statsapi.mlb.com，`gameType=P` 的實際回應尚未以真實 API 確認
+
+- [x] **Phase 29: 球員頁新增「轉隊記錄」（2026-10-16）**
+  - [x] 新增 `getPlayerTransactions`（`/transactions?playerId=`）與 `usePlayerTransactionsQuery`，球員頁逐場紀錄下方顯示該球員所有異動：交易、簽約、升降、DFA、釋出、傷兵名單等，大小聯盟皆含
+  - [x] 由新到舊排列，預設顯示 10 筆，可展開全部；交易以隊色標籤標示；有轉出與轉入球隊時顯示「A → B」，大聯盟球隊用中文隊名，球隊可點進球隊頁；API 的英文說明列在下方
+  - [x] 異動類型以 API 的英文 `typeDesc` 對照中文，對照表沒有的類型直接顯示英文原文
+  - [x] 測試由 290 項增至 299 項，全數通過；TypeScript、ESLint（0 errors）驗證通過；以瀏覽器（模擬 API 回應）確認中英文、桌機與手機寬度版面
+  - [x] 此環境連不到 statsapi.mlb.com，回應欄位依既有對 API 的了解撰寫，尚未以真實 API 確認；手機寬度頁面橫向捲動來自導覽列，`main` 上原本就有
