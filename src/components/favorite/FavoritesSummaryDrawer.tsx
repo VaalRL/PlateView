@@ -27,7 +27,7 @@ export const FavoritesSummaryDrawer: React.FC<FavoritesSummaryDrawerProps> = ({
   const { favoritePlayersMeta } = useFavorites();
   const queryClient = useQueryClient();
 
-  const { data, isLoading, isFetching, refetch } = useFavoritePlayersGameLogQuery(playerIds);
+  const { data, isLoading, isFetching, refetch, postseasonError } = useFavoritePlayersGameLogQuery(playerIds);
   const people = data?.people || [];
 
   // Team cards pair the summarized day with the one before it. The base date is
@@ -73,6 +73,10 @@ export const FavoritesSummaryDrawer: React.FC<FavoritesSummaryDrawerProps> = ({
           <span className="hidden sm:inline">{t('sb.refresh')}</span>
         </button>
       </div>
+
+      {postseasonError && playerIds.length > 0 && (
+        <p className="text-[11px] text-amber-500">{t('player.postseason_logs_error')}</p>
+      )}
 
       {/* Cards Grid: favorite teams first, then favorite players */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">

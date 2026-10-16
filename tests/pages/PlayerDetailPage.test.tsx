@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -396,7 +396,14 @@ describe('PlayerDetailPage game logs', () => {
 describe('PlayerDetailPage postseason games', () => {
   const globalFetch = globalThis.fetch;
 
+  // The postseason request is only sent from late September on
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-16T12:00:00'));
+  });
+
   afterEach(() => {
+    vi.useRealTimers();
     globalThis.fetch = globalFetch;
     queryClient.clear();
   });
@@ -658,5 +665,102 @@ describe('PlayerDetailPage game log filters', () => {
     expect(screen.queryByRole('combobox', { name: '賽事' })).not.toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: '層級' })).not.toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: '月份' })).toBeInTheDocument();
+  });
+});
+
+describe('PlayerDetailPage history state per player and role', () => {
+  const globalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = globalFetch;
+    queryClient.clear();
+  });
+
+  const log = (group: string, date: string, opponentId: number, opponentName: string) => ({
+    group,
+    split: {
+      date,
+      gameType: 'R',
+      team: { id: 119, name: 'Los Angeles Dodgers' },
+      opponent: { id: opponentId, name: opponentName },
+      isHome: true,
+      stat: { atBats: 4, hits: 1, inningsPitched: '6.0', outs: 18, earnedRuns: 2 },
+    },
+  });
+
+  // Ohtani's hitting and pitching logs face different clubs
+  const logs = [
+    log('hitting', '2026-09-20', 137, 'San Francisco Giants'),
+    log('hitting', '2026-09-19', 135, 'San Diego Padres'),
+    log('pitching', '2026-09-18', 113, 'Cincinnati Reds'),
+    log('pitching', '2026-09-11', 115, 'Colorado Rockies'),
+  ];
+
+  const mockPlayers = () => {
+    globalThis.fetch = vi.fn(async (url: string) => ({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () => {
+        const u = decodeURIComponent(url);
+        if (u.includes('gameType=P') || u.includes('/transactions')) return {};
+        const id = u.includes('/people/660271') ? 660271 : 999007;
+        return {
+          people: [
+            {
+              id,
+              fullName: id === 660271 ? 'Shohei Ohtani' : 'Other Player',
+              primaryPosition: { abbreviation: 'TWP', type: 'Two-Way Player', name: 'Two-Way Player' },
+              stats: (['hitting', 'pitching'] as const).map((group) => ({
+                group: { displayName: group },
+                type: { displayName: 'gameLog' },
+                splits: logs.filter((l) => l.group === group).map((l) => l.split),
+              })),
+            },
+          ],
+        };
+      },
+    })) as unknown as typeof fetch;
+  };
+
+  const renderAt = (path: string) =>
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[path]}>
+          <Link to="/players/999007">next player</Link>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+  it('does not carry a hitting filter over to the pitching log', async () => {
+    mockPlayers();
+    renderAt('/players/660271');
+    await screen.findByText('2026-09-20');
+
+    fireEvent.change(screen.getByRole('combobox', { name: '對手' }), { target: { value: '137' } });
+    expect(screen.queryByText('2026-09-19')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /投球成績/ }));
+    // Both pitching games, and the opponent filter reads "all" again
+    expect(screen.getByText('2026-09-18')).toBeInTheDocument();
+    expect(screen.getByText('2026-09-11')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: '對手' })).toHaveValue('all');
+    expect(screen.queryByText('沒有符合篩選條件的比賽')).not.toBeInTheDocument();
+  });
+
+  it('opens the next player on his game logs, not on the tab left open', async () => {
+    mockPlayers();
+    renderAt('/players/660271');
+    await screen.findByText('2026-09-20');
+
+    fireEvent.click(screen.getByRole('tab', { name: /轉隊記錄/ }));
+    expect(screen.getByRole('tab', { name: /轉隊記錄/ })).toHaveAttribute('aria-selected', 'true');
+
+    fireEvent.click(screen.getByRole('link', { name: 'next player' }));
+    await screen.findByRole('heading', { name: /Other Player/ });
+    expect(screen.getByRole('tab', { name: /逐場比賽紀錄/ })).toHaveAttribute('aria-selected', 'true');
   });
 });

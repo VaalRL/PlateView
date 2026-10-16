@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   getSchedule,
@@ -15,9 +16,11 @@ import {
   getLeaderboards,
   getPeopleBatch,
   getFavoritePlayersGameLog,
+  getPostseasonGameLogs,
+  withPostseasonGameLogs,
   getPostseasonSeries,
 } from './mlbApi';
-import { getCurrentMlbSeason } from '../utils/season';
+import { getCurrentMlbSeason, mayHavePostseasonGames } from '../utils/season';
 import { MLB_SPORT_ID } from '../constants/levels';
 import { formatApiDate } from '../utils/timezone';
 import { ScheduleResponse } from '../types/mlb';
@@ -206,12 +209,58 @@ export function usePeopleBatchQuery(personIds: number[]) {
   });
 }
 
-export function useFavoritePlayersGameLogQuery(personIds: number[]) {
+/**
+ * Players' postseason game logs, a query apart from the regular season log so
+ * it never holds that log up and a failure is retried rather than cached as
+ * "no postseason games". Off outside the postseason, when it can only be empty.
+ */
+function usePostseasonGameLogsQuery(
+  personIds: number[],
+  season: number | undefined,
+  timing: { staleTime: number; refetchInterval?: number }
+) {
   return useQuery({
+    queryKey: ['postseason-gamelogs', personIds.slice().sort().join(','), season],
+    queryFn: () => getPostseasonGameLogs(personIds, season),
+    enabled: personIds.length > 0 && mayHavePostseasonGames(),
+    ...timing,
+  });
+}
+
+/** Postseason game log for the player page, merged in by the page */
+export function usePlayerPostseasonLogsQuery(personId?: number) {
+  // No season, like the player detail request it completes
+  return usePostseasonGameLogsQuery(personId ? [personId] : [], undefined, {
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+}
+
+/**
+ * Favorites' game logs with their postseason games folded in. Returns the
+ * fields the summary drawer reads; `postseasonError` is set while the
+ * postseason games could not be loaded.
+ */
+export function useFavoritePlayersGameLogQuery(personIds: number[]) {
+  const timing = {
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    refetchInterval: 1000 * 60 * 5, // 5 minutes background auto refresh
+  };
+  const logs = useQuery({
     queryKey: ['fav-players-gamelog', personIds.slice().sort().join(',')],
     queryFn: () => getFavoritePlayersGameLog(personIds),
     enabled: personIds.length > 0,
-    staleTime: 1000 * 60 * 2, // 2 minutes
-    refetchInterval: 1000 * 60 * 5, // 5 minutes background auto refresh
+    ...timing,
   });
+  const postseason = usePostseasonGameLogsQuery(personIds, getCurrentMlbSeason(), timing);
+  const data = useMemo(() => withPostseasonGameLogs(logs.data, postseason.data), [logs.data, postseason.data]);
+
+  return {
+    data,
+    isLoading: logs.isLoading,
+    isFetching: logs.isFetching || postseason.isFetching,
+    postseasonError: postseason.isError,
+    // refetch() runs even a disabled query, so only ask for the postseason when it is on
+    refetch: () =>
+      Promise.all([logs.refetch(), ...(personIds.length > 0 && mayHavePostseasonGames() ? [postseason.refetch()] : [])]),
+  };
 }

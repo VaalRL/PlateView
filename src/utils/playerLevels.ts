@@ -13,6 +13,8 @@ export interface LevelSplit {
   date?: string;
   /** R = regular season; see isPostseasonGameType */
   gameType?: string;
+  /** Game log splits only */
+  game?: { gamePk?: number };
   // Stat lines carry dozens of counting and rate fields that the player page reads directly
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stat?: any;
@@ -110,17 +112,21 @@ export function isPostseasonGameType(gameType?: string): boolean {
  * request and are appended to the matching game log group, or added as a new
  * group when the player has no regular season log in that group. Only splits
  * tagged as postseason are taken, so a response that ignored `gameType=P`
- * cannot list the regular season twice.
+ * cannot list the regular season twice, and a game already in the log (same
+ * gamePk) is not added again.
  */
 export function mergeGameLogs<T extends PlayerStatGroup>(stats: T[] | undefined, extra: T[] | undefined): T[] {
   const merged = (stats ?? []).map((g) => ({ ...g, splits: [...(g.splits ?? [])] }));
   (extra ?? []).forEach((group) => {
     if (group.type?.displayName !== 'gameLog') return;
-    const games = (group.splits ?? []).filter((s) => isPostseasonGameType(s.gameType));
-    if (games.length === 0) return;
     const target = merged.find(
       (g) => g.type?.displayName === 'gameLog' && g.group?.displayName === group.group?.displayName
     );
+    const known = new Set(target?.splits.map((s) => s.game?.gamePk).filter((pk) => pk !== undefined));
+    const games = (group.splits ?? []).filter(
+      (s) => isPostseasonGameType(s.gameType) && (s.game?.gamePk === undefined || !known.has(s.game.gamePk))
+    );
+    if (games.length === 0) return;
     if (target) target.splits.push(...games);
     else merged.push({ ...group, splits: games });
   });

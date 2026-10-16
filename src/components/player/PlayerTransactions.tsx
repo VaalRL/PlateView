@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { usePlayerTransactionsQuery } from '../../services/queries';
 import { getTeamLogoUrl } from '../../services/mlbApi';
 import { useLanguage } from '../../hooks/useLanguage';
-import teamsData from '../../data/teams.json';
+import { teamDisplayName } from '../../utils/teams';
 import { TeamHoverCard } from '../common/TeamHoverCard';
 import type { TransactionTeam } from '../../types/transactions';
 import { isTrade, sortTransactions, transactionDate, transactionTypeLabel } from '../../utils/transactions';
@@ -13,9 +13,7 @@ import { isTrade, sortTransactions, transactionDate, transactionTypeLabel } from
 const COLLAPSED_COUNT = 10;
 
 const TeamLabel: React.FC<{ team: TransactionTeam; lang: 'zh' | 'en' }> = ({ team, lang }) => {
-  const meta = teamsData.find((t) => t.id === team.id);
-  // Only big league clubs have a Chinese name; minor league clubs keep theirs
-  const name = (lang === 'zh' ? meta?.nameZh : meta?.name) || team.name || '—';
+  const name = teamDisplayName(team.id, lang, team.name) || '—';
   if (team.id === undefined) return <span className="text-main font-semibold">{name}</span>;
   return (
     <TeamHoverCard teamId={team.id} name={team.name}>

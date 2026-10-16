@@ -32,3 +32,12 @@ describe('transactions', () => {
     expect(sortTransactions(undefined)).toEqual([]);
   });
 });
+
+describe('sortTransactions on one day', () => {
+  it('puts the later move (higher id) first, whatever order the API used', () => {
+    const optioned = { id: 500, date: '2026-08-05', typeDesc: 'Optioned' };
+    const recalled = { id: 510, date: '2026-08-05', typeDesc: 'Recalled' };
+    expect(sortTransactions([optioned, recalled]).map((t) => t.typeDesc)).toEqual(['Recalled', 'Optioned']);
+    expect(sortTransactions([recalled, optioned]).map((t) => t.typeDesc)).toEqual(['Recalled', 'Optioned']);
+  });
+});
