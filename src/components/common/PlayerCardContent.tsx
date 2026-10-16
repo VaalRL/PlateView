@@ -2,7 +2,7 @@ import React from 'react';
 import { useLeaderboardsQuery, usePersonSummaryQuery } from '../../services/queries';
 import { getPlayerHeadshotUrl } from '../../services/mlbApi';
 import { useLanguage } from '../../hooks/useLanguage';
-import teamsData from '../../data/teams.json';
+import { teamDisplayName } from '../../utils/teams';
 import playersData from '../../data/players-zh-tw.json';
 import type { TranslationKey } from '../../i18n/translations';
 import { HITTING_LEADER_CATEGORIES, PITCHING_LEADER_CATEGORIES } from '../../constants/leaderboards';
@@ -10,7 +10,6 @@ import { getCurrentMlbSeason } from '../../utils/season';
 import { MLB_SPORT_ID } from '../../constants/levels';
 import { findLeaderRanks, levelAbbreviation, ordinal } from '../../utils/hoverCards';
 
-const teamsById = new Map(teamsData.map((t) => [t.id, t]));
 const zhNames = new Map(playersData.map((p) => [p.id, p.nameZh]));
 
 /** Leader categories listed on the card at most */
@@ -29,21 +28,24 @@ const leaderParams = (statGroup: 'hitting' | 'pitching') => ({
 const PlayerCardContent: React.FC<{ personId: number }> = ({ personId }) => {
   const { lang, t } = useLanguage();
   const { data, isLoading } = usePersonSummaryQuery(personId);
-  const hitting = useLeaderboardsQuery(leaderParams('hitting'));
-  const pitching = useLeaderboardsQuery(leaderParams('pitching'));
-
   const person = data?.people?.[0];
   const team = person?.currentTeam;
   const isMinors = team?.sport?.id !== undefined && team.sport.id !== MLB_SPORT_ID;
-  const teamMeta = team?.id !== undefined ? teamsById.get(team.id) : undefined;
-  const teamName = (lang === 'zh' ? teamMeta?.nameZh : teamMeta?.name) || team?.name;
-  const parent = team?.parentOrgId !== undefined ? teamsById.get(team.parentOrgId) : undefined;
-  const parentName = (lang === 'zh' ? parent?.nameZh : parent?.name) || team?.parentOrgName;
+  // The leaderboards are MLB only: no point asking for a minor leaguer or a
+  // player without a club
+  const onMlbClub = !!team && !isMinors;
+  const hitting = useLeaderboardsQuery(leaderParams('hitting'), onMlbClub);
+  const pitching = useLeaderboardsQuery(leaderParams('pitching'), onMlbClub);
 
-  const ranks = findLeaderRanks(personId, [
-    ...(hitting.data?.leagueLeaders ?? []),
-    ...(pitching.data?.leagueLeaders ?? []),
-  ]).slice(0, MAX_RANKS);
+  const teamName = teamDisplayName(team?.id, lang, team?.name);
+  const parentName = teamDisplayName(team?.parentOrgId, lang, team?.parentOrgName);
+
+  const ranks = onMlbClub
+    ? findLeaderRanks(personId, [
+        ...(hitting.data?.leagueLeaders ?? []),
+        ...(pitching.data?.leagueLeaders ?? []),
+      ]).slice(0, MAX_RANKS)
+    : [];
   const zhName = zhNames.get(personId);
 
   return (

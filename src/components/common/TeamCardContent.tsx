@@ -2,10 +2,9 @@ import React from 'react';
 import { useStandingsQuery, useTeamDetailQuery } from '../../services/queries';
 import { getTeamLogoUrl } from '../../services/mlbApi';
 import { useLanguage } from '../../hooks/useLanguage';
-import teamsData from '../../data/teams.json';
+import { teamDisplayName, teamsById } from '../../utils/teams';
 import { findTeamStanding, levelAbbreviation, ordinal } from '../../utils/hoverCards';
 
-const teamsById = new Map(teamsData.map((t) => [t.id, t]));
 
 const CardHeader: React.FC<{ teamId: number; name: string; sub?: string }> = ({ teamId, name, sub }) => (
   <div className="flex items-center gap-2.5">
@@ -77,8 +76,7 @@ const MilbTeamCard: React.FC<{ teamId: number; fallbackName?: string }> = ({ tea
   const { data, isLoading } = useTeamDetailQuery(teamId);
   const team = data?.teams?.[0];
   const level = levelAbbreviation(team?.sport?.id) ?? team?.sport?.name;
-  const parent = team?.parentOrgId !== undefined ? teamsById.get(team.parentOrgId) : undefined;
-  const parentName = (lang === 'zh' ? parent?.nameZh : parent?.name) || team?.parentOrgName;
+  const parentName = teamDisplayName(team?.parentOrgId, lang, team?.parentOrgName);
   const sub = [level, team?.league?.name].filter(Boolean).join(' · ');
 
   return (

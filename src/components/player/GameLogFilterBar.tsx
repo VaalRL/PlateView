@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
-import teamsData from '../../data/teams.json';
+import { teamDisplayName } from '../../utils/teams';
 import type { TranslationKey } from '../../i18n/translations';
 import {
   DEFAULT_GAME_LOG_FILTER,
@@ -51,10 +51,6 @@ export const GameLogFilterBar: React.FC<Props> = ({ options, filter, onChange })
     return lang === 'zh'
       ? `${year} 年 ${mm} 月`
       : new Date(Date.UTC(year, mm - 1, 1)).toLocaleString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
-  };
-  const teamLabel = (id: number, name: string) => {
-    const meta = teamsData.find((team) => team.id === id);
-    return (lang === 'zh' ? meta?.nameZh : meta?.name) || name;
   };
   const choice = (key: TranslationKey, value: string) => <option value={value}>{t(key)}</option>;
 
@@ -107,7 +103,7 @@ export const GameLogFilterBar: React.FC<Props> = ({ options, filter, onChange })
           {all}
           {options.opponents.map((o) => (
             <option key={o.id} value={o.id}>
-              {teamLabel(o.id, o.name)}
+              {teamDisplayName(o.id, lang, o.name)}
             </option>
           ))}
         </FilterSelect>

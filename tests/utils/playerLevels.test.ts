@@ -144,6 +144,14 @@ describe('mergeGameLogs', () => {
     expect(merged[0].splits).toHaveLength(1);
   });
 
+  it('does not add a game the log already has', () => {
+    const merged = mergeGameLogs(
+      [log('hitting', [{ date: '2026-10-08', gameType: 'D', game: { gamePk: 777001 } }])],
+      [log('hitting', [{ date: '2026-10-08', gameType: 'D', game: { gamePk: 777001 } }, { date: '2026-10-09', gameType: 'D', game: { gamePk: 777002 } }])]
+    );
+    expect(merged[0].splits?.map((s) => s.date)).toEqual(['2026-10-08', '2026-10-09']);
+  });
+
   it('does not mutate its inputs', () => {
     const stats = [log('hitting', [{ gameType: 'R' }])];
     mergeGameLogs(stats, [log('hitting', [{ gameType: 'L' }])]);

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { usePlayerDetailQuery } from '../services/queries';
-import { getPlayerHeadshotUrl, getTeamLogoUrl } from '../services/mlbApi';
+import { usePlayerDetailQuery, usePlayerPostseasonLogsQuery } from '../services/queries';
+import { getPlayerHeadshotUrl, getTeamLogoUrl, withPostseasonGameLogs } from '../services/mlbApi';
 import { useFavorites } from '../hooks/useFavorites';
 import { useLanguage } from '../hooks/useLanguage';
 import {
@@ -63,15 +63,20 @@ export const PlayerDetailPage: React.FC = () => {
 
   const [statTypeTab, setStatTypeTab] = useState<'season' | 'career'>('season');
   const [roleTab, setRoleTab] = useState<'auto' | 'hitting' | 'pitching'>('auto');
-  // Transactions load only once their tab is opened
-  const [historyTab, setHistoryTab] = useState<HistoryTab>('logs');
-  // Game log filters and "show all" belong to one player, like the level choice below
-  const [logFilterChoice, setLogFilterChoice] = useState<{ personId: number; filter: GameLogFilter } | null>(null);
-  const logFilter = logFilterChoice?.personId === idNum ? logFilterChoice.filter : DEFAULT_GAME_LOG_FILTER;
-  const [logsExpandedFor, setLogsExpandedFor] = useState<number | null>(null);
-  const logsExpanded = logsExpandedFor === idNum;
+  // Transactions load only once their tab is opened. The tab, like the game
+  // log filters and "show all", belongs to one player (see the level choice below)
+  const [historyChoice, setHistoryChoice] = useState<{ personId: number; tab: HistoryTab } | null>(null);
+  const historyTab: HistoryTab = historyChoice?.personId === idNum ? historyChoice.tab : 'logs';
+  const setHistoryTab = (tab: HistoryTab) => setHistoryChoice({ personId: idNum, tab });
+  // Filters are also per role: a two-way player's hitting and pitching logs
+  // have different opponents and levels to choose from
+  const [logFilterChoice, setLogFilterChoice] = useState<{ key: string; filter: GameLogFilter } | null>(null);
+  const [logsExpandedFor, setLogsExpandedFor] = useState<string | null>(null);
 
-  const { data, isLoading, isError } = usePlayerDetailQuery(idNum);
+  const { data: detail, isLoading, isError } = usePlayerDetailQuery(idNum);
+  // Postseason games come from a query of their own, so they never hold up the page
+  const postseasonLogs = usePlayerPostseasonLogsQuery(idNum);
+  const data = useMemo(() => withPostseasonGameLogs(detail, postseasonLogs.data), [detail, postseasonLogs.data]);
   const { isFavoritePlayer, toggleFavoritePlayer } = useFavorites();
   const { lang, t } = useLanguage();
 
@@ -189,6 +194,9 @@ export const PlayerDetailPage: React.FC = () => {
 
   // The whole season's log is on hand; ten rows show until expanded
   const roleGameLogs = effectiveRole === 'pitching' ? sortedPitchingGameLogs : sortedHittingGameLogs;
+  const logViewKey = `${idNum}:${effectiveRole}`;
+  const logFilter = logFilterChoice?.key === logViewKey ? logFilterChoice.filter : DEFAULT_GAME_LOG_FILTER;
+  const logsExpanded = logsExpandedFor === logViewKey;
   const logFilterOptions = useMemo(() => getGameLogFilterOptions(roleGameLogs), [roleGameLogs]);
   const filteredGameLogs = useMemo(() => filterGameLogs(roleGameLogs, logFilter), [roleGameLogs, logFilter]);
   const logFiltered = isFilterActive(logFilter);
@@ -850,11 +858,14 @@ export const PlayerDetailPage: React.FC = () => {
               hidden={historyTab !== 'logs'}
               className="space-y-3"
             >
+              {postseasonLogs.isError && (
+                <p className="text-[11px] text-amber-500">{t('player.postseason_logs_error')}</p>
+              )}
               {roleGameLogs.length > 0 && (
                 <GameLogFilterBar
                   options={logFilterOptions}
                   filter={logFilter}
-                  onChange={(filter) => setLogFilterChoice({ personId: idNum, filter })}
+                  onChange={(filter) => setLogFilterChoice({ key: logViewKey, filter })}
                 />
               )}
 
@@ -1058,7 +1069,7 @@ export const PlayerDetailPage: React.FC = () => {
                 <div className="text-center">
                   <button
                     type="button"
-                    onClick={() => setLogsExpandedFor(logsExpanded ? null : idNum)}
+                    onClick={() => setLogsExpandedFor(logsExpanded ? null : logViewKey)}
                     className="text-xs font-semibold text-team-primary hover:underline"
                   >
                     {logsExpanded

@@ -38,7 +38,16 @@ export function transactionTypeLabel(t: Transaction, lang: 'zh' | 'en'): string 
   return lang === 'zh' ? TYPE_DESC_ZH[desc] ?? desc : desc;
 }
 
-/** Newest first; moves on the same day keep the API's order */
+/**
+ * Newest first. Moves on the same day (optioned then recalled, traded then
+ * designated) are ordered by id, which the API hands out as moves are filed,
+ * so the player's latest status still comes first; moves without an id keep
+ * the API's order.
+ */
 export function sortTransactions(transactions: Transaction[] | undefined): Transaction[] {
-  return [...(transactions ?? [])].sort((a, b) => transactionDate(b).localeCompare(transactionDate(a)));
+  return [...(transactions ?? [])].sort(
+    (a, b) =>
+      transactionDate(b).localeCompare(transactionDate(a)) ||
+      (a.id !== undefined && b.id !== undefined ? b.id - a.id : 0)
+  );
 }

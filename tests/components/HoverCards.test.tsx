@@ -138,7 +138,7 @@ describe('hover cards', () => {
   });
 
   it('shows a minor leaguer’s level and parent club, and no leaderboard', async () => {
-    stubApi({
+    const fetchMock = stubApi({
       people: [
         {
           id: 678020,
@@ -159,6 +159,8 @@ describe('hover cards', () => {
     expect(card).toHaveTextContent('AAA');
     expect(card).toHaveTextContent('Oklahoma City Comets');
     expect(card).not.toHaveTextContent('排行榜');
+    // The leaderboards are MLB only, so they are not asked for
+    expect(fetchMock.mock.calls.some(([u]) => String(u).includes('/stats/leaders'))).toBe(false);
   });
 
   it('loads nothing until opened and closes on Escape', async () => {

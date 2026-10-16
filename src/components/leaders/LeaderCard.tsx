@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { LeaderCategoryGroup, LeaderItem } from '../../types/leaderboards';
 import { getPlayerHeadshotUrl, getTeamLogoUrl } from '../../services/mlbApi';
 import { useLanguage } from '../../hooks/useLanguage';
-import teamsData from '../../data/teams.json';
+import { teamsById } from '../../utils/teams';
 import { PlayerHoverCard } from '../common/PlayerHoverCard';
 import { TeamHoverCard } from '../common/TeamHoverCard';
 import { Trophy } from 'lucide-react';
@@ -15,8 +15,6 @@ interface LeaderCardProps {
   icon?: React.ReactNode;
 }
 
-// Static dictionary — index once at module load instead of scanning per row
-const teamsById = new Map(teamsData.map((t) => [t.id, t]));
 
 export const LeaderCard: React.FC<LeaderCardProps> = ({
   categoryGroup,

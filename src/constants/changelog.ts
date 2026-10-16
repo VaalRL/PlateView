@@ -15,6 +15,28 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.6.1',
+    date: '2026-10-16',
+    changes: {
+      zh: [
+        '球員頁不再等季後賽資料才顯示；例行賽期間不再發出必定是空的季後賽請求',
+        '季後賽場次載入失敗時會提示，並在之後重新載入，不再默默只顯示例行賽',
+        '二刀流球員切換打擊／投球時，逐場紀錄的篩選會重設',
+        '換到另一位球員時，回到逐場紀錄分頁',
+        '同一天的多筆轉隊異動，最新的一筆排在最前面',
+        '小聯盟球員的資料卡不再查詢大聯盟排行榜',
+      ],
+      en: [
+        'Player pages no longer wait on postseason data, and no postseason request is sent while the regular season is on',
+        'A failed postseason load is now flagged and retried instead of silently showing only the regular season',
+        'Game log filters reset when a two-way player switches between hitting and pitching',
+        'Moving to another player opens on the game logs tab',
+        'Several transactions on one day list the latest first',
+        'Hover cards for minor leaguers no longer look up the MLB leaderboards',
+      ],
+    },
+  },
+  {
     version: '1.6.0',
     date: '2026-10-16',
     changes: {
