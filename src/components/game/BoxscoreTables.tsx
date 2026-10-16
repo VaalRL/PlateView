@@ -4,6 +4,7 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { BoxscoreTeamSide } from '../../types/mlb';
 import { getPitchingDecisions, formatDecisionRecord } from '../../utils/statsFormatters';
 import { DECISION_ACCENT } from '../../constants/gameStatus';
+import { PlayerHoverCard } from '../common/PlayerHoverCard';
 
 interface TableProps {
   teamBox: BoxscoreTeamSide;
@@ -78,16 +79,18 @@ export const BattingTable: React.FC<TableProps> = ({ teamBox, title, limit }) =>
               return (
                 <tr key={bId} className="hover:bg-card-hover/40 group">
                   <td className="py-1 font-sans font-medium text-main truncate max-w-[150px]">
-                    <Link
-                      to={`/players/${personId}`}
-                      className="hover:text-team-primary hover:underline transition-colors inline-flex items-center gap-1 group-hover:text-team-primary"
-                      title={p.person?.fullName}
-                    >
-                      <span className="truncate">{displayName}</span>
-                      <span className="text-[9px] text-muted font-mono">
-                        {p.position?.abbreviation}
-                      </span>
-                    </Link>
+                    <PlayerHoverCard personId={personId}>
+                      <Link
+                        to={`/players/${personId}`}
+                        className="hover:text-team-primary hover:underline transition-colors inline-flex items-center gap-1 group-hover:text-team-primary"
+                        title={p.person?.fullName}
+                      >
+                        <span className="truncate">{displayName}</span>
+                        <span className="text-[9px] text-muted font-mono">
+                          {p.position?.abbreviation}
+                        </span>
+                      </Link>
+                    </PlayerHoverCard>
                     {!!extras.length && (
                       <span className="ml-1 text-[9px] font-bold text-team-primary font-mono">
                         {extras.join(' ')}
@@ -171,13 +174,15 @@ export const PitchingTable: React.FC<TableProps> = ({ teamBox, title }) => {
                 <tr key={pId} className="hover:bg-card-hover/40 group align-top">
                   <td className="py-1 font-sans font-medium text-main max-w-[150px]">
                     <span className="flex flex-wrap items-center gap-1">
-                      <Link
-                        to={`/players/${personId}`}
-                        className="hover:text-team-primary hover:underline transition-colors truncate max-w-[110px] group-hover:text-team-primary"
-                        title={p.person?.fullName}
-                      >
-                        {displayName}
-                      </Link>
+                      <PlayerHoverCard personId={personId}>
+                        <Link
+                          to={`/players/${personId}`}
+                          className="hover:text-team-primary hover:underline transition-colors truncate max-w-[110px] group-hover:text-team-primary"
+                          title={p.person?.fullName}
+                        >
+                          {displayName}
+                        </Link>
+                      </PlayerHoverCard>
                       {decisions.map((decision) => {
                         const record = formatDecisionRecord(decision, seasonPitching);
                         return (

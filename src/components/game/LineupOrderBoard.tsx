@@ -4,6 +4,7 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { BoxscoreTeamSide } from '../../types/mlb';
 import { buildLineup } from '../../utils/lineup';
 import { ArrowRight } from 'lucide-react';
+import { PlayerHoverCard } from '../common/PlayerHoverCard';
 
 interface LineupOrderBoardProps {
   teamBox: BoxscoreTeamSide;
@@ -57,13 +58,15 @@ export const LineupOrderBoard: React.FC<LineupOrderBoardProps> = ({ teamBox, tea
                 {entries.map((entry, idx) => (
                   <React.Fragment key={entry.personId}>
                     {idx > 0 && <ArrowRight className="w-3 h-3 shrink-0 text-muted" />}
-                    <Link
-                      to={`/players/${entry.personId}`}
-                      className="text-xs text-main hover:text-team-primary hover:underline truncate max-w-[150px]"
-                      title={entry.fullName}
-                    >
-                      {entry.fullName}
-                    </Link>
+                    <PlayerHoverCard personId={entry.personId}>
+                      <Link
+                        to={`/players/${entry.personId}`}
+                        className="text-xs text-main hover:text-team-primary hover:underline truncate max-w-[150px]"
+                        title={entry.fullName}
+                      >
+                        {entry.fullName}
+                      </Link>
+                    </PlayerHoverCard>
                     <span className="font-mono text-[10px] text-muted shrink-0">
                       {entry.allPositions.length > 1
                         ? entry.allPositions.join('-')

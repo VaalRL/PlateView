@@ -169,6 +169,16 @@ export async function getPlayerTransactions(personId: number): Promise<Transacti
 }
 
 /**
+ * Who a player is and where he plays now, for the player hover card.
+ * `parentOrg` names the big league club behind a minor league team.
+ */
+export async function getPersonSummary(personId: number): Promise<PeopleResponse> {
+  return fetchMlb<PeopleResponse>(`/people/${personId}`, {
+    hydrate: 'currentTeam(league,sport,parentOrg)',
+  });
+}
+
+/**
  * Search people by name via official MLB API
  */
 export async function searchPeople(name: string) {

@@ -31,6 +31,7 @@ import {
 import { MLB_SPORT_ID } from '../constants/levels';
 import { PlayerTransactions } from '../components/player/PlayerTransactions';
 import { GameLogFilterBar } from '../components/player/GameLogFilterBar';
+import { TeamHoverCard } from '../components/common/TeamHoverCard';
 import {
   DEFAULT_GAME_LOG_FILTER,
   filterGameLogs,
@@ -254,20 +255,22 @@ export const PlayerDetailPage: React.FC = () => {
 
                   if (mlbTeam) {
                     return (
-                      <Link
-                        to={`/teams/${person.currentTeam.id}`}
-                        className="flex items-center gap-1.5 font-semibold text-main hover:text-team-primary"
-                      >
-                        <img
-                          src={getTeamLogoUrl(person.currentTeam.id)}
-                          alt={person.currentTeam.name}
-                          className="w-4 h-4 object-contain"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                        <span>{lang === 'zh' ? mlbTeam.nameZh : mlbTeam.name}</span>
-                      </Link>
+                      <TeamHoverCard teamId={person.currentTeam.id}>
+                        <Link
+                          to={`/teams/${person.currentTeam.id}`}
+                          className="flex items-center gap-1.5 font-semibold text-main hover:text-team-primary"
+                        >
+                          <img
+                            src={getTeamLogoUrl(person.currentTeam.id)}
+                            alt={person.currentTeam.name}
+                            className="w-4 h-4 object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                          <span>{lang === 'zh' ? mlbTeam.nameZh : mlbTeam.name}</span>
+                        </Link>
+                      </TeamHoverCard>
                     );
                   }
 
@@ -281,12 +284,14 @@ export const PlayerDetailPage: React.FC = () => {
                       {parentOrgMlbTeam && (
                         <span className="text-muted text-xs">
                           (
-                          <Link
-                            to={`/teams/${parentOrgMlbTeam.id}`}
-                            className="text-team-primary hover:underline font-semibold"
-                          >
-                            {lang === 'zh' ? parentOrgMlbTeam.nameZh : parentOrgMlbTeam.name}
-                          </Link>
+                          <TeamHoverCard teamId={parentOrgMlbTeam.id}>
+                            <Link
+                              to={`/teams/${parentOrgMlbTeam.id}`}
+                              className="text-team-primary hover:underline font-semibold"
+                            >
+                              {lang === 'zh' ? parentOrgMlbTeam.nameZh : parentOrgMlbTeam.name}
+                            </Link>
+                          </TeamHoverCard>
                           {lang === 'zh' ? ' 旗下' : ' affiliate'})
                         </span>
                       )}
@@ -977,22 +982,24 @@ export const PlayerDetailPage: React.FC = () => {
                                 {log.isHome === false ? '@' : log.isHome ? 'vs' : '-'}
                               </span>
                               {oppTeam ? (
-                                <Link
-                                  to={`/teams/${oppTeam.id}`}
-                                  className="inline-flex items-center gap-1.5 hover:text-team-primary hover:underline font-semibold text-main transition-colors group"
-                                >
-                                  <img
-                                    src={getTeamLogoUrl(oppTeam.id)}
-                                    alt={oppDisplayName}
-                                    className="w-4 h-4 object-contain shrink-0 group-hover:scale-110 transition-transform"
-                                    onError={(e) => {
-                                      (e.target as HTMLImageElement).style.display = 'none';
-                                    }}
-                                  />
-                                  <span className="truncate max-w-[92px] sm:max-w-none">
-                                    {oppDisplayName}
-                                  </span>
-                                </Link>
+                                <TeamHoverCard teamId={oppTeam.id}>
+                                  <Link
+                                    to={`/teams/${oppTeam.id}`}
+                                    className="inline-flex items-center gap-1.5 hover:text-team-primary hover:underline font-semibold text-main transition-colors group"
+                                  >
+                                    <img
+                                      src={getTeamLogoUrl(oppTeam.id)}
+                                      alt={oppDisplayName}
+                                      className="w-4 h-4 object-contain shrink-0 group-hover:scale-110 transition-transform"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                      }}
+                                    />
+                                    <span className="truncate max-w-[92px] sm:max-w-none">
+                                      {oppDisplayName}
+                                    </span>
+                                  </Link>
+                                </TeamHoverCard>
                               ) : (
                                 <span className="text-muted font-medium truncate max-w-[92px] sm:max-w-none">
                                   {oppDisplayName}

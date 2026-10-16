@@ -1,7 +1,7 @@
 {
   "name": "plateview",
   "private": true,
-  "version": "1.5.2",
+  "version": "1.6.0",
   "type": "module",
   "description": "MLB Stats and Live Scoreboard SPA",
   "scripts": {
@@ -15,6 +15,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\""
   },
   "dependencies": {
+    "@floating-ui/react-dom": "^2.1.9",
     "@tanstack/react-query": "^5.62.8",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

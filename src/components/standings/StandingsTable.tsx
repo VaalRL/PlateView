@@ -7,6 +7,7 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { formatSeasonProgress } from '../../utils/statsFormatters';
 import teamsData from '../../data/teams.json';
 import { MLB_LEVEL, MLB_SPORT_ID, type BrowsableLevel } from '../../constants/levels';
+import { TeamHoverCard } from '../common/TeamHoverCard';
 
 type StandingsTab = 'ALL' | 'AL' | 'NL' | 'WC';
 
@@ -431,12 +432,14 @@ const MinorLeagueStandings: React.FC<{ level: BrowsableLevel }> = ({ level }) =>
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
                           />
-                          <Link
-                            to={`/teams/${rec.team.id}`}
-                            className="font-semibold text-main hover:text-team-primary truncate max-w-[140px]"
-                          >
-                            {rec.team.name}
-                          </Link>
+                          <TeamHoverCard teamId={rec.team.id} name={rec.team.name}>
+                            <Link
+                              to={`/teams/${rec.team.id}`}
+                              className="font-semibold text-main hover:text-team-primary truncate max-w-[140px]"
+                            >
+                              {rec.team.name}
+                            </Link>
+                          </TeamHoverCard>
                         </td>
                         <td className="py-2 px-2 text-center font-mono font-medium">{rec.wins}</td>
                         <td className="py-2 px-2 text-center font-mono text-muted">{rec.losses}</td>
