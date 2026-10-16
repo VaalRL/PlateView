@@ -17,6 +17,11 @@ export interface GameLogStat {
   baseOnBalls?: number;
   inningsPitched?: string;
   earnedRuns?: number;
+  /** Outs recorded; exact where inningsPitched ("5.2") is thirds in disguise */
+  outs?: number;
+  totalBases?: number;
+  hitByPitch?: number;
+  sacFlies?: number;
   /**
    * Per-game decision counters. The API reports no decision field, so exactly
    * one of these is set on a decided appearance (see getPitchingDecision).
