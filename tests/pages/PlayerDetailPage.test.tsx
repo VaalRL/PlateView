@@ -526,7 +526,7 @@ describe('PlayerDetailPage game logs and transactions tabs', () => {
       </QueryClientProvider>
     );
 
-    const logsTab = await screen.findByRole('tab', { name: /近 10 場逐場比賽紀錄/ });
+    const logsTab = await screen.findByRole('tab', { name: /逐場比賽紀錄/ });
     const transactionsTab = screen.getByRole('tab', { name: /轉隊記錄/ });
     expect(logsTab).toHaveAttribute('aria-selected', 'true');
     expect(await screen.findByText('2026-08-02')).toBeVisible();
@@ -555,10 +555,108 @@ describe('PlayerDetailPage game logs and transactions tabs', () => {
       </QueryClientProvider>
     );
 
-    const logsTab = await screen.findByRole('tab', { name: /近 10 場逐場比賽紀錄/ });
+    const logsTab = await screen.findByRole('tab', { name: /逐場比賽紀錄/ });
     fireEvent.keyDown(logsTab, { key: 'ArrowRight' });
     const transactionsTab = screen.getByRole('tab', { name: /轉隊記錄/ });
     expect(transactionsTab).toHaveAttribute('aria-selected', 'true');
     expect(transactionsTab).toHaveFocus();
+  });
+});
+
+describe('PlayerDetailPage game log filters', () => {
+  const globalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = globalFetch;
+    queryClient.clear();
+  });
+
+  const split = (date: string, opponentId: number, opponentName: string, isHome: boolean, hits: number) => ({
+    date,
+    gameType: 'R',
+    team: { id: 119, name: 'Los Angeles Dodgers' },
+    opponent: { id: opponentId, name: opponentName },
+    isHome,
+    stat: { atBats: 4, hits, runs: 0, rbi: 0, homeRuns: 0, baseOnBalls: 0, strikeOuts: 1, totalBases: hits, avg: '.300' },
+  });
+
+  // 12 games: 4 at home against the Giants, 8 on the road against the Padres
+  const splits = [
+    ...Array.from({ length: 4 }, (_, i) => split(`2026-09-${10 + i}`, 137, 'San Francisco Giants', true, 2)),
+    ...Array.from({ length: 8 }, (_, i) => split(`2026-08-${10 + i}`, 135, 'San Diego Padres', false, 1)),
+  ];
+
+  const renderFiltered = () => {
+    globalThis.fetch = vi.fn(async (url: string) => ({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () =>
+        decodeURIComponent(url).includes('gameType=P')
+          ? {}
+          : {
+              people: [
+                {
+                  id: 999006,
+                  fullName: 'Filter Tester',
+                  primaryPosition: { abbreviation: 'LF', type: 'Outfielder' },
+                  stats: [{ group: { displayName: 'hitting' }, type: { displayName: 'gameLog' }, splits }],
+                },
+              ],
+            },
+    })) as unknown as typeof fetch;
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/999006']}>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+  };
+
+  const panel = () => screen.getByRole('tabpanel', { name: /逐場比賽紀錄/ });
+  const gameRows = () => within(panel()).getAllByRole('row').filter((r) => /2026-\d\d-\d\d/.test(r.textContent ?? ''));
+
+  it('shows ten games and the rest behind "show all"', async () => {
+    renderFiltered();
+    await screen.findByText('2026-09-13');
+    expect(gameRows()).toHaveLength(10);
+
+    fireEvent.click(screen.getByRole('button', { name: '顯示全部 12 場' }));
+    expect(gameRows()).toHaveLength(12);
+  });
+
+  it('filters by opponent and venue and totals the games left', async () => {
+    renderFiltered();
+    await screen.findByText('2026-09-13');
+    // No total until a filter is set
+    expect(screen.queryByText(/篩選合計/)).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole('combobox', { name: '對手' }), { target: { value: '137' } });
+    expect(gameRows()).toHaveLength(4);
+    const total = screen.getByText('篩選合計（4 場）').closest('tr')!;
+    // 8 hits in 16 at bats
+    expect(within(total).getByText('16')).toBeInTheDocument();
+    expect(within(total).getByText('8')).toBeInTheDocument();
+    expect(within(total).getByText('.500')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole('combobox', { name: '主客場' }), { target: { value: 'away' } });
+    expect(gameRows()).toHaveLength(0);
+    expect(screen.getByText('沒有符合篩選條件的比賽')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '清除篩選' }));
+    expect(gameRows()).toHaveLength(10);
+    expect(screen.queryByText(/篩選合計/)).not.toBeInTheDocument();
+  });
+
+  it('offers no postseason or level filter when the log has nothing to choose', async () => {
+    renderFiltered();
+    await screen.findByText('2026-09-13');
+    expect(screen.queryByRole('combobox', { name: '賽事' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: '層級' })).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: '月份' })).toBeInTheDocument();
   });
 });

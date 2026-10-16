@@ -30,6 +30,16 @@ import {
 } from '../utils/playerLevels';
 import { MLB_SPORT_ID } from '../constants/levels';
 import { PlayerTransactions } from '../components/player/PlayerTransactions';
+import { GameLogFilterBar } from '../components/player/GameLogFilterBar';
+import {
+  DEFAULT_GAME_LOG_FILTER,
+  filterGameLogs,
+  getGameLogFilterOptions,
+  isFilterActive,
+  sumHitting,
+  sumPitching,
+  type GameLogFilter,
+} from '../utils/gameLogFilters';
 import { Star, ArrowLeft, Activity, Calendar, Award, Zap, ArrowLeftRight } from 'lucide-react';
 import type { TranslationKey } from '../i18n/translations';
 
@@ -54,6 +64,11 @@ export const PlayerDetailPage: React.FC = () => {
   const [roleTab, setRoleTab] = useState<'auto' | 'hitting' | 'pitching'>('auto');
   // Transactions load only once their tab is opened
   const [historyTab, setHistoryTab] = useState<HistoryTab>('logs');
+  // Game log filters and "show all" belong to one player, like the level choice below
+  const [logFilterChoice, setLogFilterChoice] = useState<{ personId: number; filter: GameLogFilter } | null>(null);
+  const logFilter = logFilterChoice?.personId === idNum ? logFilterChoice.filter : DEFAULT_GAME_LOG_FILTER;
+  const [logsExpandedFor, setLogsExpandedFor] = useState<number | null>(null);
+  const logsExpanded = logsExpandedFor === idNum;
 
   const { data, isLoading, isError } = usePlayerDetailQuery(idNum);
   const { isFavoritePlayer, toggleFavoritePlayer } = useFavorites();
@@ -171,7 +186,14 @@ export const PlayerDetailPage: React.FC = () => {
   const primaryName = person?.fullName || zhPlayerMeta?.nameEn || 'MLB Player';
   const secondaryName = zhPlayerMeta?.nameZh || '';
 
-  const activeGameLogs = (effectiveRole === 'pitching' ? sortedPitchingGameLogs : sortedHittingGameLogs).slice(0, 10);
+  // The whole season's log is on hand; ten rows show until expanded
+  const roleGameLogs = effectiveRole === 'pitching' ? sortedPitchingGameLogs : sortedHittingGameLogs;
+  const logFilterOptions = useMemo(() => getGameLogFilterOptions(roleGameLogs), [roleGameLogs]);
+  const filteredGameLogs = useMemo(() => filterGameLogs(roleGameLogs, logFilter), [roleGameLogs, logFilter]);
+  const logFiltered = isFilterActive(logFilter);
+  const activeGameLogs = logsExpanded ? filteredGameLogs : filteredGameLogs.slice(0, 10);
+  const hittingTotals = logFiltered && effectiveRole !== 'pitching' ? sumHitting(filteredGameLogs) : null;
+  const pitchingTotals = logFiltered && effectiveRole === 'pitching' ? sumPitching(filteredGameLogs) : null;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
@@ -821,164 +843,223 @@ export const PlayerDetailPage: React.FC = () => {
               id="player-panel-logs"
               aria-labelledby="player-tab-logs"
               hidden={historyTab !== 'logs'}
-              className="bg-card border border-border rounded-2xl overflow-x-auto shadow-sm"
+              className="space-y-3"
             >
-              <table className="w-full text-xs text-left font-mono">
-                <thead>
-                  <tr className="border-b border-border text-muted text-[11px] bg-page/60">
-                    <th className="py-3 px-4 font-medium">{lang === 'zh' ? '日期' : 'Date'}</th>
-                    <th className="py-3 px-3 font-medium">
-                      {lang === 'zh' ? '所屬 / 對戰' : 'Team / Matchup'}
-                    </th>
-                    {effectiveRole === 'pitching' ? (
-                      <>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '結果' : 'Dec'}</th>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '局數' : 'IP'}</th>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '安打' : 'H'}</th>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '失分' : 'R'}</th>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '責失' : 'ER'}</th>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '三振' : 'K'}</th>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '保送' : 'BB'}</th>
-                        <th className="py-3 px-2 text-center font-medium">ERA</th>
-                      </>
-                    ) : (
-                      <>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '打數' : 'AB'}</th>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '得分' : 'R'}</th>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '安打' : 'H'}</th>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '打點' : 'RBI'}</th>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '全壘打' : 'HR'}</th>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '保送' : 'BB'}</th>
-                        <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '三振' : 'SO'}</th>
-                        <th className="py-3 px-2 text-center font-medium">AVG</th>
-                      </>
-                    )}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/30">
-                  {activeGameLogs.map((log: GameLogSplit, idx: number) => {
-                    const oppTeam = teamsData.find((t) => t.id === log.opponent?.id);
-                    const oppDisplayName =
-                      lang === 'zh' ? oppTeam?.nameZh || log.opponent?.name : log.opponent?.name || 'MLB';
+              {roleGameLogs.length > 0 && (
+                <GameLogFilterBar
+                  options={logFilterOptions}
+                  filter={logFilter}
+                  onChange={(filter) => setLogFilterChoice({ personId: idNum, filter })}
+                />
+              )}
 
-                    // The team he played FOR that day: the only way to read a
-                    // log that spans a mid-season trade
-                    const ownTeam = teamsData.find((t) => t.id === log.team?.id);
-                    const ownDisplayName =
-                      (lang === 'zh' ? ownTeam?.nameZh : ownTeam?.name) || log.team?.name || '';
-                    const gamePk = log.game?.gamePk;
-
-                    return (
-                      <tr key={idx} className="hover:bg-card-hover/50 transition-colors">
-                        <td className="py-2.5 px-4 text-main font-semibold">
-                          {gamePk ? (
-                            <Link
-                              to={`/games/${gamePk}`}
-                              className="hover:text-team-primary hover:underline transition-colors"
-                              title={t('game.open_full_box')}
-                            >
-                              {log.date}
-                            </Link>
-                          ) : (
-                            log.date
-                          )}
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <span className="inline-flex items-center gap-1.5">
-                            {isPostseasonGameType(log.gameType) && (
-                              <span
-                                className="px-1 rounded bg-team-primary/15 text-team-primary text-[9px] font-bold shrink-0"
-                                title={t('player.postseason_title')}
-                              >
-                                {t('player.postseason_badge')}
-                              </span>
-                            )}
-                            {log.sport?.id !== undefined && log.sport.id !== MLB_SPORT_ID && (
-                              <span className="px-1 rounded bg-amber-500/15 text-amber-500 text-[9px] font-bold shrink-0">
-                                {log.sport.abbreviation}
-                              </span>
-                            )}
-                            {/* The team he played for reads as an abbreviation,
-                                not a crest: a crest that fails to load would
-                                take the whole answer with it */}
-                            <span
-                              className="text-main text-[11px] font-bold shrink-0 w-8"
-                              title={ownDisplayName}
-                            >
-                              {ownTeam?.abbrev || log.team?.name?.slice(0, 3).toUpperCase() || '—'}
-                            </span>
-                            <span className="text-muted text-[10px] font-medium shrink-0">
-                              {log.isHome === false ? '@' : log.isHome ? 'vs' : '-'}
-                            </span>
-                            {oppTeam ? (
-                              <Link
-                                to={`/teams/${oppTeam.id}`}
-                                className="inline-flex items-center gap-1.5 hover:text-team-primary hover:underline font-semibold text-main transition-colors group"
-                              >
-                                <img
-                                  src={getTeamLogoUrl(oppTeam.id)}
-                                  alt={oppDisplayName}
-                                  className="w-4 h-4 object-contain shrink-0 group-hover:scale-110 transition-transform"
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                  }}
-                                />
-                                <span className="truncate max-w-[92px] sm:max-w-none">
-                                  {oppDisplayName}
-                                </span>
-                              </Link>
-                            ) : (
-                              <span className="text-muted font-medium truncate max-w-[92px] sm:max-w-none">
-                                {oppDisplayName}
-                              </span>
-                            )}
+              <div className="bg-card border border-border rounded-2xl overflow-x-auto shadow-sm">
+                <table className="w-full text-xs text-left font-mono">
+                  <thead>
+                    <tr className="border-b border-border text-muted text-[11px] bg-page/60">
+                      <th className="py-3 px-4 font-medium">{lang === 'zh' ? '日期' : 'Date'}</th>
+                      <th className="py-3 px-3 font-medium">
+                        {lang === 'zh' ? '所屬 / 對戰' : 'Team / Matchup'}
+                      </th>
+                      {effectiveRole === 'pitching' ? (
+                        <>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '結果' : 'Dec'}</th>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '局數' : 'IP'}</th>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '安打' : 'H'}</th>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '失分' : 'R'}</th>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '責失' : 'ER'}</th>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '三振' : 'K'}</th>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '保送' : 'BB'}</th>
+                          <th className="py-3 px-2 text-center font-medium">ERA</th>
+                        </>
+                      ) : (
+                        <>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '打數' : 'AB'}</th>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '得分' : 'R'}</th>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '安打' : 'H'}</th>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '打點' : 'RBI'}</th>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '全壘打' : 'HR'}</th>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '保送' : 'BB'}</th>
+                          <th className="py-3 px-2 text-center font-medium">{lang === 'zh' ? '三振' : 'SO'}</th>
+                          <th className="py-3 px-2 text-center font-medium">AVG</th>
+                        </>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30">
+                    {(hittingTotals || pitchingTotals) && filteredGameLogs.length > 0 && (
+                      <tr className="bg-team-primary/10 font-bold text-main whitespace-nowrap">
+                        <td colSpan={2} className="py-2.5 px-4 font-sans">
+                          {t('player.filter_total', { count: filteredGameLogs.length })}
+                          <span className="ml-2 font-mono font-semibold text-muted">
+                            {hittingTotals ? `OPS ${hittingTotals.ops}` : `WHIP ${pitchingTotals!.whip}`}
                           </span>
                         </td>
-                        {effectiveRole === 'pitching' ? (
+                        {pitchingTotals ? (
                           <>
-                            <td className="py-2.5 px-2 text-center font-bold text-main">
-                              {getPitchingDecision(log.stat)}
-                            </td>
-                            <td className="py-2.5 px-2 text-center">{log.stat?.inningsPitched}</td>
-                            <td className="py-2.5 px-2 text-center">{log.stat?.hits}</td>
-                            <td className="py-2.5 px-2 text-center">{log.stat?.runs}</td>
-                            <td className="py-2.5 px-2 text-center">{log.stat?.earnedRuns}</td>
-                            <td className="py-2.5 px-2 text-center font-bold text-team-primary">
-                              {log.stat?.strikeOuts}
-                            </td>
-                            <td className="py-2.5 px-2 text-center">{log.stat?.baseOnBalls}</td>
-                            <td className="py-2.5 px-2 text-center">{log.stat?.era}</td>
+                            <td className="py-2.5 px-2 text-center">{pitchingTotals.record}</td>
+                            <td className="py-2.5 px-2 text-center">{pitchingTotals.inningsPitched}</td>
+                            <td className="py-2.5 px-2 text-center">{pitchingTotals.hits}</td>
+                            <td className="py-2.5 px-2 text-center">{pitchingTotals.runs}</td>
+                            <td className="py-2.5 px-2 text-center">{pitchingTotals.earnedRuns}</td>
+                            <td className="py-2.5 px-2 text-center">{pitchingTotals.strikeOuts}</td>
+                            <td className="py-2.5 px-2 text-center">{pitchingTotals.baseOnBalls}</td>
+                            <td className="py-2.5 px-2 text-center text-team-primary">{pitchingTotals.era}</td>
                           </>
                         ) : (
-                          <>
-                            <td className="py-2.5 px-2 text-center">{log.stat?.atBats}</td>
-                            <td className="py-2.5 px-2 text-center">{log.stat?.runs}</td>
-                            <td className="py-2.5 px-2 text-center font-bold text-team-primary">
-                              {log.stat?.hits}
-                            </td>
-                            <td className="py-2.5 px-2 text-center">{log.stat?.rbi}</td>
-                            <td className="py-2.5 px-2 text-center font-bold text-main">
-                              {log.stat?.homeRuns}
-                            </td>
-                            <td className="py-2.5 px-2 text-center">{log.stat?.baseOnBalls}</td>
-                            <td className="py-2.5 px-2 text-center">{log.stat?.strikeOuts}</td>
-                            <td className="py-2.5 px-2 text-center font-semibold text-main">
-                              {log.stat?.avg}
-                            </td>
-                          </>
+                          hittingTotals && (
+                            <>
+                              <td className="py-2.5 px-2 text-center">{hittingTotals.atBats}</td>
+                              <td className="py-2.5 px-2 text-center">{hittingTotals.runs}</td>
+                              <td className="py-2.5 px-2 text-center">{hittingTotals.hits}</td>
+                              <td className="py-2.5 px-2 text-center">{hittingTotals.rbi}</td>
+                              <td className="py-2.5 px-2 text-center">{hittingTotals.homeRuns}</td>
+                              <td className="py-2.5 px-2 text-center">{hittingTotals.baseOnBalls}</td>
+                              <td className="py-2.5 px-2 text-center">{hittingTotals.strikeOuts}</td>
+                              <td className="py-2.5 px-2 text-center text-team-primary">{hittingTotals.avg}</td>
+                            </>
+                          )
                         )}
                       </tr>
-                    );
-                  })}
-                  {activeGameLogs.length === 0 && (
-                    <tr>
-                      <td colSpan={10} className="py-8 text-center text-muted font-sans">
-                        {t('player.empty_logs')}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    )}
+                    {activeGameLogs.map((log: GameLogSplit, idx: number) => {
+                      const oppTeam = teamsData.find((t) => t.id === log.opponent?.id);
+                      const oppDisplayName =
+                        lang === 'zh' ? oppTeam?.nameZh || log.opponent?.name : log.opponent?.name || 'MLB';
+
+                      // The team he played FOR that day: the only way to read a
+                      // log that spans a mid-season trade
+                      const ownTeam = teamsData.find((t) => t.id === log.team?.id);
+                      const ownDisplayName =
+                        (lang === 'zh' ? ownTeam?.nameZh : ownTeam?.name) || log.team?.name || '';
+                      const gamePk = log.game?.gamePk;
+
+                      return (
+                        <tr key={idx} className="hover:bg-card-hover/50 transition-colors">
+                          <td className="py-2.5 px-4 text-main font-semibold">
+                            {gamePk ? (
+                              <Link
+                                to={`/games/${gamePk}`}
+                                className="hover:text-team-primary hover:underline transition-colors"
+                                title={t('game.open_full_box')}
+                              >
+                                {log.date}
+                              </Link>
+                            ) : (
+                              log.date
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span className="inline-flex items-center gap-1.5">
+                              {isPostseasonGameType(log.gameType) && (
+                                <span
+                                  className="px-1 rounded bg-team-primary/15 text-team-primary text-[9px] font-bold shrink-0"
+                                  title={t('player.postseason_title')}
+                                >
+                                  {t('player.postseason_badge')}
+                                </span>
+                              )}
+                              {log.sport?.id !== undefined && log.sport.id !== MLB_SPORT_ID && (
+                                <span className="px-1 rounded bg-amber-500/15 text-amber-500 text-[9px] font-bold shrink-0">
+                                  {log.sport.abbreviation}
+                                </span>
+                              )}
+                              {/* The team he played for reads as an abbreviation,
+                                  not a crest: a crest that fails to load would
+                                  take the whole answer with it */}
+                              <span
+                                className="text-main text-[11px] font-bold shrink-0 w-8"
+                                title={ownDisplayName}
+                              >
+                                {ownTeam?.abbrev || log.team?.name?.slice(0, 3).toUpperCase() || '—'}
+                              </span>
+                              <span className="text-muted text-[10px] font-medium shrink-0">
+                                {log.isHome === false ? '@' : log.isHome ? 'vs' : '-'}
+                              </span>
+                              {oppTeam ? (
+                                <Link
+                                  to={`/teams/${oppTeam.id}`}
+                                  className="inline-flex items-center gap-1.5 hover:text-team-primary hover:underline font-semibold text-main transition-colors group"
+                                >
+                                  <img
+                                    src={getTeamLogoUrl(oppTeam.id)}
+                                    alt={oppDisplayName}
+                                    className="w-4 h-4 object-contain shrink-0 group-hover:scale-110 transition-transform"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
+                                  />
+                                  <span className="truncate max-w-[92px] sm:max-w-none">
+                                    {oppDisplayName}
+                                  </span>
+                                </Link>
+                              ) : (
+                                <span className="text-muted font-medium truncate max-w-[92px] sm:max-w-none">
+                                  {oppDisplayName}
+                                </span>
+                              )}
+                            </span>
+                          </td>
+                          {effectiveRole === 'pitching' ? (
+                            <>
+                              <td className="py-2.5 px-2 text-center font-bold text-main">
+                                {getPitchingDecision(log.stat)}
+                              </td>
+                              <td className="py-2.5 px-2 text-center">{log.stat?.inningsPitched}</td>
+                              <td className="py-2.5 px-2 text-center">{log.stat?.hits}</td>
+                              <td className="py-2.5 px-2 text-center">{log.stat?.runs}</td>
+                              <td className="py-2.5 px-2 text-center">{log.stat?.earnedRuns}</td>
+                              <td className="py-2.5 px-2 text-center font-bold text-team-primary">
+                                {log.stat?.strikeOuts}
+                              </td>
+                              <td className="py-2.5 px-2 text-center">{log.stat?.baseOnBalls}</td>
+                              <td className="py-2.5 px-2 text-center">{log.stat?.era}</td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="py-2.5 px-2 text-center">{log.stat?.atBats}</td>
+                              <td className="py-2.5 px-2 text-center">{log.stat?.runs}</td>
+                              <td className="py-2.5 px-2 text-center font-bold text-team-primary">
+                                {log.stat?.hits}
+                              </td>
+                              <td className="py-2.5 px-2 text-center">{log.stat?.rbi}</td>
+                              <td className="py-2.5 px-2 text-center font-bold text-main">
+                                {log.stat?.homeRuns}
+                              </td>
+                              <td className="py-2.5 px-2 text-center">{log.stat?.baseOnBalls}</td>
+                              <td className="py-2.5 px-2 text-center">{log.stat?.strikeOuts}</td>
+                              <td className="py-2.5 px-2 text-center font-semibold text-main">
+                                {log.stat?.avg}
+                              </td>
+                            </>
+                          )}
+                        </tr>
+                      );
+                    })}
+                    {activeGameLogs.length === 0 && (
+                      <tr>
+                        <td colSpan={10} className="py-8 text-center text-muted font-sans">
+                          {roleGameLogs.length > 0 ? t('player.filter_no_match') : t('player.empty_logs')}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {filteredGameLogs.length > 10 && (
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setLogsExpandedFor(logsExpanded ? null : idNum)}
+                    className="text-xs font-semibold text-team-primary hover:underline"
+                  >
+                    {logsExpanded
+                      ? t('player.logs_collapse')
+                      : t('player.logs_show_all', { count: filteredGameLogs.length })}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </>
