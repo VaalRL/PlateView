@@ -456,3 +456,109 @@ describe('PlayerDetailPage postseason games', () => {
     expect(within(regularRow).queryByText('季後')).not.toBeInTheDocument();
   });
 });
+
+describe('PlayerDetailPage game logs and transactions tabs', () => {
+  const globalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = globalFetch;
+    queryClient.clear();
+  });
+
+  const mockApi = () => {
+    const fetchMock = vi.fn(async (url: string) => ({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () =>
+        url.includes('/transactions')
+          ? {
+              transactions: [
+                {
+                  id: 1,
+                  date: '2026-07-30',
+                  typeCode: 'TR',
+                  typeDesc: 'Trade',
+                  fromTeam: { id: 140, name: 'Texas Rangers' },
+                  toTeam: { id: 119, name: 'Los Angeles Dodgers' },
+                },
+              ],
+            }
+          : {
+              people: [
+                {
+                  id: 999004,
+                  fullName: 'Tab Tester',
+                  primaryPosition: { abbreviation: 'LF', type: 'Outfielder' },
+                  stats: [
+                    {
+                      group: { displayName: 'hitting' },
+                      type: { displayName: 'gameLog' },
+                      splits: [
+                        {
+                          date: '2026-08-02',
+                          gameType: 'R',
+                          team: { id: 119, name: 'Los Angeles Dodgers' },
+                          opponent: { id: 134, name: 'Pittsburgh Pirates' },
+                          stat: { atBats: 4, hits: 2 },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+    }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    return fetchMock;
+  };
+
+  it('opens on the game logs and loads transactions only when their tab is chosen', async () => {
+    const fetchMock = mockApi();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/999004']}>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    const logsTab = await screen.findByRole('tab', { name: /近 10 場逐場比賽紀錄/ });
+    const transactionsTab = screen.getByRole('tab', { name: /轉隊記錄/ });
+    expect(logsTab).toHaveAttribute('aria-selected', 'true');
+    expect(await screen.findByText('2026-08-02')).toBeVisible();
+    expect(fetchMock.mock.calls.some(([u]) => String(u).includes('/transactions'))).toBe(false);
+
+    fireEvent.click(transactionsTab);
+    expect(transactionsTab).toHaveAttribute('aria-selected', 'true');
+    expect(await screen.findByText('交易')).toBeInTheDocument();
+    expect(screen.getByRole('tabpanel', { name: /轉隊記錄/ })).toBeInTheDocument();
+    expect(screen.getByText('2026-08-02')).not.toBeVisible();
+
+    fireEvent.click(logsTab);
+    expect(screen.getByText('2026-08-02')).toBeVisible();
+    expect(screen.queryByText('交易')).not.toBeInTheDocument();
+  });
+
+  it('switches tabs with the arrow keys', async () => {
+    mockApi();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/999004']}>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    const logsTab = await screen.findByRole('tab', { name: /近 10 場逐場比賽紀錄/ });
+    fireEvent.keyDown(logsTab, { key: 'ArrowRight' });
+    const transactionsTab = screen.getByRole('tab', { name: /轉隊記錄/ });
+    expect(transactionsTab).toHaveAttribute('aria-selected', 'true');
+    expect(transactionsTab).toHaveFocus();
+  });
+});
