@@ -260,6 +260,8 @@ export const translations = {
     'player.age': '年齡',
     'player.age_unit': '歲',
     'player.physique': '體型',
+    'player.postseason_badge': '季後',
+    'player.postseason_title': '季後賽',
     'player.empty_logs': '尚無最近出賽之官方紀錄',
     'player.load_error': '球員詳細數據載入失敗，請稍後再試。',
 
@@ -578,6 +580,8 @@ export const translations = {
     'player.age': 'Age',
     'player.age_unit': 'yo',
     'player.physique': 'Size',
+    'player.postseason_badge': 'PS',
+    'player.postseason_title': 'Postseason',
     'player.empty_logs': 'No recent official game logs available.',
     'player.load_error': 'Failed to load player details. Please try again later.',
 

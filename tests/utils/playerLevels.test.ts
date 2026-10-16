@@ -5,6 +5,8 @@ import {
   getDefaultLevel,
   sortGameLogsByDate,
   getLatestGameLog,
+  isPostseasonGameType,
+  mergeGameLogs,
   type PlayerStatGroup,
 } from '../../src/utils/playerLevels';
 // Real /people responses hydrated with leagueListId=mlb_milb (game logs trimmed)
@@ -98,5 +100,53 @@ describe('game logs across levels', () => {
     expect(getLatestGameLog(logs(promoted, 'hitting'))?.date).toBe('2026-09-23');
     expect(getLatestGameLog(logs(demoted, 'pitching'))?.sport?.id).toBe(11);
     expect(getLatestGameLog([])).toBeUndefined();
+  });
+});
+
+describe('isPostseasonGameType', () => {
+  it('flags the postseason and each of its rounds', () => {
+    ['P', 'F', 'D', 'L', 'W'].forEach((gt) => expect(isPostseasonGameType(gt)).toBe(true));
+  });
+
+  it('leaves the regular season, spring training and missing types alone', () => {
+    ['R', 'S', 'E', 'A'].forEach((gt) => expect(isPostseasonGameType(gt)).toBe(false));
+    expect(isPostseasonGameType(undefined)).toBe(false);
+  });
+});
+
+describe('mergeGameLogs', () => {
+  const log = (group: string, splits: object[], type = 'gameLog'): PlayerStatGroup => ({
+    group: { displayName: group },
+    type: { displayName: type },
+    splits,
+  });
+
+  it('appends postseason games to the matching game log', () => {
+    const merged = mergeGameLogs(
+      [log('hitting', [{ date: '2026-09-28', gameType: 'R' }]), log('hitting', [{ gameType: 'R' }], 'season')],
+      [log('hitting', [{ date: '2026-10-08', gameType: 'D' }])]
+    );
+    expect(merged[0].splits?.map((s) => s.date)).toEqual(['2026-09-28', '2026-10-08']);
+    // Season lines are untouched
+    expect(merged[1].splits).toHaveLength(1);
+  });
+
+  it('adds a game log group the regular season did not have', () => {
+    const merged = mergeGameLogs([log('hitting', [{ gameType: 'R' }])], [log('pitching', [{ gameType: 'W' }])]);
+    expect(merged.map((g) => g.group?.displayName)).toEqual(['hitting', 'pitching']);
+  });
+
+  it('ignores regular season games in the postseason response', () => {
+    const merged = mergeGameLogs(
+      [log('hitting', [{ date: '2026-09-28', gameType: 'R' }])],
+      [log('hitting', [{ date: '2026-09-28', gameType: 'R' }])]
+    );
+    expect(merged[0].splits).toHaveLength(1);
+  });
+
+  it('does not mutate its inputs', () => {
+    const stats = [log('hitting', [{ gameType: 'R' }])];
+    mergeGameLogs(stats, [log('hitting', [{ gameType: 'L' }])]);
+    expect(stats[0].splits).toHaveLength(1);
   });
 });

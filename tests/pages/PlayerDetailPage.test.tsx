@@ -229,8 +229,10 @@ describe('PlayerDetailPage game logs', () => {
     it('requests every level in one call', async () => {
       const fetchMock = renderPlayer(promoted, 661531);
       await screen.findByText('出賽 28 場', { exact: false });
-      expect(fetchMock).toHaveBeenCalledTimes(1);
-      expect(String((fetchMock.mock.calls[0] as unknown[])[0])).toContain('leagueListId%3Dmlb_milb');
+      // One call for every level, plus one for the postseason game log
+      const urls = fetchMock.mock.calls.map((c) => decodeURIComponent(String((c as unknown[])[0])));
+      expect(urls.filter((u) => !u.includes('gameType=P'))).toHaveLength(1);
+      urls.forEach((u) => expect(u).toContain('leagueListId=mlb_milb'));
     });
 
     it('keeps minor league stats reachable after a call-up', async () => {
@@ -386,5 +388,69 @@ describe('PlayerDetailPage game logs', () => {
       fireEvent.click(within(screen.getByRole('group', { name: '層級' })).getByRole('button', { name: 'AAA' }));
       expect(screen.queryByText(/\(wRC\+\)/)).not.toBeInTheDocument();
     });
+  });
+});
+
+describe('PlayerDetailPage postseason games', () => {
+  const globalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = globalFetch;
+    queryClient.clear();
+  });
+
+  const hitter = (gameType: string, date: string, gamePk: number) => ({
+    people: [
+      {
+        id: 999003,
+        fullName: 'October Hitter',
+        primaryPosition: { abbreviation: 'RF', type: 'Outfielder' },
+        stats: [
+          {
+            group: { displayName: 'hitting' },
+            type: { displayName: 'gameLog' },
+            splits: [
+              {
+                date,
+                gameType,
+                team: { id: 119, name: 'Los Angeles Dodgers' },
+                opponent: { id: 134, name: 'Pittsburgh Pirates' },
+                isHome: true,
+                game: { gamePk },
+                stat: { atBats: 4, runs: 1, hits: 2, rbi: 1, homeRuns: 0, baseOnBalls: 0, strikeOuts: 1, avg: '.288' },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
+  it('lists postseason games in the game log with a postseason badge', async () => {
+    globalThis.fetch = vi.fn(async (url: string) => ({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () =>
+        decodeURIComponent(url).includes('gameType=P')
+          ? hitter('D', '2026-10-08', 777001)
+          : hitter('R', '2026-09-28', 776003),
+    })) as unknown as typeof fetch;
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/999003']}>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    const postseasonRow = (await screen.findByText('2026-10-08')).closest('tr')!;
+    expect(within(postseasonRow).getByText('季後')).toBeInTheDocument();
+
+    const regularRow = screen.getByText('2026-09-28').closest('tr')!;
+    expect(within(regularRow).queryByText('季後')).not.toBeInTheDocument();
   });
 });

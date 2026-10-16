@@ -11,6 +11,8 @@ export interface LevelSplit {
   /** Set on the combined line of a player who split a level between teams */
   numTeams?: number;
   date?: string;
+  /** R = regular season; see isPostseasonGameType */
+  gameType?: string;
   // Stat lines carry dozens of counting and rate fields that the player page reads directly
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stat?: any;
@@ -90,4 +92,37 @@ export function sortGameLogsByDate<T extends { date?: string }>(logs: T[]): T[] 
 /** The most recent game in a log, whichever level it was at */
 export function getLatestGameLog<T extends { date?: string }>(logs: T[]): T | undefined {
   return sortGameLogsByDate(logs)[0];
+}
+
+/**
+ * Postseason game types: `P` is the postseason as a whole, the others its
+ * rounds (wild card, division series, LCS, World Series).
+ */
+const POSTSEASON_GAME_TYPES = new Set(['P', 'F', 'D', 'L', 'W']);
+
+export function isPostseasonGameType(gameType?: string): boolean {
+  return gameType !== undefined && POSTSEASON_GAME_TYPES.has(gameType);
+}
+
+/**
+ * Add the postseason game log to a player's stats. Stats requests default to
+ * the regular season (`gameType=R`), so postseason games come from a second
+ * request and are appended to the matching game log group, or added as a new
+ * group when the player has no regular season log in that group. Only splits
+ * tagged as postseason are taken, so a response that ignored `gameType=P`
+ * cannot list the regular season twice.
+ */
+export function mergeGameLogs<T extends PlayerStatGroup>(stats: T[] | undefined, extra: T[] | undefined): T[] {
+  const merged = (stats ?? []).map((g) => ({ ...g, splits: [...(g.splits ?? [])] }));
+  (extra ?? []).forEach((group) => {
+    if (group.type?.displayName !== 'gameLog') return;
+    const games = (group.splits ?? []).filter((s) => isPostseasonGameType(s.gameType));
+    if (games.length === 0) return;
+    const target = merged.find(
+      (g) => g.type?.displayName === 'gameLog' && g.group?.displayName === group.group?.displayName
+    );
+    if (target) target.splits.push(...games);
+    else merged.push({ ...group, splits: games });
+  });
+  return merged;
 }
