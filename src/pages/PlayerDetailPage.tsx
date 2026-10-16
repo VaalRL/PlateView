@@ -30,12 +30,20 @@ import {
 } from '../utils/playerLevels';
 import { MLB_SPORT_ID } from '../constants/levels';
 import { PlayerTransactions } from '../components/player/PlayerTransactions';
-import { Star, ArrowLeft, Activity, Calendar, Award, Zap } from 'lucide-react';
+import { Star, ArrowLeft, Activity, Calendar, Award, Zap, ArrowLeftRight } from 'lucide-react';
+import type { TranslationKey } from '../i18n/translations';
 
 function gameLogsOf(stats: PlayerStatGroup[], group: 'hitting' | 'pitching'): GameLogSplit[] {
   const splits = stats.find((s) => s.group?.displayName === group && s.type?.displayName === 'gameLog')?.splits;
   return sortGameLogsByDate((splits || []) as GameLogSplit[]);
 }
+
+type HistoryTab = 'logs' | 'transactions';
+
+const HISTORY_TABS: { key: HistoryTab; Icon: typeof Calendar; title: TranslationKey; short: TranslationKey }[] = [
+  { key: 'logs', Icon: Calendar, title: 'player.game_logs_title', short: 'player.tab_game_logs' },
+  { key: 'transactions', Icon: ArrowLeftRight, title: 'player.transactions_title', short: 'player.tab_transactions' },
+];
 
 export const PlayerDetailPage: React.FC = () => {
   const { personId } = useParams<{ personId: string }>();
@@ -44,6 +52,8 @@ export const PlayerDetailPage: React.FC = () => {
 
   const [statTypeTab, setStatTypeTab] = useState<'season' | 'career'>('season');
   const [roleTab, setRoleTab] = useState<'auto' | 'hitting' | 'pitching'>('auto');
+  // Transactions load only once their tab is opened
+  const [historyTab, setHistoryTab] = useState<HistoryTab>('logs');
 
   const { data, isLoading, isError } = usePlayerDetailQuery(idNum);
   const { isFavoritePlayer, toggleFavoritePlayer } = useFavorites();
@@ -753,21 +763,66 @@ export const PlayerDetailPage: React.FC = () => {
             )}
           </div>
 
-          {/* Game Logs Section */}
+          {/* Game Logs / Transactions, one tab at a time */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-team-primary" />
-                <h2 className="text-lg font-bold text-main">
-                  {t('player.game_logs_title')}
-                </h2>
+            <div className="flex items-end justify-between gap-3 border-b border-border">
+              <div
+                role="tablist"
+                aria-label={t('player.history_tabs')}
+                className="flex items-end gap-4 sm:gap-6"
+                onKeyDown={(e) => {
+                  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+                  const next = historyTab === 'logs' ? 'transactions' : 'logs';
+                  setHistoryTab(next);
+                  document.getElementById(`player-tab-${next}`)?.focus();
+                }}
+              >
+                {HISTORY_TABS.map(({ key, Icon, title, short }) => {
+                  const selected = historyTab === key;
+                  return (
+                    <button
+                      key={key}
+                      id={`player-tab-${key}`}
+                      type="button"
+                      role="tab"
+                      aria-selected={selected}
+                      aria-controls={`player-panel-${key}`}
+                      tabIndex={selected ? 0 : -1}
+                      onClick={() => setHistoryTab(key)}
+                      className={`flex items-center gap-2 pb-3 -mb-px border-b-2 font-bold transition-colors ${
+                        selected
+                          ? 'border-team-primary text-main'
+                          : 'border-transparent text-muted hover:text-main'
+                      }`}
+                    >
+                      <Icon className={`w-5 h-5 ${selected ? 'text-team-primary' : ''}`} />
+                      {/* The full titles don't fit side by side at phone width */}
+                      <span className="hidden sm:inline text-lg">{t(title)}</span>
+                      <span className="sm:hidden text-base">{t(short)}</span>
+                    </button>
+                  );
+                })}
               </div>
-              <span className="text-xs text-muted">
-                {effectiveRole === 'pitching' ? t('player.pitching_logs') : t('player.hitting_logs')}
-              </span>
+              {historyTab === 'logs' && (
+                <span className="text-xs text-muted pb-3 shrink-0">
+                  {effectiveRole === 'pitching' ? t('player.pitching_logs') : t('player.hitting_logs')}
+                </span>
+              )}
             </div>
 
-            <div className="bg-card border border-border rounded-2xl overflow-x-auto shadow-sm">
+            {historyTab === 'transactions' && (
+              <div role="tabpanel" id="player-panel-transactions" aria-labelledby="player-tab-transactions">
+                <PlayerTransactions personId={idNum} />
+              </div>
+            )}
+
+            <div
+              role="tabpanel"
+              id="player-panel-logs"
+              aria-labelledby="player-tab-logs"
+              hidden={historyTab !== 'logs'}
+              className="bg-card border border-border rounded-2xl overflow-x-auto shadow-sm"
+            >
               <table className="w-full text-xs text-left font-mono">
                 <thead>
                   <tr className="border-b border-border text-muted text-[11px] bg-page/60">
@@ -926,8 +981,6 @@ export const PlayerDetailPage: React.FC = () => {
               </table>
             </div>
           </div>
-
-          <PlayerTransactions personId={idNum} />
         </>
       )}
     </div>
