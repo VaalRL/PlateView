@@ -15,6 +15,7 @@ import {
   formatPer9,
   getPitchingDecision,
 } from '../utils/statsFormatters';
+import { formatPhysique } from '../utils/units';
 import playersData from '../data/players-zh-tw.json';
 import teamsData from '../data/teams.json';
 import { GameLogSplit } from '../types/favorites';
@@ -286,7 +287,7 @@ export const PlayerDetailPage: React.FC = () => {
                 <>
                   <span>&bull;</span>
                   <span>
-                    {t('player.physique')}：{person.height} / {person.weight} lbs
+                    {t('player.physique')}：{formatPhysique(person.height, person.weight, lang)}
                   </span>
                 </>
               )}
