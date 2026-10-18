@@ -14,12 +14,15 @@ interface FavoritePlayerSummaryCardProps {
   person: GameLogPerson;
   zhMeta?: { nameZh?: string; nameEn?: string };
   todayDateStr: string;
+  /** Show the Chinese name under the English one (in the Chinese UI) */
+  showNameZh?: boolean;
 }
 
 export const FavoritePlayerSummaryCard: React.FC<FavoritePlayerSummaryCardProps> = ({
   person,
   zhMeta,
   todayDateStr,
+  showNameZh = false,
 }) => {
   const { lang, t } = useLanguage();
 
@@ -96,6 +99,9 @@ export const FavoritePlayerSummaryCard: React.FC<FavoritePlayerSummaryCardProps>
                   {playerName}
                 </Link>
               </PlayerHoverCard>
+              {showNameZh && lang === 'zh' && zhMeta?.nameZh && (
+                <div className="text-xs font-semibold text-main/80 truncate">{zhMeta.nameZh}</div>
+              )}
               <div className="flex items-center gap-1.5 text-[11px] text-muted">
                 {teamId && (
                   <TeamHoverCard teamId={teamId}>

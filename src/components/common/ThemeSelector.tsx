@@ -53,7 +53,7 @@ export const ThemeSelector: React.FC<{ stacked?: boolean }> = ({ stacked = false
       {/* 30-Team Theme Dropdown with explicit label */}
       <div className="flex items-center gap-1.5">
         <span
-          className={`${stacked ? 'inline-flex' : 'hidden xl:inline-flex'} items-center gap-1 text-xs font-bold text-muted shrink-0`}
+          className={`${stacked ? 'inline-flex' : 'hidden'} items-center gap-1 text-xs font-bold text-muted shrink-0`}
         >
           <Palette className="w-3.5 h-3.5 text-team-primary" />
           <span>{translate('theme.label')}</span>
@@ -70,7 +70,8 @@ export const ThemeSelector: React.FC<{ stacked?: boolean }> = ({ stacked = false
             onChange={(e) => setTeam(e.target.value)}
             aria-label={translate('theme.team_color')}
             className={`text-xs md:text-sm bg-card border border-border text-main rounded-lg pl-6 pr-2 sm:pl-7 sm:pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-team-primary cursor-pointer hover:border-team-primary transition-all font-medium truncate ${
-              stacked ? 'w-full' : 'max-w-[76px] sm:max-w-none'
+              // Inline it shares the navbar row: capped, or the longest team name sets its width
+              stacked ? 'w-full' : 'max-w-[180px]'
             }`}
           >
             {Object.entries(groupedTeams).map(([divName, list]) => (

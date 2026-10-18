@@ -15,6 +15,24 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.7.0',
+    date: '2026-10-18',
+    changes: {
+      zh: [
+        '新增「台灣旅外球員」頁：大聯盟與各級小聯盟所有出生於台灣的球員，依層級分組並顯示最近一場成績；名單每週自動更新',
+        '中文譯名新增林維恩、陳柏毓、張弘稜、李晨薰、柯敬賢；鄭宗哲的球隊更新為紅襪',
+        '修正手機與平板寬度整頁可以左右滑動：球隊配色、語言、深淺色在 1280px 以下收進「設定」按鈕',
+        '修正小聯盟球員的資料卡沒有顯示層級（AAA、AA…）',
+      ],
+      en: [
+        'New Players from Taiwan page: everyone born in Taiwan in MLB and the minors, by level, with his latest game; the list updates weekly',
+        'Chinese names added for Wei-En Lin, Po-Yu Chen, Hung-Leng Chang, Chen-Hsun Lee and Ching-Hsien Ko; Tsung-Che Cheng now listed with the Red Sox',
+        'Fixed pages scrolling sideways on phones and tablets: below 1280px, team colour, language and light/dark sit behind a settings button',
+        'Fixed hover cards for minor leaguers missing their level (AAA, AA ...)',
+      ],
+    },
+  },
+  {
     version: '1.6.2',
     date: '2026-10-18',
     changes: {

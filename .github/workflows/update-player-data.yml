@@ -47,8 +47,13 @@ jobs:
           git commit -m "Update the list of players born in Taiwan"
           git push --force origin "$BRANCH"
           if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
-            gh pr create --head "$BRANCH" --base "${{ github.event.repository.default_branch }}" \
-              --title "Update the list of players born in Taiwan" --body-file "$REPORT_FILE"
+            # Needs "Allow GitHub Actions to create and approve pull requests" in the
+            # repository settings; without it the list still waits on the branch
+            if ! gh pr create --head "$BRANCH" --base "${{ github.event.repository.default_branch }}" \
+              --title "Update the list of players born in Taiwan" --body-file "$REPORT_FILE"; then
+              echo "::error title=No pull request opened::The updated list is on branch $BRANCH. Open a pull request at ${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.repository.default_branch }}...$BRANCH, or let workflows do it: Settings > Actions > General > Workflow permissions > Allow GitHub Actions to create and approve pull requests."
+              exit 1
+            fi
           else
             echo "Updated the open pull request on $BRANCH."
           fi
