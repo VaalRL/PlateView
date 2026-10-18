@@ -23,6 +23,9 @@ const PostseasonPage = lazy(() =>
 const GameDetailPage = lazy(() =>
   import('./pages/GameDetailPage').then((m) => ({ default: m.GameDetailPage }))
 );
+const TaiwanPlayersPage = lazy(() =>
+  import('./pages/TaiwanPlayersPage').then((m) => ({ default: m.TaiwanPlayersPage }))
+);
 
 const RouteFallback: React.FC = () => (
   <div className="flex justify-center py-24">
@@ -55,6 +58,7 @@ export const App: React.FC = () => {
                   <Route path="/leaders" element={<LeaderboardsPage />} />
                   <Route path="/games/:gamePk" element={<GameDetailPage />} />
                   <Route path="/postseason/:season?" element={<PostseasonPage />} />
+                  <Route path="/taiwan" element={<TaiwanPlayersPage />} />
                 </Routes>
               </Suspense>
             </main>

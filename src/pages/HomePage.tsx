@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { MapPin } from 'lucide-react';
+import { useLanguage } from '../hooks/useLanguage';
 import { ScoreboardGrid } from '../components/scoreboard/ScoreboardGrid';
 import { StandingsTable } from '../components/standings/StandingsTable';
 import { FavoritesBar } from '../components/favorite/FavoritesBar';
@@ -9,6 +11,7 @@ import { LevelSelector } from '../components/common/LevelSelector';
 import { MLB_LEVEL, type BrowsableLevel } from '../constants/levels';
 
 export const HomePage: React.FC = () => {
+  const { t } = useLanguage();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [level, setLevel] = useState<BrowsableLevel>(MLB_LEVEL);
   const dateStr = formatApiDate(selectedDate);
@@ -29,9 +32,17 @@ export const HomePage: React.FC = () => {
       {/* Pinned Favorites Bar — today's summary always uses the US game date */}
       <FavoritesBar games={games} />
 
-      {/* Level switcher: scores and standings follow it; favorites stay MLB */}
-      <div className="mb-3">
+      {/* Level switcher: scores and standings follow it; favorites stay MLB.
+          The Taiwan page link sits beside it, its only entry on a phone */}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <LevelSelector value={level} onChange={setLevel} />
+        <Link
+          to="/taiwan"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-team-primary hover:underline"
+        >
+          <MapPin className="w-3.5 h-3.5" />
+          {t('taiwan.home_link')}
+        </Link>
       </div>
 
       {/* Main Scoreboard */}

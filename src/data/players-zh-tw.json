@@ -491,11 +491,11 @@
       "鄭宗哲",
       "宗哲",
       "Cheng",
-      "海盜台將",
+      "紅襪台將",
       "台灣游擊手"
     ],
-    "team": "PIT",
-    "teamId": 134
+    "team": "BOS",
+    "teamId": 111
   },
   {
     "id": 813820,
@@ -652,5 +652,65 @@
     ],
     "team": "HOU",
     "teamId": 117
+  },
+  {
+    "id": 827734,
+    "nameEn": "Wei-En Lin",
+    "nameZh": "林維恩",
+    "nicknames": [
+      "林維恩",
+      "維恩",
+      "運動家台將"
+    ],
+    "team": "ATH",
+    "teamId": 133
+  },
+  {
+    "id": 696040,
+    "nameEn": "Po-Yu Chen",
+    "nameZh": "陳柏毓",
+    "nicknames": [
+      "陳柏毓",
+      "柏毓",
+      "海盜台將"
+    ],
+    "team": "PIT",
+    "teamId": 134
+  },
+  {
+    "id": 800213,
+    "nameEn": "Hung-Leng Chang",
+    "nameZh": "張弘稜",
+    "nicknames": [
+      "張弘稜",
+      "弘稜",
+      "海盜台將"
+    ],
+    "team": "PIT",
+    "teamId": 134
+  },
+  {
+    "id": 808486,
+    "nameEn": "Chen-Hsun Lee",
+    "nameZh": "李晨薰",
+    "nicknames": [
+      "李晨薰",
+      "晨薰",
+      "巨人台將"
+    ],
+    "team": "SF",
+    "teamId": 137
+  },
+  {
+    "id": 828667,
+    "nameEn": "Ching-Hsien Ko",
+    "nameZh": "柯敬賢",
+    "nicknames": [
+      "柯敬賢",
+      "敬賢",
+      "道奇台將"
+    ],
+    "team": "LAD",
+    "teamId": 119
   }
 ]

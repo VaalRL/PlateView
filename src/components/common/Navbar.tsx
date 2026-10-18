@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Compass, Coffee, Trophy, Medal, SlidersHorizontal } from 'lucide-react';
+import { Search, Compass, Coffee, Trophy, Medal, SlidersHorizontal, MapPin } from 'lucide-react';
 import { ThemeSelector } from './ThemeSelector';
 import { SearchModal } from './SearchModal';
 import { PlateViewLogo } from './PlateViewLogo';
@@ -12,8 +12,9 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Phones: team colour, language and light/dark sit behind one settings
-  // button, since the row has no room for them next to the other actions
+  // Below xl, team colour, language and light/dark sit behind one settings
+  // button: inline, the team dropdown alone is as wide as its longest team
+  // name, and the row overflowed every phone and tablet width
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   useEffect(() => setIsSettingsOpen(false), [location.pathname]);
@@ -54,7 +55,7 @@ export const Navbar: React.FC = () => {
               <span className="font-extrabold text-base sm:text-lg tracking-tight text-main">
                 Plate<span className="text-team-primary">View</span>
               </span>
-              <span className="hidden sm:inline-block ml-2 text-xs px-2 py-0.5 rounded-full bg-team-primary/10 text-team-primary font-medium">
+              <span className="hidden xl:inline-block ml-2 text-xs px-2 py-0.5 rounded-full bg-team-primary/10 text-team-primary font-medium">
                 {t('nav.badge')}
               </span>
             </div>
@@ -63,13 +64,13 @@ export const Navbar: React.FC = () => {
           {/* Center Search Trigger */}
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="flex-1 max-w-md hidden md:flex items-center justify-between px-3.5 py-1.5 rounded-lg bg-page border border-border text-muted hover:text-main hover:border-team-primary/50 text-sm transition-all"
+            className="flex-1 min-w-0 max-w-md hidden lg:flex items-center justify-between gap-2 px-3.5 py-1.5 rounded-lg bg-page border border-border text-muted hover:text-main hover:border-team-primary/50 text-sm transition-all"
           >
-            <div className="flex items-center gap-2">
-              <Search className="w-4 h-4" />
-              <span>{t('nav.search_placeholder')}</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <Search className="w-4 h-4 shrink-0" />
+              <span className="truncate">{t('nav.search_placeholder')}</span>
             </div>
-            <kbd className="text-xs bg-card border border-border px-1.5 py-0.5 rounded font-mono">
+            <kbd className="shrink-0 text-xs bg-card border border-border px-1.5 py-0.5 rounded font-mono">
               Ctrl+K
             </kbd>
           </button>
@@ -78,7 +79,7 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-1.5 sm:gap-3">
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="md:hidden p-2 text-muted hover:text-main"
+              className="lg:hidden p-2 text-muted hover:text-main"
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
@@ -95,7 +96,7 @@ export const Navbar: React.FC = () => {
               title={t('nav.leaders')}
             >
               <Trophy className="w-4 h-4 text-amber-500" />
-              <span className="hidden sm:inline">{t('nav.leaders')}</span>
+              <span className="hidden lg:inline">{t('nav.leaders')}</span>
             </Link>
 
             {/* Postseason Bracket Link */}
@@ -109,7 +110,21 @@ export const Navbar: React.FC = () => {
               title={t('nav.postseason')}
             >
               <Medal className="w-4 h-4 text-amber-500" />
-              <span className="hidden sm:inline">{t('nav.postseason')}</span>
+              <span className="hidden lg:inline">{t('nav.postseason')}</span>
+            </Link>
+
+            {/* Players from Taiwan: no room on a phone, where the home page links to it */}
+            <Link
+              to="/taiwan"
+              className={`hidden sm:flex items-center gap-1 text-sm font-medium transition-colors px-2 py-1 rounded-lg hover:bg-card-hover ${
+                location.pathname === '/taiwan'
+                  ? 'text-team-primary bg-team-primary/10 font-bold'
+                  : 'text-muted hover:text-main'
+              }`}
+              title={t('nav.taiwan')}
+            >
+              <MapPin className="w-4 h-4 text-team-primary" />
+              <span className="hidden lg:inline">{t('nav.taiwan')}</span>
             </Link>
 
             {/* Standings Quick Scroll Button */}
@@ -118,7 +133,7 @@ export const Navbar: React.FC = () => {
               className="hidden sm:flex items-center gap-1 text-sm font-medium text-muted hover:text-main transition-colors px-2 py-1 rounded-lg hover:bg-card-hover"
             >
               <Compass className="w-4 h-4 text-team-primary" />
-              <span>{t('nav.standings')}</span>
+              <span className="hidden lg:inline">{t('nav.standings')}</span>
             </button>
 
             {/* Sponsor Icon Button with Hover Tooltip */}
@@ -141,13 +156,13 @@ export const Navbar: React.FC = () => {
               </div>
             </div>
 
-            <div className="h-4 w-px bg-border hidden sm:block" />
+            <div className="h-4 w-px bg-border hidden xl:block" />
 
-            <div className="hidden sm:block">
+            <div className="hidden xl:block">
               <ThemeSelector />
             </div>
 
-            <div ref={settingsRef} className="relative sm:hidden">
+            <div ref={settingsRef} className="relative xl:hidden">
               <button
                 type="button"
                 onClick={() => setIsSettingsOpen((open) => !open)}
