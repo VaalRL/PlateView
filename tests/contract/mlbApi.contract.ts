@@ -26,7 +26,7 @@ import {
 import { HITTING_LEADER_CATEGORIES, PITCHING_LEADER_CATEGORIES } from '../../src/constants/leaderboards';
 import { isPostseasonGameType, type PlayerStatGroup } from '../../src/utils/playerLevels';
 import { calledOffReason, isCompletedGame, teamResult } from '../../src/utils/gameStatus';
-import { findLeaderRanks, findTeamStanding } from '../../src/utils/hoverCards';
+import { findLeaderRanks, findTeamStanding, isMinorLeagueClub } from '../../src/utils/hoverCards';
 import { sortTransactions, transactionTypeLabel } from '../../src/utils/transactions';
 import { buildPostseasonBracket } from '../../src/utils/postseason';
 import { MLB_LEVEL } from '../../src/constants/levels';
@@ -151,10 +151,25 @@ describe('players', () => {
     people.forEach((p) => expect(typeof p.currentTeam?.id).toBe('number'));
   });
 
-  it('gives the hover card a current club with its level', async () => {
-    const person = (await getPersonSummary(OHTANI)).people[0];
-    expect(person.currentTeam?.id).toBe(DODGERS);
-    expect(person.currentTeam?.sport?.id).toBe(1);
+  it('gives the hover card a big leaguer’s current club', async () => {
+    const team = (await getPersonSummary(OHTANI)).people[0].currentTeam;
+    expect(team?.id).toBe(DODGERS);
+    // No `sport` here for a big league club, so the card tells levels apart by id
+    expect(isMinorLeagueClub(team?.id)).toBe(false);
+  });
+
+  it('gives the hover card a minor leaguer’s club and its parent', async () => {
+    // Whoever is on Rochester's roster now; the roster can be empty between seasons
+    const roster: { person: { id: number } }[] = (await getTeamRoster(ROCHESTER)).roster ?? [];
+    if (roster.length === 0) {
+      console.info('Rochester has no active roster today; minor leaguer hover card not checked');
+      return;
+    }
+    const team = (await getPersonSummary(roster[0].person.id)).people[0].currentTeam;
+    console.info('Minor leaguer currentTeam fields:', Object.keys(team ?? {}).sort().join(', '));
+    expect(isMinorLeagueClub(team?.id)).toBe(true);
+    expect(team?.parentOrgId).toBe(NATIONALS);
+    expect(typeof team?.parentOrgName).toBe('string');
   });
 
   it('finds players by name', async () => {
@@ -225,7 +240,8 @@ describe('postseason bracket', () => {
       getPostseasonSeries(LAST_FULL_SEASON),
       getStandings(LAST_FULL_SEASON, MLB_LEVEL.leagueIds),
     ]);
-    expect(series.series?.length).toBeGreaterThanOrEqual(12);
+    // 12 clubs: 4 wild card series, 4 division series, 2 LCS, the World Series
+    expect(series.series?.length).toBe(11);
     expect(buildPostseasonBracket(series, standings)).not.toBeNull();
   });
 });

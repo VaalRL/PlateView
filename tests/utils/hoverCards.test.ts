@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findLeaderRanks, findTeamStanding, levelAbbreviation, ordinal } from '../../src/utils/hoverCards';
+import { findLeaderRanks, findTeamStanding, isMinorLeagueClub, levelAbbreviation, ordinal } from '../../src/utils/hoverCards';
 import type { LeaderCategoryGroup } from '../../src/types/leaderboards';
 import type { StandingsResponse } from '../../src/types/mlb';
 import standings from '../fixtures/standings-2026.json';
@@ -57,5 +57,13 @@ describe('levelAbbreviation', () => {
     expect(levelAbbreviation(11)).toBe('AAA');
     expect(levelAbbreviation(14)).toBe('A');
     expect(levelAbbreviation(99)).toBeUndefined();
+  });
+});
+
+describe('isMinorLeagueClub', () => {
+  it('tells a big league club from any other by id', () => {
+    expect(isMinorLeagueClub(119)).toBe(false);
+    expect(isMinorLeagueClub(534)).toBe(true);
+    expect(isMinorLeagueClub(undefined)).toBe(false);
   });
 });
