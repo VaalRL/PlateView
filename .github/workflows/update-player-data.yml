@@ -1,0 +1,54 @@
+name: Update player data
+
+# Rebuilds src/data/taiwan-players.json (players born in Taiwan, at every
+# level) from the live MLB Stats API and opens a pull request when it
+# changed. Weekly, and on demand. See scripts/update-taiwan-players.mjs.
+on:
+  schedule:
+    - cron: '23 10 * * 1' # Mondays, 10:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      BRANCH: data/taiwan-players
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Rebuild the list of players born in Taiwan
+        env:
+          REPORT_FILE: ${{ runner.temp }}/report.md
+        run: node scripts/update-taiwan-players.mjs
+
+      - name: Open or update a pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPORT_FILE: ${{ runner.temp }}/report.md
+        run: |
+          if [ -z "$(git status --porcelain src/data/taiwan-players.json)" ]; then
+            echo "No change in the player list."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add src/data/taiwan-players.json
+          git commit -m "Update the list of players born in Taiwan"
+          git push --force origin "$BRANCH"
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            gh pr create --head "$BRANCH" --base "${{ github.event.repository.default_branch }}" \
+              --title "Update the list of players born in Taiwan" --body-file "$REPORT_FILE"
+          else
+            echo "Updated the open pull request on $BRANCH."
+          fi
