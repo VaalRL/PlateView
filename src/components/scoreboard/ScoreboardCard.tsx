@@ -12,6 +12,7 @@ import playersData from '../../data/players-zh-tw.json';
 import { ChevronRight, AlertCircle } from 'lucide-react';
 import { PlayerHoverCard } from '../common/PlayerHoverCard';
 import { TeamHoverCard } from '../common/TeamHoverCard';
+import { calledOffReason, isCompletedGame } from '../../utils/gameStatus';
 
 interface ScoreboardCardProps {
   game: GameSchedule;
@@ -23,11 +24,11 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
   const { status, teams, linescore } = game;
 
   const isLive = status.abstractGameState === 'Live';
-  const isFinal = status.abstractGameState === 'Final';
+  // Postponed and cancelled games come back as "Final" with no score
+  const isFinal = isCompletedGame(game);
   const isPostponed =
-    status.detailedState?.toLowerCase().includes('postponed') ||
+    calledOffReason(status) !== null ||
     status.detailedState?.toLowerCase().includes('delayed') ||
-    status.detailedState?.toLowerCase().includes('suspended') ||
     status.statusCode === 'DO' ||
     status.statusCode === 'DR';
   const isPreview = status.abstractGameState === 'Preview' && !isPostponed;

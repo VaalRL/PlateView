@@ -221,6 +221,81 @@ describe('TeamDetailPage component', () => {
     expect(await screen.findByText('GAME PAGE 776633')).toBeInTheDocument();
   });
 
+  it('marks postponed and cancelled games as such, not as losses', async () => {
+    const team = (id: number, name: string, extra: object = {}) => ({ team: { id, name }, ...extra });
+    const scheduleResponse = {
+      dates: [
+        {
+          date: '2026-09-15',
+          games: [
+            {
+              gamePk: 776640,
+              gameDate: '2026-09-15T23:10:00Z',
+              // As the API returns a rainout: "Final", no score, no winner
+              status: { abstractGameState: 'Final', codedGameState: 'D', detailedState: 'Postponed' },
+              teams: { away: team(119, 'Los Angeles Dodgers'), home: team(134, 'Pittsburgh Pirates') },
+            },
+          ],
+        },
+        {
+          date: '2026-09-14',
+          games: [
+            {
+              gamePk: 776641,
+              gameDate: '2026-09-14T23:10:00Z',
+              status: { abstractGameState: 'Final', codedGameState: 'C', detailedState: 'Cancelled' },
+              teams: { away: team(119, 'Los Angeles Dodgers'), home: team(134, 'Pittsburgh Pirates') },
+            },
+          ],
+        },
+        {
+          date: '2026-09-13',
+          games: [
+            {
+              gamePk: 776642,
+              gameDate: '2026-09-13T23:10:00Z',
+              status: { abstractGameState: 'Final', codedGameState: 'F', detailedState: 'Final' },
+              teams: {
+                away: team(119, 'Los Angeles Dodgers', { score: 5, isWinner: true }),
+                home: team(134, 'Pittsburgh Pirates', { score: 3, isWinner: false }),
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: unknown) => {
+        const body = String(input).includes('/schedule') ? scheduleResponse : {};
+        return { ok: true, status: 200, statusText: 'OK', json: async () => body } as Response;
+      })
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/teams/119']}>
+          <Routes>
+            <Route path="/teams/:teamId" element={<TeamDetailPage />} />
+            <Route path="/games/:gamePk" element={<div>GAME PAGE</div>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(await screen.findByText('延賽 (Postponed)')).toBeInTheDocument();
+    expect(screen.getByText('取消 (Cancelled)')).toBeInTheDocument();
+    // The one game played is the only result, and a win
+    expect(screen.queryByText(/敗 \(L\)/)).not.toBeInTheDocument();
+    expect(screen.getByText(/勝 \(W\)/)).toBeInTheDocument();
+    expect(screen.getByText('近 1 場戰績：1 勝 0 敗')).toBeInTheDocument();
+
+    // No box score behind a game that was never played
+    fireEvent.click(screen.getByText('延賽 (Postponed)'));
+    expect(screen.queryByText('GAME PAGE')).not.toBeInTheDocument();
+  });
+
   it('shows how far into the 162-game season the team is', async () => {
     vi.stubGlobal(
       'fetch',

@@ -144,6 +144,23 @@ describe('FavoriteTeamSummaryCard component', () => {
     expect(screen.getByText(/已結束/)).toBeInTheDocument();
   });
 
+  it('shows a postponed game as postponed, not as a loss', () => {
+    // The API files a rainout as "Final" with no score and no winner
+    const postponed: GameSchedule = {
+      ...mockFinalGame,
+      status: { ...mockFinalGame.status, codedGameState: 'D', detailedState: 'Postponed', statusCode: 'DR' },
+      teams: {
+        away: { ...mockFinalGame.teams.away, score: undefined, isWinner: undefined },
+        home: { ...mockFinalGame.teams.home, score: undefined, isWinner: undefined },
+      },
+    } as unknown as GameSchedule;
+    renderCard(134, postponed);
+
+    expect(screen.getByText('延賽 (Postponed)')).toBeInTheDocument();
+    expect(screen.queryByText('敗 (L)')).not.toBeInTheDocument();
+    expect(screen.queryByText(/已結束/)).not.toBeInTheDocument();
+  });
+
   it('renders scheduled game with both probable starting pitchers', () => {
     renderCard(119, mockPreviewGame);
 

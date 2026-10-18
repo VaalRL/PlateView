@@ -15,6 +15,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.6.2',
+    date: '2026-10-18',
+    changes: {
+      zh: [
+        '修正延賽或取消的比賽在球隊頁被標成輸球，並被算進近 10 場戰績；現在標示「延賽」或「取消」',
+        '比分卡、收藏球隊卡與收藏列遇到延賽或取消的比賽，也不再顯示「已結束」或敗場',
+      ],
+      en: [
+        'Fixed postponed and cancelled games showing as losses on team pages and counting toward the last-10 record; they are now marked Postponed or Cancelled',
+        'Scoreboards, favorite team cards and the favorites bar no longer show such games as final or lost',
+      ],
+    },
+  },
+  {
     version: '1.6.1',
     date: '2026-10-16',
     changes: {

@@ -323,3 +323,9 @@
   - [x] 同日轉隊異動以 id 由大到小排列；季後賽場次合併時以 gamePk 去重
   - [x] 球員資料卡只在球員屬於大聯盟球隊時才查排行榜；球隊名稱改用共用的 `src/utils/teams.ts`（`teamsById`、`teamDisplayName`）
   - [x] 版本升為 1.6.1 並補上版本說明；測試由 326 項增至 336 項，全數通過；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過
+
+- [x] **Phase 34: 延賽／取消的比賽不再被當成輸球（2026-10-18）**
+  - [x] 原因：API 把延賽、取消的比賽標為 `abstractGameState: "Final"`，但沒有比分、也沒有 `isWinner`；球隊頁只看 Final 就判勝負，`isWinner` 不是 true 就顯示敗，近 10 場戰績也把它算成敗場
+  - [x] 新增 `src/utils/gameStatus.ts`：`calledOffReason`（依 detailedState 或 codedGameState D/C/T/U 判斷延賽、取消、暫停）、`isCompletedGame`、`teamResult`（只有真的打完才回傳 W/L，和局回傳 null）
+  - [x] 套用到球隊頁（勝敗標籤、近 10 場戰績、延賽／取消標籤、不連到比賽頁）、收藏球隊卡（原本也顯示敗）、比分卡（原本同時顯示「延賽」和「已結束」）、收藏列（原本顯示「已結束 undefined-undefined」）
+  - [x] 版本升為 1.6.2；測試由 336 項增至 344 項，全數通過，新測試已在修正前的程式上確認會失敗；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過

@@ -12,6 +12,7 @@ import { FavoritesSummaryDrawer } from './FavoritesSummaryDrawer';
 import { getEasternDateStr } from '../../utils/timezone';
 import { PlayerHoverCard } from '../common/PlayerHoverCard';
 import { TeamHoverCard } from '../common/TeamHoverCard';
+import { CALLED_OFF_LABEL, calledOffReason } from '../../utils/gameStatus';
 
 interface FavoritesBarProps {
   games?: GameSchedule[];
@@ -82,6 +83,10 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
       const myScore = isAway ? game.teams.away.score : game.teams.home.score;
       const oppScore = isAway ? game.teams.home.score : game.teams.away.score;
       return `🔴 ${myScore}-${oppScore} ${t('fav.live_vs')} ${oppAbbrev}`;
+    }
+    const calledOff = calledOffReason(game.status);
+    if (calledOff) {
+      return `${t(CALLED_OFF_LABEL[calledOff])} ${t('fav.live_vs')} ${oppAbbrev}`;
     }
     if (game.status.abstractGameState === 'Final') {
       const myScore = isAway ? game.teams.away.score : game.teams.home.score;
