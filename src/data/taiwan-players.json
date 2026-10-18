@@ -1,0 +1,235 @@
+{
+  "season": 2026,
+  "players": [
+    {
+      "id": 701678,
+      "fullName": "Hao-Yu Lee",
+      "birthCity": "New Taipei",
+      "position": "2B",
+      "teamId": 116,
+      "teamName": "Detroit Tigers",
+      "level": "MLB",
+      "parentOrgId": 116
+    },
+    {
+      "id": 678906,
+      "fullName": "Kai-Wei Teng",
+      "birthCity": "Taichung",
+      "position": "P",
+      "teamId": 117,
+      "teamName": "Houston Astros",
+      "level": "MLB",
+      "parentOrgId": 117
+    },
+    {
+      "id": 691907,
+      "fullName": "Tsung-Che Cheng",
+      "birthCity": "Pingtung County",
+      "position": "SS",
+      "teamId": 111,
+      "teamName": "Boston Red Sox",
+      "level": "MLB",
+      "parentOrgId": 111
+    },
+    {
+      "id": 800018,
+      "fullName": "Chen Zhong-Ao Zhuang",
+      "birthCity": "Taipei",
+      "position": "P",
+      "teamId": 400,
+      "teamName": "Las Vegas Aviators",
+      "level": "AAA",
+      "parentOrgId": 133
+    },
+    {
+      "id": 827734,
+      "fullName": "Wei-En Lin",
+      "birthCity": "Taoyuen",
+      "position": "P",
+      "teamId": 400,
+      "teamName": "Las Vegas Aviators",
+      "level": "AAA",
+      "parentOrgId": 133
+    },
+    {
+      "id": 801179,
+      "fullName": "Yu-Min Lin",
+      "birthCity": "Taitung",
+      "position": "P",
+      "teamId": 2310,
+      "teamName": "Reno Aces",
+      "level": "AAA",
+      "parentOrgId": 109
+    },
+    {
+      "id": 813820,
+      "fullName": "Chen-Wei Lin",
+      "birthCity": "Tainan",
+      "position": "P",
+      "teamId": 440,
+      "teamName": "Springfield Cardinals",
+      "level": "AA",
+      "parentOrgId": 138
+    },
+    {
+      "id": 696040,
+      "fullName": "Po-Yu Chen",
+      "birthCity": "Taoyuan City",
+      "position": "P",
+      "teamId": 452,
+      "teamName": "Altoona Curve",
+      "level": "AA",
+      "parentOrgId": 134
+    },
+    {
+      "id": 808207,
+      "fullName": "Wen-Hui Pan",
+      "birthCity": "Hualien",
+      "position": "P",
+      "teamId": 522,
+      "teamName": "Reading Fightin Phils",
+      "level": "AA",
+      "parentOrgId": 143
+    },
+    {
+      "id": 800213,
+      "fullName": "Hung-Leng Chang",
+      "birthCity": "Taichung",
+      "position": "P",
+      "teamId": 477,
+      "teamName": "Greensboro Grasshoppers",
+      "level": "A+",
+      "parentOrgId": 134
+    },
+    {
+      "id": 694834,
+      "fullName": "Tyler Wilson",
+      "birthCity": "Tainan",
+      "position": "OF",
+      "teamId": 537,
+      "teamName": "Hudson Valley Renegades",
+      "level": "A+",
+      "parentOrgId": 147
+    },
+    {
+      "id": 809223,
+      "fullName": "Tzu-Chen Sha",
+      "birthCity": "Taipei",
+      "position": "P",
+      "teamId": 499,
+      "teamName": "Lansing Lugnuts",
+      "level": "A+",
+      "parentOrgId": 133
+    },
+    {
+      "id": 808486,
+      "fullName": "Chen-Hsun Lee",
+      "birthCity": "Taoyuen",
+      "position": "P",
+      "teamId": 476,
+      "teamName": "San Jose Giants",
+      "level": "A",
+      "parentOrgId": 137
+    },
+    {
+      "id": 828667,
+      "fullName": "Ching-Hsien Ko",
+      "birthCity": "Taiping",
+      "position": "OF",
+      "teamId": 6482,
+      "teamName": "Ontario Tower Buzzers",
+      "level": "A",
+      "parentOrgId": 119
+    },
+    {
+      "id": 829473,
+      "fullName": "Chung-Hsiang Huang",
+      "birthCity": "Keelung",
+      "position": "P",
+      "teamId": 516,
+      "teamName": "Visalia Rawhide",
+      "level": "A",
+      "parentOrgId": 109
+    },
+    {
+      "id": 842158,
+      "fullName": "Jui-Chieh Lin",
+      "birthCity": "Taipei",
+      "position": "P",
+      "teamId": 509,
+      "teamName": "Fort Myers Mighty Mussels",
+      "level": "A",
+      "parentOrgId": 142
+    },
+    {
+      "id": 837088,
+      "fullName": "Lan-Hong Su",
+      "birthCity": "Taipei",
+      "position": "P",
+      "teamId": 103,
+      "teamName": "Lake Elsinore Storm",
+      "level": "A",
+      "parentOrgId": 135
+    },
+    {
+      "id": 806823,
+      "fullName": "Sheng-En Lin",
+      "birthCity": "Taitung",
+      "position": "P",
+      "teamId": 450,
+      "teamName": "Daytona Tortugas",
+      "level": "A",
+      "parentOrgId": 113
+    },
+    {
+      "id": 843397,
+      "fullName": "Chien-Fan Lai",
+      "birthCity": "Taitung",
+      "position": "P",
+      "teamId": 475,
+      "teamName": "FCL Yankees",
+      "level": "ROK",
+      "parentOrgId": 147
+    },
+    {
+      "id": 843974,
+      "fullName": "Hua Ho",
+      "birthCity": "Yuli",
+      "position": "P",
+      "teamId": 623,
+      "teamName": "DSL Phillies",
+      "level": "ROK",
+      "parentOrgId": 143
+    },
+    {
+      "id": 806825,
+      "fullName": "Nien-Hsi Yang",
+      "birthCity": "Tainan",
+      "position": "P",
+      "teamId": 408,
+      "teamName": "ACL Giants",
+      "level": "ROK",
+      "parentOrgId": 137
+    },
+    {
+      "id": 806836,
+      "fullName": "Po-Chun Lin",
+      "birthCity": "Taipei",
+      "position": "P",
+      "teamId": 409,
+      "teamName": "ACL Mariners",
+      "level": "ROK",
+      "parentOrgId": 136
+    },
+    {
+      "id": 835879,
+      "fullName": "Yu-Lin Liao",
+      "birthCity": "Taoyuen",
+      "position": "3B",
+      "teamId": 406,
+      "teamName": "ACL Brewers",
+      "level": "ROK",
+      "parentOrgId": 158
+    }
+  ]
+}
