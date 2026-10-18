@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Compass, Coffee, Trophy, Medal } from 'lucide-react';
+import { Search, Compass, Coffee, Trophy, Medal, SlidersHorizontal } from 'lucide-react';
 import { ThemeSelector } from './ThemeSelector';
 import { SearchModal } from './SearchModal';
 import { PlateViewLogo } from './PlateViewLogo';
@@ -11,6 +11,27 @@ export const Navbar: React.FC = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Phones: team colour, language and light/dark sit behind one settings
+  // button, since the row has no room for them next to the other actions
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => setIsSettingsOpen(false), [location.pathname]);
+  useEffect(() => {
+    if (!isSettingsOpen) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (!settingsRef.current?.contains(e.target as Node)) setIsSettingsOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsSettingsOpen(false);
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isSettingsOpen]);
 
   const handleStandingsClick = () => {
     if (location.pathname !== '/') {
@@ -28,7 +49,8 @@ export const Navbar: React.FC = () => {
           {/* Logo & Brand */}
           <Link to="/" className="flex items-center gap-2 group shrink-0">
             <PlateViewLogo className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 drop-shadow-md group-hover:scale-105 transition-transform" />
-            <div>
+            {/* Below 360px the mark alone has to stand for the name */}
+            <div className="max-[359px]:sr-only">
               <span className="font-extrabold text-base sm:text-lg tracking-tight text-main">
                 Plate<span className="text-team-primary">View</span>
               </span>
@@ -121,7 +143,34 @@ export const Navbar: React.FC = () => {
 
             <div className="h-4 w-px bg-border hidden sm:block" />
 
-            <ThemeSelector />
+            <div className="hidden sm:block">
+              <ThemeSelector />
+            </div>
+
+            <div ref={settingsRef} className="relative sm:hidden">
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen((open) => !open)}
+                aria-label={t('nav.settings')}
+                aria-expanded={isSettingsOpen}
+                aria-controls="navbar-settings"
+                className={`p-2 rounded-lg border transition-colors ${
+                  isSettingsOpen
+                    ? 'border-team-primary text-team-primary bg-team-primary/10'
+                    : 'border-border text-muted hover:text-main hover:bg-card-hover'
+                }`}
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+              </button>
+              {isSettingsOpen && (
+                <div
+                  id="navbar-settings"
+                  className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-24px)] rounded-xl border border-border bg-card p-3 shadow-lg z-50"
+                >
+                  <ThemeSelector stacked />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>

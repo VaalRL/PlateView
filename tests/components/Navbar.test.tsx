@@ -53,4 +53,34 @@ describe('Navbar component', () => {
     expect(scrollMock).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
     document.body.removeChild(targetElement);
   });
+
+  it('opens the phone settings menu, and closes it on Escape and outside clicks', () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <MemoryRouter>
+            <Navbar />
+          </MemoryRouter>
+        </LanguageProvider>
+      </QueryClientProvider>
+    );
+
+    const toggle = screen.getByRole('button', { name: '設定' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(document.getElementById('navbar-settings')).toBeNull();
+
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    const menu = document.getElementById('navbar-settings')!;
+    // The same team colour, language and light/dark controls as on larger screens
+    expect(menu.querySelector('select')).not.toBeNull();
+    expect(menu).toHaveTextContent('繁中');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(document.getElementById('navbar-settings')).toBeNull();
+
+    fireEvent.click(toggle);
+    fireEvent.mouseDown(document.body);
+    expect(document.getElementById('navbar-settings')).toBeNull();
+  });
 });

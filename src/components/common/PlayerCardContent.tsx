@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLeaderboardsQuery, usePersonSummaryQuery } from '../../services/queries';
+import { useLeaderboardsQuery, usePersonSummaryQuery, useTeamDetailQuery } from '../../services/queries';
 import { getPlayerHeadshotUrl } from '../../services/mlbApi';
 import { useLanguage } from '../../hooks/useLanguage';
 import { teamDisplayName } from '../../utils/teams';
@@ -7,8 +7,7 @@ import playersData from '../../data/players-zh-tw.json';
 import type { TranslationKey } from '../../i18n/translations';
 import { HITTING_LEADER_CATEGORIES, PITCHING_LEADER_CATEGORIES } from '../../constants/leaderboards';
 import { getCurrentMlbSeason } from '../../utils/season';
-import { MLB_SPORT_ID } from '../../constants/levels';
-import { findLeaderRanks, levelAbbreviation, ordinal } from '../../utils/hoverCards';
+import { findLeaderRanks, isMinorLeagueClub, levelAbbreviation, ordinal } from '../../utils/hoverCards';
 
 const zhNames = new Map(playersData.map((p) => [p.id, p.nameZh]));
 
@@ -30,12 +29,18 @@ const PlayerCardContent: React.FC<{ personId: number }> = ({ personId }) => {
   const { data, isLoading } = usePersonSummaryQuery(personId);
   const person = data?.people?.[0];
   const team = person?.currentTeam;
-  const isMinors = team?.sport?.id !== undefined && team.sport.id !== MLB_SPORT_ID;
+  const isMinors = isMinorLeagueClub(team?.id);
   // The leaderboards are MLB only: no point asking for a minor leaguer or a
   // player without a club
   const onMlbClub = !!team && !isMinors;
   const hitting = useLeaderboardsQuery(leaderParams('hitting'), onMlbClub);
   const pitching = useLeaderboardsQuery(leaderParams('pitching'), onMlbClub);
+
+  // The person's currentTeam names the club and its parent but not its level
+  // (checked against the live API), so a minor league club's level comes from
+  // its own record: the query the team page and team card use
+  const { data: club } = useTeamDetailQuery(isMinors ? team?.id : undefined);
+  const level = isMinors ? levelAbbreviation(team?.sport?.id ?? club?.teams?.[0]?.sport?.id) : undefined;
 
   const teamName = teamDisplayName(team?.id, lang, team?.name);
   const parentName = teamDisplayName(team?.parentOrgId, lang, team?.parentOrgName);
@@ -76,9 +81,9 @@ const PlayerCardContent: React.FC<{ personId: number }> = ({ personId }) => {
         teamName && (
           <div className="mt-2.5 rounded-lg bg-page px-2.5 py-2 space-y-0.5">
             <div className="font-semibold">
-              {isMinors && levelAbbreviation(team?.sport?.id) && (
+              {level && (
                 <span className="mr-1.5 px-1 rounded bg-amber-500/15 text-amber-500 text-[9px] font-bold">
-                  {levelAbbreviation(team?.sport?.id)}
+                  {level}
                 </span>
               )}
               {teamName}

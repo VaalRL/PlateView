@@ -7,7 +7,11 @@ import teamsData from '../../data/teams.json';
 
 type TeamItem = (typeof teamsData)[number];
 
-export const ThemeSelector: React.FC = () => {
+/**
+ * Team colour, language and light/dark controls. In a row in the navbar;
+ * `stacked` lays them out one under the other for the phone settings menu.
+ */
+export const ThemeSelector: React.FC<{ stacked?: boolean }> = ({ stacked = false }) => {
   const { mode, toggleMode, team, setTeam } = useTheme();
   const { lang, t: translate } = useLanguage();
 
@@ -45,15 +49,17 @@ export const ThemeSelector: React.FC = () => {
   const teamDisplayName = lang === 'zh' ? currentTeamMeta.nameZh : currentTeamMeta.name;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className={stacked ? 'flex flex-col items-stretch gap-3' : 'flex items-center gap-2'}>
       {/* 30-Team Theme Dropdown with explicit label */}
       <div className="flex items-center gap-1.5">
-        <span className="hidden xl:inline-flex items-center gap-1 text-xs font-bold text-muted shrink-0">
+        <span
+          className={`${stacked ? 'inline-flex' : 'hidden xl:inline-flex'} items-center gap-1 text-xs font-bold text-muted shrink-0`}
+        >
           <Palette className="w-3.5 h-3.5 text-team-primary" />
           <span>{translate('theme.label')}</span>
         </span>
 
-        <div className="relative flex items-center">
+        <div className={`relative flex items-center ${stacked ? 'flex-1 min-w-0' : ''}`}>
           <div
             className="w-3 h-3 rounded-full absolute left-2.5 pointer-events-none transition-colors border border-black/20"
             style={{ backgroundColor: currentTeamMeta.primaryColor }}
@@ -63,7 +69,9 @@ export const ThemeSelector: React.FC = () => {
             value={team}
             onChange={(e) => setTeam(e.target.value)}
             aria-label={translate('theme.team_color')}
-            className="text-xs md:text-sm bg-card border border-border text-main rounded-lg pl-6 pr-2 sm:pl-7 sm:pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-team-primary cursor-pointer hover:border-team-primary transition-all font-medium max-w-[76px] sm:max-w-none truncate"
+            className={`text-xs md:text-sm bg-card border border-border text-main rounded-lg pl-6 pr-2 sm:pl-7 sm:pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-team-primary cursor-pointer hover:border-team-primary transition-all font-medium truncate ${
+              stacked ? 'w-full' : 'max-w-[76px] sm:max-w-none'
+            }`}
           >
             {Object.entries(groupedTeams).map(([divName, list]) => (
               <optgroup key={divName} label={divName}>

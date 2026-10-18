@@ -1,6 +1,7 @@
 import type { LeaderCategoryGroup } from '../types/leaderboards';
 import type { StandingRecord, StandingsResponse } from '../types/mlb';
 import { BROWSABLE_LEVELS } from '../constants/levels';
+import { teamsById } from './teams';
 
 export interface LeaderRank {
   category: string;
@@ -39,4 +40,13 @@ export function ordinal(n: number): string {
 /** AAA, AA ... for a minor league sport id; undefined for anything else */
 export function levelAbbreviation(sportId?: number): string | undefined {
   return BROWSABLE_LEVELS.find((level) => level.id === sportId)?.abbreviation;
+}
+
+/**
+ * A club below the majors: anything but the 30 big league clubs. Decided by
+ * id because the `currentTeam` hydrated on /people/{id} has no `sport` for
+ * a big league club (checked against the live API, tests/contract).
+ */
+export function isMinorLeagueClub(teamId?: number): boolean {
+  return teamId !== undefined && !teamsById.has(teamId);
 }
