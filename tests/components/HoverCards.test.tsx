@@ -49,6 +49,8 @@ function stubApi(people: unknown) {
         ? leaders(new URL(url).searchParams.get('statGroup') ?? '')
         : u.includes('/teams/534')
           ? rochester
+          : u.includes('/teams/238')
+            ? { teams: [{ id: 238, name: 'Oklahoma City Comets', sport: { id: 11 }, parentOrgId: 119 }] }
           : u.includes('/people/')
             ? people
             : {};
@@ -143,7 +145,8 @@ describe('hover cards', () => {
         {
           id: 678020,
           fullName: 'Seth Halvorsen',
-          currentTeam: { id: 238, name: 'Oklahoma City Comets', sport: { id: 11 }, parentOrgId: 119, parentOrgName: 'Los Angeles Dodgers' },
+          // As the live API returns it: no sport, no parentOrgName
+          currentTeam: { id: 238, name: 'Oklahoma City Comets', parentOrgId: 119 },
         },
       ],
     });
@@ -155,8 +158,9 @@ describe('hover cards', () => {
     open('Halvorsen');
 
     expect(await screen.findByText('洛杉磯道奇 體系')).toBeInTheDocument();
+    // The level comes from the club's own record, a second request
+    expect(await screen.findByText('AAA')).toBeInTheDocument();
     const card = screen.getByRole('tooltip');
-    expect(card).toHaveTextContent('AAA');
     expect(card).toHaveTextContent('Oklahoma City Comets');
     expect(card).not.toHaveTextContent('排行榜');
     // The leaderboards are MLB only, so they are not asked for

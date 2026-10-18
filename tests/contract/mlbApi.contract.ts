@@ -26,7 +26,8 @@ import {
 import { HITTING_LEADER_CATEGORIES, PITCHING_LEADER_CATEGORIES } from '../../src/constants/leaderboards';
 import { isPostseasonGameType, type PlayerStatGroup } from '../../src/utils/playerLevels';
 import { calledOffReason, isCompletedGame, teamResult } from '../../src/utils/gameStatus';
-import { findLeaderRanks, findTeamStanding, isMinorLeagueClub } from '../../src/utils/hoverCards';
+import { findLeaderRanks, findTeamStanding, isMinorLeagueClub, levelAbbreviation } from '../../src/utils/hoverCards';
+import { teamDisplayName } from '../../src/utils/teams';
 import { sortTransactions, transactionTypeLabel } from '../../src/utils/transactions';
 import { buildPostseasonBracket } from '../../src/utils/postseason';
 import { MLB_LEVEL } from '../../src/constants/levels';
@@ -166,10 +167,12 @@ describe('players', () => {
       return;
     }
     const team = (await getPersonSummary(roster[0].person.id)).people[0].currentTeam;
-    console.info('Minor leaguer currentTeam fields:', Object.keys(team ?? {}).sort().join(', '));
     expect(isMinorLeagueClub(team?.id)).toBe(true);
+    // Only the parent's id comes with it (no parentOrgName, no sport); the
+    // card names the parent from that id and reads the level off the club
     expect(team?.parentOrgId).toBe(NATIONALS);
-    expect(typeof team?.parentOrgName).toBe('string');
+    expect(teamDisplayName(team?.parentOrgId, 'en')).toBe('Washington Nationals');
+    expect(levelAbbreviation((await getTeamDetail(team!.id!)).teams[0].sport.id)).toBe('AAA');
   });
 
   it('finds players by name', async () => {

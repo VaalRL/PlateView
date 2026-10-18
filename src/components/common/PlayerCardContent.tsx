@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLeaderboardsQuery, usePersonSummaryQuery } from '../../services/queries';
+import { useLeaderboardsQuery, usePersonSummaryQuery, useTeamDetailQuery } from '../../services/queries';
 import { getPlayerHeadshotUrl } from '../../services/mlbApi';
 import { useLanguage } from '../../hooks/useLanguage';
 import { teamDisplayName } from '../../utils/teams';
@@ -35,6 +35,12 @@ const PlayerCardContent: React.FC<{ personId: number }> = ({ personId }) => {
   const onMlbClub = !!team && !isMinors;
   const hitting = useLeaderboardsQuery(leaderParams('hitting'), onMlbClub);
   const pitching = useLeaderboardsQuery(leaderParams('pitching'), onMlbClub);
+
+  // The person's currentTeam names the club and its parent but not its level
+  // (checked against the live API), so a minor league club's level comes from
+  // its own record: the query the team page and team card use
+  const { data: club } = useTeamDetailQuery(isMinors ? team?.id : undefined);
+  const level = isMinors ? levelAbbreviation(team?.sport?.id ?? club?.teams?.[0]?.sport?.id) : undefined;
 
   const teamName = teamDisplayName(team?.id, lang, team?.name);
   const parentName = teamDisplayName(team?.parentOrgId, lang, team?.parentOrgName);
@@ -75,9 +81,9 @@ const PlayerCardContent: React.FC<{ personId: number }> = ({ personId }) => {
         teamName && (
           <div className="mt-2.5 rounded-lg bg-page px-2.5 py-2 space-y-0.5">
             <div className="font-semibold">
-              {isMinors && levelAbbreviation(team?.sport?.id) && (
+              {level && (
                 <span className="mr-1.5 px-1 rounded bg-amber-500/15 text-amber-500 text-[9px] font-bold">
-                  {levelAbbreviation(team?.sport?.id)}
+                  {level}
                 </span>
               )}
               {teamName}
