@@ -1,0 +1,63 @@
+name: MLB API contract check
+
+# Runs the app's own request functions against the live MLB Stats API
+# (tests/contract) to catch a change in what the API returns before users do.
+# Daily on a schedule, on demand, and on pull requests that touch the code
+# reading the API.
+on:
+  schedule:
+    - cron: '17 9 * * *' # daily, 09:17 UTC (05:17 US Eastern, after the night's games)
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/services/**'
+      - 'src/utils/**'
+      - 'src/types/**'
+      - 'src/constants/**'
+      - 'tests/contract/**'
+      - 'vitest.contract.config.ts'
+      - '.github/workflows/api-contract.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check the MLB API against what the app reads
+        run: npm run test:contract
+
+      # A scheduled failure means the API changed under a deployed site, so it
+      # gets an issue (one open at a time; later failures comment on it)
+      - name: Open or update an issue
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create api-contract --color D93F0B \
+            --description "The MLB Stats API no longer returns what PlateView expects" --force
+          existing=$(gh issue list --label api-contract --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "Still failing: $RUN_URL"
+          else
+            gh issue create --label api-contract \
+              --title "MLB API contract check failed" \
+              --body "The daily check against the live MLB Stats API failed: $RUN_URL
+
+          A failing test names the endpoint and the field that changed. Until it is fixed, the part of the site reading that field may show wrong or missing data."
+          fi

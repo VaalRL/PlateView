@@ -1,0 +1,231 @@
+/**
+ * Live checks that the MLB Stats API still returns what PlateView reads.
+ * Each test calls the app's own request function (same URL, same hydrate)
+ * and, where the app derives something from the response, runs that too.
+ *
+ * Fixed past data (the 2025 season, the 2012 ALCS rainout) keeps results
+ * stable; checks on the current season only test shape, never values.
+ */
+import { describe, it, expect } from 'vitest';
+import {
+  getFavoritePlayersGameLog,
+  getLeaderboards,
+  getPersonSummary,
+  getPlayerDetail,
+  getPlayerTransactions,
+  getPostseasonGameLogs,
+  getPostseasonSeries,
+  getSchedule,
+  getStandings,
+  getTeamDetail,
+  getTeamRoster,
+  getTeamSchedule,
+  getVenue,
+  searchPeople,
+} from '../../src/services/mlbApi';
+import { HITTING_LEADER_CATEGORIES, PITCHING_LEADER_CATEGORIES } from '../../src/constants/leaderboards';
+import { isPostseasonGameType, type PlayerStatGroup } from '../../src/utils/playerLevels';
+import { calledOffReason, isCompletedGame, teamResult } from '../../src/utils/gameStatus';
+import { findLeaderRanks, findTeamStanding } from '../../src/utils/hoverCards';
+import { sortTransactions, transactionTypeLabel } from '../../src/utils/transactions';
+import { buildPostseasonBracket } from '../../src/utils/postseason';
+import { MLB_LEVEL } from '../../src/constants/levels';
+import { getCurrentMlbSeason } from '../../src/utils/season';
+import type { GameSchedule, ScheduleResponse } from '../../src/types/mlb';
+
+const DODGERS = 119;
+const TIGERS = 116;
+const ROCHESTER = 534; // AAA, Nationals affiliate
+const NATIONALS = 120;
+const OHTANI = 660271;
+const JUDGE = 592450;
+const DODGER_STADIUM = 22;
+const LAST_FULL_SEASON = 2025;
+
+const YMD = /^\d{4}-\d{2}-\d{2}$/;
+
+const gamesOf = (r: ScheduleResponse) => (r.dates ?? []).flatMap((d) => d.games ?? []);
+const gameLogOf = (stats: PlayerStatGroup[] | undefined, group: string) =>
+  stats?.find((s) => s.group?.displayName === group && s.type?.displayName === 'gameLog')?.splits ?? [];
+
+describe('schedule', () => {
+  it('gives every played game a winner and a loser', async () => {
+    // A full regular season Saturday
+    const games = gamesOf(await getSchedule('2025-07-12'));
+    const played = games.filter(isCompletedGame);
+    expect(played.length).toBeGreaterThan(5);
+    played.forEach((g: GameSchedule) => {
+      expect(typeof g.gamePk).toBe('number');
+      expect(typeof g.teams.away.score).toBe('number');
+      expect(typeof g.teams.home.score).toBe('number');
+      const away = teamResult(g, g.teams.away.team.id);
+      const home = teamResult(g, g.teams.home.team.id);
+      expect([away, home].sort()).toEqual(['L', 'W']);
+    });
+  });
+
+  it('files a rainout as "Final" without a winner, which the app reads as postponed', async () => {
+    // 2012 ALCS Game 4 at Detroit was rained out on Oct 17 and played on Oct 18
+    const games = gamesOf(await getTeamSchedule(TIGERS, '2012-10-17', '2012-10-19'));
+    const rainout = games.find((g) => /postponed/i.test(g.status.detailedState ?? ''));
+    expect(rainout, 'the postponed ALCS Game 4 entry').toBeDefined();
+    expect(rainout!.status.abstractGameState).toBe('Final');
+    expect(calledOffReason(rainout!.status)).toBe('postponed');
+    expect(teamResult(rainout!, TIGERS)).toBeNull();
+    expect(rainout!.teams.home.isWinner).not.toBe(true);
+    expect(rainout!.teams.away.isWinner).not.toBe(true);
+  });
+});
+
+describe('standings', () => {
+  it('ranks all 30 clubs in six divisions with a win percentage', async () => {
+    const standings = await getStandings(LAST_FULL_SEASON, MLB_LEVEL.leagueIds);
+    expect(standings.records).toHaveLength(6);
+    const records = standings.records.flatMap((d) => d.teamRecords);
+    expect(records).toHaveLength(30);
+    records.forEach((r) => {
+      expect(r.divisionRank).toMatch(/^[1-5]$/);
+      expect(r.winningPercentage).toMatch(/^(\.\d{3}|1\.000)$/);
+      expect(r.wins + r.losses).toBeGreaterThan(150);
+    });
+    standings.records.forEach((d) => expect(typeof d.division?.id).toBe('number'));
+    expect(findTeamStanding(standings, DODGERS)?.team.id).toBe(DODGERS);
+  });
+});
+
+describe('teams', () => {
+  it('names the parent club of a minor league team', async () => {
+    const team = (await getTeamDetail(ROCHESTER)).teams[0];
+    expect(team.parentOrgId).toBe(NATIONALS);
+    expect(typeof team.parentOrgName).toBe('string');
+    expect(team.sport.id).toBe(11);
+    expect(typeof team.league.name).toBe('string');
+  });
+
+  it('lists an active roster with people', async () => {
+    const roster = (await getTeamRoster(DODGERS)).roster;
+    expect(roster.length).toBeGreaterThan(20);
+    roster.forEach((entry: { person: { id: number } }) => expect(typeof entry.person.id).toBe('number'));
+  });
+
+  it('has fence distances for a ballpark', async () => {
+    const venue = (await getVenue(DODGER_STADIUM)).venues?.[0];
+    ['leftLine', 'center', 'rightLine'].forEach((key) =>
+      expect(typeof venue?.fieldInfo?.[key as 'center']).toBe('number')
+    );
+  });
+});
+
+describe('players', () => {
+  it('returns the player page stats with typed game log rows', async () => {
+    const person = (await getPlayerDetail(OHTANI)).people[0];
+    expect(person.fullName).toBe('Shohei Ohtani');
+    expect(typeof person.height).toBe('string');
+    expect(person.height).toMatch(/^\d+' ?\d*"?$/);
+    expect(typeof person.weight).toBe('number');
+    const groups = (person.stats as PlayerStatGroup[]).map((s) => `${s.group?.displayName}/${s.type?.displayName}`);
+    expect(groups).toContain('hitting/season');
+    expect(groups).toContain('hitting/career');
+    // Rows only exist once the season has started; their shape is checked when they do
+    gameLogOf(person.stats, 'hitting').forEach((row) => {
+      expect(row.date).toMatch(YMD);
+      expect(row.gameType).toBe('R');
+      expect(typeof row.game?.gamePk).toBe('number');
+    });
+  });
+
+  it('returns only postseason games for gameType=P', async () => {
+    const people = (await getPostseasonGameLogs([OHTANI], LAST_FULL_SEASON)).people;
+    const rows = gameLogOf(people[0].stats, 'hitting');
+    expect(rows.length).toBeGreaterThan(5);
+    rows.forEach((row) => {
+      expect(isPostseasonGameType(row.gameType)).toBe(true);
+      expect(row.date).toMatch(YMD);
+      expect(typeof row.game?.gamePk).toBe('number');
+    });
+  });
+
+  it('batches favorites with their current club', async () => {
+    const people = (await getFavoritePlayersGameLog([OHTANI, JUDGE])).people;
+    expect(people.map((p) => p.id).sort()).toEqual([JUDGE, OHTANI].sort());
+    people.forEach((p) => expect(typeof p.currentTeam?.id).toBe('number'));
+  });
+
+  it('gives the hover card a current club with its level', async () => {
+    const person = (await getPersonSummary(OHTANI)).people[0];
+    expect(person.currentTeam?.id).toBe(DODGERS);
+    expect(person.currentTeam?.sport?.id).toBe(1);
+  });
+
+  it('finds players by name', async () => {
+    const people: { id: number }[] = (await searchPeople('Ohtani')).people ?? [];
+    expect(people.map((p) => p.id)).toContain(OHTANI);
+  });
+});
+
+describe('transactions', () => {
+  it('lists a player’s moves with dates and types', async () => {
+    const transactions = (await getPlayerTransactions(OHTANI)).transactions ?? [];
+    expect(transactions.length).toBeGreaterThan(3);
+    transactions.forEach((t) => {
+      expect(typeof t.id).toBe('number');
+      expect(t.date ?? t.effectiveDate).toMatch(YMD);
+      expect(typeof t.typeDesc).toBe('string');
+    });
+    // He signed with the Dodgers as a free agent in December 2023
+    expect(transactions.some((t) => t.toTeam?.id === DODGERS && /free agent/i.test(t.typeDesc ?? ''))).toBe(true);
+
+    const untranslated = [...new Set(transactions.map((t) => t.typeDesc!))].filter(
+      (desc) => transactionTypeLabel({ typeDesc: desc }, 'zh') === desc
+    );
+    if (untranslated.length > 0) console.info('Move types without a Chinese label:', untranslated);
+  });
+
+  it('numbers moves in filing order, which same-day sorting relies on', async () => {
+    const transactions = (await getPlayerTransactions(OHTANI)).transactions ?? [];
+    const sorted = sortTransactions(transactions);
+    // Newest first by date: ids should fall along with the dates
+    const pairs = sorted.slice(1).map((t, i) => [sorted[i], t] as const);
+    const datedApart = pairs.filter(([a, b]) => (a.date ?? '') !== (b.date ?? ''));
+    const agreeing = datedApart.filter(([a, b]) => a.id! > b.id!);
+    expect(agreeing.length / datedApart.length).toBeGreaterThanOrEqual(0.9);
+  });
+});
+
+describe('leaderboards', () => {
+  it.each([
+    ['hitting', HITTING_LEADER_CATEGORIES],
+    ['pitching', PITCHING_LEADER_CATEGORIES],
+  ] as const)('returns a top five in every %s category', async (statGroup, categories) => {
+    const groups = (
+      await getLeaderboards({ statGroup, categories: [...categories], season: LAST_FULL_SEASON, limit: 5 })
+    ).leagueLeaders;
+    expect(groups.map((g) => g.leaderCategory).sort()).toEqual([...categories].sort());
+    groups.forEach((g) => {
+      expect(g.leaders.length).toBeGreaterThanOrEqual(5);
+      g.leaders.forEach((l) => {
+        expect(typeof l.rank).toBe('number');
+        expect(typeof l.value).toBe('string');
+        expect(typeof l.person.id).toBe('number');
+      });
+    });
+    const top = groups[0].leaders[0];
+    expect(findLeaderRanks(top.person.id, groups)[0].rank).toBe(1);
+  });
+
+  it('answers for the current season', async () => {
+    const groups = (await getLeaderboards({ statGroup: 'hitting', season: getCurrentMlbSeason() })).leagueLeaders;
+    expect(Array.isArray(groups)).toBe(true);
+  });
+});
+
+describe('postseason bracket', () => {
+  it('builds a bracket from a finished postseason', async () => {
+    const [series, standings] = await Promise.all([
+      getPostseasonSeries(LAST_FULL_SEASON),
+      getStandings(LAST_FULL_SEASON, MLB_LEVEL.leagueIds),
+    ]);
+    expect(series.series?.length).toBeGreaterThanOrEqual(12);
+    expect(buildPostseasonBracket(series, standings)).not.toBeNull();
+  });
+});

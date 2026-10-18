@@ -329,3 +329,10 @@
   - [x] 新增 `src/utils/gameStatus.ts`：`calledOffReason`（依 detailedState 或 codedGameState D/C/T/U 判斷延賽、取消、暫停）、`isCompletedGame`、`teamResult`（只有真的打完才回傳 W/L，和局回傳 null）
   - [x] 套用到球隊頁（勝敗標籤、近 10 場戰績、延賽／取消標籤、不連到比賽頁）、收藏球隊卡（原本也顯示敗）、比分卡（原本同時顯示「延賽」和「已結束」）、收藏列（原本顯示「已結束 undefined-undefined」）
   - [x] 版本升為 1.6.2；測試由 336 項增至 344 項，全數通過，新測試已在修正前的程式上確認會失敗；TypeScript、ESLint（0 errors）與 Vite 打包驗證通過
+
+- [x] **Phase 35: 每日以真實 MLB API 檢查資料格式（2026-10-18）**
+  - [x] 開發環境連不到 statsapi.mlb.com，近期功能都無法用真實資料驗證；GitHub Actions 連得到
+  - [x] 新增 `tests/contract/mlbApi.contract.ts`：直接呼叫 app 自己的請求函式（網址與 hydrate 完全相同），檢查回應欄位，並把真實回應餵給 app 的解析函式（勝負判斷、延賽判斷、季後賽合併、排行榜名次、戰績、對戰樹、轉隊排序）
+  - [x] 以固定的歷史資料為準（2025 球季、2012 美聯冠軍賽雨延），結果穩定；本季資料只檢查格式
+  - [x] 也驗證先前未能確認的假設：季後賽請求只回季後賽場次、延賽的比賽是 Final 但沒有勝隊、轉隊異動 id 依提交順序遞增
+  - [x] `npm run test:contract`（獨立設定 `vitest.contract.config.ts`，不在 `npm test` 內）；`.github/workflows/api-contract.yml` 每天跑一次，也在改到 API 相關程式的 PR 上跑；排程失敗時自動開 issue（標籤 `api-contract`，已有未關閉的就留言）
