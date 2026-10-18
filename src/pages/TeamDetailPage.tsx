@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { PlayerHoverCard } from '../components/common/PlayerHoverCard';
 import { TeamHoverCard } from '../components/common/TeamHoverCard';
+import { CALLED_OFF_LABEL, calledOffReason, isCompletedGame, teamResult } from '../utils/gameStatus';
 
 type MainViewTab = 'roster' | 'schedule';
 type RosterTab = 'active' | '40Man' | 'il';
@@ -157,19 +158,15 @@ export const TeamDetailPage: React.FC = () => {
     return map;
   }, [scheduleData, idNum]);
 
-  // Calculate recent 10-game win-loss
+  // Calculate recent 10-game win-loss. Only games with a result count: the
+  // API files postponed and cancelled games as "Final" too
   const recent10Stats = useMemo(() => {
-    const completed = recentGames.filter((g) => g.status?.abstractGameState === 'Final');
-    const last10 = completed.slice(0, 10);
-    let wins = 0;
-    let losses = 0;
-
-    last10.forEach((g) => {
-      const isHome = g.teams.home.team.id === idNum;
-      const isWinner = isHome ? g.teams.home.isWinner : g.teams.away.isWinner;
-      if (isWinner) wins++;
-      else losses++;
-    });
+    const last10 = recentGames
+      .map((g) => teamResult(g, idNum))
+      .filter((r): r is 'W' | 'L' => r !== null)
+      .slice(0, 10);
+    const wins = last10.filter((r) => r === 'W').length;
+    const losses = last10.length - wins;
 
     return { wins, losses, count: last10.length };
   }, [recentGames, idNum]);
@@ -379,13 +376,15 @@ export const TeamDetailPage: React.FC = () => {
                     ? oppMeta?.nameZh || oppTeamData.name
                     : oppMeta?.name || oppTeamData.name;
 
-                const isFinal = g.status?.abstractGameState === 'Final';
-                const isLive = g.status?.abstractGameState === 'Live';
-                const isPreview = g.status?.abstractGameState === 'Preview';
+                // Postponed and cancelled games come back as "Final" with no score
+                const calledOff = calledOffReason(g.status);
+                const isFinal = isCompletedGame(g);
+                const isLive = g.status?.abstractGameState === 'Live' && !calledOff;
+                const isPreview = g.status?.abstractGameState === 'Preview' && !calledOff;
                 // No box score before first pitch, so no detail page to open
                 const hasStarted = isFinal || isLive;
 
-                const isWinner = isHome ? g.teams.home.isWinner : g.teams.away.isWinner;
+                const result = teamResult(g, idNum);
 
                 return (
                   <div
@@ -526,15 +525,23 @@ export const TeamDetailPage: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <span
                               className={`text-xs px-2.5 py-1 rounded-lg font-mono font-black border ${
-                                isWinner
+                                result === 'W'
                                   ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-                                  : 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                                  : result === 'L'
+                                    ? 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                                    : 'bg-page border-border text-muted'
                               }`}
                             >
-                              {isWinner ? t('team.win_badge') : t('team.loss_badge')}{' '}
+                              {result === 'W' ? `${t('team.win_badge')} ` : result === 'L' ? `${t('team.loss_badge')} ` : ''}
                               {myScore !== undefined ? `${myScore} - ${oppScore}` : ''}
                             </span>
                           </div>
+                        )}
+
+                        {calledOff && (
+                          <span className="text-xs px-2.5 py-1 rounded-lg font-bold border bg-amber-500/15 border-amber-500/30 text-amber-500">
+                            {t(CALLED_OFF_LABEL[calledOff])}
+                          </span>
                         )}
 
                         {isLive && (

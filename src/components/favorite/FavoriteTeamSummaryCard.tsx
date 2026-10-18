@@ -7,6 +7,7 @@ import { formatBilingualGameTime } from '../../utils/timezone';
 import teamsData from '../../data/teams.json';
 import { Radio, Flag, CalendarClock, ArrowRight } from 'lucide-react';
 import { LIVE_ACCENT } from '../../constants/gameStatus';
+import { CALLED_OFF_LABEL, calledOffReason, isCompletedGame, teamResult } from '../../utils/gameStatus';
 
 interface FavoriteTeamSummaryCardProps {
   teamId: number;
@@ -59,13 +60,14 @@ export const FavoriteTeamSummaryCard: React.FC<FavoriteTeamSummaryCardProps> = (
 
     const { status, linescore } = dayGame;
     const isLive = status.abstractGameState === 'Live';
+    // Postponed and cancelled games come back as "Final" with no score
+    const calledOff = calledOffReason(status);
     const isPostponed =
-      status.detailedState?.toLowerCase().includes('postponed') ||
+      calledOff !== null ||
       status.detailedState?.toLowerCase().includes('delayed') ||
-      status.detailedState?.toLowerCase().includes('suspended') ||
       status.statusCode === 'DO' ||
       status.statusCode === 'DR';
-    const isFinal = status.abstractGameState === 'Final';
+    const isFinal = isCompletedGame(dayGame);
     const isPreview = status.abstractGameState === 'Preview' && !isPostponed;
 
     const myScore = myGameTeam.score;
@@ -75,7 +77,7 @@ export const FavoriteTeamSummaryCard: React.FC<FavoriteTeamSummaryCardProps> = (
     const hasScore =
       myScore !== undefined && oppScore !== undefined && !isPreview && !isPostponed;
 
-    const isWinner = isFinal && (myGameTeam.isWinner || (myScore ?? 0) > (oppScore ?? 0));
+    const result = teamResult(dayGame, teamId);
     const myLine = isAway ? linescore?.teams?.away : linescore?.teams?.home;
 
     const vsPrefix = isAway ? '@' : t('fav.live_vs');
@@ -91,7 +93,7 @@ export const FavoriteTeamSummaryCard: React.FC<FavoriteTeamSummaryCardProps> = (
       statusText = t('sb.final');
       statusClass = 'bg-page text-muted border-border/50';
     } else if (isPostponed) {
-      statusText = status.detailedState || t('sb.postponed');
+      statusText = calledOff ? t(CALLED_OFF_LABEL[calledOff]) : status.detailedState || t('sb.postponed');
       statusClass = 'bg-amber-500/15 text-amber-500 border-amber-500/30';
     } else {
       statusText = formatBilingualGameTime(dayGame.gameDate, lang);
@@ -105,8 +107,8 @@ export const FavoriteTeamSummaryCard: React.FC<FavoriteTeamSummaryCardProps> = (
         : `${vsPrefix} ${oppAbbrev}`,
       statusText,
       statusClass,
-      isWinner,
-      isLoser: isFinal && !isWinner,
+      isWinner: result === 'W',
+      isLoser: result === 'L',
       hasScore,
       myScore,
       oppScore,

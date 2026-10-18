@@ -129,6 +129,25 @@ describe('ScoreboardCard component', () => {
     expect(screen.getByText(/Postponed/)).toBeInTheDocument();
   });
 
+  it('does not also call a postponed game final', () => {
+    // The API files a rainout as "Final" with no score and no winner
+    const rainout = {
+      ...mockLiveGame,
+      status: { abstractGameState: 'Final', codedGameState: 'D', detailedState: 'Postponed', statusCode: 'DR', abstractGameCode: 'F' },
+    } as GameSchedule;
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <ScoreboardCard game={rainout} />
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(screen.getByText('Postponed')).toBeInTheDocument();
+    expect(screen.queryByText(/已結束|Final/)).not.toBeInTheDocument();
+  });
+
   it('navigates to the standalone game page when the card is clicked', () => {
     render(
       <QueryClientProvider client={queryClient}>
