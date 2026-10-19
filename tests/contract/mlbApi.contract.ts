@@ -14,6 +14,7 @@ import {
   getLeaderboards,
   getPersonSummary,
   getPlayerDetail,
+  getPlayersForComparison,
   getPlayerTransactions,
   getPostseasonGameLogs,
   getPostseasonSeries,
@@ -33,6 +34,7 @@ import { teamDisplayName } from '../../src/utils/teams';
 import { sortTransactions, transactionTypeLabel } from '../../src/utils/transactions';
 import { buildPostseasonBracket } from '../../src/utils/postseason';
 import { MLB_LEVEL } from '../../src/constants/levels';
+import { COMPARE_ROWS, compareValue } from '../../src/utils/comparison';
 import { getCurrentMlbSeason } from '../../src/utils/season';
 import type { GameSchedule, ScheduleResponse } from '../../src/types/mlb';
 
@@ -214,6 +216,19 @@ describe('players', () => {
   it('finds players by name', async () => {
     const people: { id: number }[] = (await searchPeople('Ohtani')).people ?? [];
     expect(people.map((p) => p.id)).toContain(OHTANI);
+  });
+});
+
+describe('player comparison', () => {
+  it('has a value for every row of the comparison table', async () => {
+    const SKENES = 694973;
+    const people = (await getPlayersForComparison([OHTANI, JUDGE, SKENES], LAST_FULL_SEASON)).people;
+    const byId = new Map(people.map((p) => [p.id, p.stats as PlayerStatGroup[]]));
+    const missing = (id: number, group: 'hitting' | 'pitching') =>
+      COMPARE_ROWS[group].filter((r) => compareValue(byId.get(id), group, r) === undefined).map((r) => r.key);
+    expect(missing(JUDGE, 'hitting')).toEqual([]);
+    expect(missing(SKENES, 'pitching')).toEqual([]);
+    expect(people.find((p) => p.id === SKENES)?.primaryPosition?.type).toBe('Pitcher');
   });
 });
 

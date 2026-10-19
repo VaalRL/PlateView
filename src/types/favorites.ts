@@ -74,7 +74,7 @@ export interface GameLogStatGroup {
 export interface GameLogPerson {
   id: number;
   fullName: string;
-  primaryPosition?: { abbreviation?: string };
+  primaryPosition?: { abbreviation?: string; type?: string };
   currentTeam?: {
     id?: number;
     name?: string;

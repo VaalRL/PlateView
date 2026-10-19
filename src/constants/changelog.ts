@@ -15,6 +15,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.8.0',
+    date: '2026-10-19',
+    changes: {
+      zh: [
+        '新增「球員比較」：最多 4 位球員本季成績並排，打擊與投球可切換，每一列最好的成績以顏色標示；網址可直接分享',
+        '球員頁新增「加入比較」按鈕；比較頁可用中文或英文名搜尋加入球員',
+      ],
+      en: [
+        'New Compare Players page: up to four players’ season lines side by side, hitting or pitching, with the best value in each row highlighted; the link can be shared',
+        'Player pages gain a Compare button, and the comparison page finds players by Chinese or English name',
+      ],
+    },
+  },
+  {
     version: '1.7.1',
     date: '2026-10-19',
     changes: {
