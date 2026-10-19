@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Home screen icon: the favicon's home plate on a full-bleed background,
+       its corners inside the maskable safe circle (radius 40%), so no launcher mask cuts it -->
+  <rect width="512" height="512" fill="#f8fafc" />
+  <g transform="translate(72 72) scale(11.5)">
+    <path
+      d="M6 4H26C27.1 4 28 4.9 28 6V16C28 16.6 27.7 17.1 27.3 17.5L16.8 27.6C16.4 28 15.6 28 15.2 27.6L4.7 17.5C4.3 17.1 4 16.6 4 16V6C4 4.9 4.9 4 6 4Z"
+      fill="#0284c7"
+    />
+    <rect x="7.5" y="12" width="2.8" height="6.5" rx="1.4" fill="#ffffff" fill-opacity="0.85" />
+    <rect x="12" y="8" width="2.8" height="12.5" rx="1.4" fill="#ffffff" fill-opacity="0.95" />
+    <rect x="16.5" y="6" width="2.8" height="16.5" rx="1.4" fill="#ffffff" />
+    <rect x="21" y="10.5" width="2.8" height="9" rx="1.4" fill="#ffffff" fill-opacity="0.9" />
+  </g>
+</svg>

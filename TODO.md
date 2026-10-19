@@ -399,3 +399,11 @@
   - [x] 入口：導覽列（平板以上，1280px 以上顯示文字）、首頁層級切換旁（手機唯一入口）；量測 320–1440px 中英文皆無溢出
   - [x] 真實 API 檢查新增：2025 年 11 月第一週有 50 筆以上、日期都在範圍內、有「Declared Free Agency」；交易截止週有 10 筆以上交易且雙方都是大聯盟球隊；記錄各類型筆數（DFA 是 Declared Free Agency 的代碼，DES 才是指定讓渡）
   - [x] 版本升為 1.11.0；測試由 406 項增至 417 項，全數通過
+
+- [x] **Phase 45: 加到手機主畫面（2026-10-19）**
+  - [x] `public/manifest.webmanifest`（standalone、start_url／scope 皆為 `./`，GitHub Pages 子路徑可用）；圖示 `public/app-icon.svg` → 192／512 PNG（含 maskable，主體在 40% 安全圓內）與 180 的 `apple-touch-icon.png`（以 Chromium 繪製）
+  - [x] Chromium DevTools 協定 `Page.getInstallabilityErrors` 對建置後的網站回報 0 個錯誤
+  - [x] 頁尾「加到主畫面」：保留 `beforeinstallprompt` 事件，按下才跳出瀏覽器的安裝視窗；iOS 顯示「分享 → 加入主畫面」說明；已從主畫面開啟則不顯示
+  - [x] 從主畫面開啟時 iOS 狀態列會蓋住頁面頂端（`black-translucent`），導覽列加上 `safe-area-inset-top`
+  - [x] 不加 service worker：離線快取舊的 `index.html` 會讓部署後換掉的程式檔更容易抓不到（Phase 39 的白畫面問題），現有的離線提示已足夠
+  - [x] 版本升為 1.12.0；測試由 417 項增至 421 項，全數通過
