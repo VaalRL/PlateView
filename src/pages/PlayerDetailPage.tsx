@@ -1,6 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { usePlayerDetailQuery, usePlayerPostseasonLogsQuery, usePlayerPostseasonStatsQuery } from '../services/queries';
+import {
+  usePlayerDetailQuery,
+  usePlayerPostseasonLogsQuery,
+  usePlayerPostseasonStatsQuery,
+  usePlayerSeasonGameLogsQuery,
+  usePlayerSeasonsQuery,
+} from '../services/queries';
 import { getPlayerHeadshotUrl, getTeamLogoUrl, withPostseasonGameLogs } from '../services/mlbApi';
 import { useFavorites } from '../hooks/useFavorites';
 import { useLanguage } from '../hooks/useLanguage';
@@ -76,10 +82,15 @@ export const PlayerDetailPage: React.FC = () => {
   // have different opponents and levels to choose from
   const [logFilterChoice, setLogFilterChoice] = useState<{ key: string; filter: GameLogFilter } | null>(null);
   const [logsExpandedFor, setLogsExpandedFor] = useState<string | null>(null);
+  // A past season's game log, for one player; null is this season's
+  const [logSeasonChoice, setLogSeasonChoice] = useState<{ personId: number; season: number } | null>(null);
+  const logSeason = logSeasonChoice?.personId === idNum ? logSeasonChoice.season : null;
 
   const { data: detail, isLoading, isError } = usePlayerDetailQuery(idNum);
   // Postseason games come from a query of their own, so they never hold up the page
   const postseasonLogs = usePlayerPostseasonLogsQuery(idNum);
+  const seasonsQuery = usePlayerSeasonsQuery(idNum);
+  const pastLogs = usePlayerSeasonGameLogsQuery(idNum, logSeason);
   const data = useMemo(() => withPostseasonGameLogs(detail, postseasonLogs.data), [detail, postseasonLogs.data]);
   const { isFavoritePlayer, toggleFavoritePlayer } = useFavorites();
   const navigate = useNavigate();
@@ -133,8 +144,17 @@ export const PlayerDetailPage: React.FC = () => {
 
   // Game logs mix every level and the API groups them by level, so sort by
   // date (most recent games first)
-  const sortedHittingGameLogs = useMemo(() => gameLogsOf(statsGroups, 'hitting'), [statsGroups]);
-  const sortedPitchingGameLogs = useMemo(() => gameLogsOf(statsGroups, 'pitching'), [statsGroups]);
+  const logGroups: PlayerStatGroup[] = useMemo(
+    () => (logSeason === null ? statsGroups : pastLogs.data?.data?.people?.[0]?.stats ?? []),
+    [logSeason, statsGroups, pastLogs.data]
+  );
+  const sortedHittingGameLogs = useMemo(() => gameLogsOf(logGroups, 'hitting'), [logGroups]);
+  const sortedPitchingGameLogs = useMemo(() => gameLogsOf(logGroups, 'pitching'), [logGroups]);
+  // This season's log comes with the page; earlier ones are offered once known
+  const currentSeason = getCurrentMlbSeason();
+  const pastSeasons = (seasonsQuery.data ?? []).filter((y) => y < currentSeason);
+  const logsLoading = logSeason !== null && pastLogs.isLoading;
+  const postseasonLogsFailed = logSeason === null ? postseasonLogs.isError : !!pastLogs.data?.postseasonFailed;
 
   // True two-way player check (Ohtani or both significant hitting and pitching volume)
   const isTwoWay = useMemo(() => {
@@ -219,7 +239,7 @@ export const PlayerDetailPage: React.FC = () => {
 
   // The whole season's log is on hand; ten rows show until expanded
   const roleGameLogs = effectiveRole === 'pitching' ? sortedPitchingGameLogs : sortedHittingGameLogs;
-  const logViewKey = `${idNum}:${effectiveRole}`;
+  const logViewKey = `${idNum}:${effectiveRole}:${logSeason ?? 'current'}`;
   const logFilter = logFilterChoice?.key === logViewKey ? logFilterChoice.filter : DEFAULT_GAME_LOG_FILTER;
   const logsExpanded = logsExpandedFor === logViewKey;
   const logFilterOptions = useMemo(() => getGameLogFilterOptions(roleGameLogs), [roleGameLogs]);
@@ -935,7 +955,29 @@ export const PlayerDetailPage: React.FC = () => {
               hidden={historyTab !== 'logs'}
               className="space-y-3"
             >
-              {postseasonLogs.isError && (
+              {pastSeasons.length > 0 && (
+                <label className="flex items-center gap-2 text-xs text-muted">
+                  {t('player.logs_season')}
+                  <select
+                    value={logSeason ?? ''}
+                    onChange={(e) =>
+                      setLogSeasonChoice(e.target.value ? { personId: idNum, season: Number(e.target.value) } : null)
+                    }
+                    className="rounded-lg border border-border bg-card px-2 py-1 text-xs text-main focus:outline-none focus:border-team-primary"
+                  >
+                    <option value="">{t('player.logs_this_season', { season: currentSeason })}</option>
+                    {pastSeasons.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              {pastLogs.isError && logSeason !== null && (
+                <p className="text-[11px] text-rose-500">{t('player.logs_season_error', { season: logSeason })}</p>
+              )}
+              {postseasonLogsFailed && (
                 <p className="text-[11px] text-amber-500">{t('player.postseason_logs_error')}</p>
               )}
               {roleGameLogs.length > 0 && (
@@ -1134,7 +1176,11 @@ export const PlayerDetailPage: React.FC = () => {
                     {activeGameLogs.length === 0 && (
                       <tr>
                         <td colSpan={10} className="py-8 text-center text-muted font-sans">
-                          {roleGameLogs.length > 0 ? t('player.filter_no_match') : t('player.empty_logs')}
+                          {logsLoading
+                            ? '…'
+                            : roleGameLogs.length > 0
+                            ? t('player.filter_no_match')
+                            : t('player.empty_logs')}
                         </td>
                       </tr>
                     )}

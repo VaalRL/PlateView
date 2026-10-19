@@ -229,11 +229,12 @@ describe('PlayerDetailPage game logs', () => {
     it('requests every level in one call', async () => {
       const fetchMock = renderPlayer(promoted, 661531);
       await screen.findByText('出賽 28 場', { exact: false });
-      // One call for every level, plus one for the postseason game log
+      // One call for every level, plus one for the postseason game log and
+      // one for the seasons the game log can go back to
       const urls = fetchMock.mock.calls
         .map((c) => decodeURIComponent(String((c as unknown[])[0])))
         .filter((u) => u.includes('/people'));
-      expect(urls.filter((u) => !u.includes('gameType=P'))).toHaveLength(1);
+      expect(urls.filter((u) => !u.includes('gameType=P') && !u.includes('yearByYear'))).toHaveLength(1);
       urls.forEach((u) => expect(u).toContain('leagueListId=mlb_milb'));
     });
 
@@ -538,6 +539,60 @@ describe('PlayerDetailPage postseason games', () => {
     await screen.findByText('2026-09-28');
     fireEvent.click(screen.getByRole('button', { name: '季後賽' }));
     expect(await screen.findByText('2026 季後賽沒有出賽紀錄。')).toBeInTheDocument();
+  });
+
+  it('goes back to an earlier season’s game log, its postseason included', async () => {
+    const fetchMock = vi.fn(async (url: string) => {
+      const u = decodeURIComponent(url);
+      const body = u.includes('yearByYear')
+        ? {
+            people: [
+              {
+                id: 999003,
+                stats: [
+                  {
+                    group: { displayName: 'hitting' },
+                    type: { displayName: 'yearByYear' },
+                    splits: [{ season: '2024' }, { season: '2025' }, { season: '2026' }, { season: '2025' }],
+                  },
+                ],
+              },
+            ],
+          }
+        : u.includes('season=2025') && u.includes('gameType=P')
+        ? hitter('D', '2025-10-05', 775002)
+        : u.includes('season=2025')
+        ? hitter('R', '2025-09-01', 775001)
+        : u.includes('gameType=P')
+        ? hitter('D', '2026-10-08', 777001)
+        : hitter('R', '2026-09-28', 776003);
+      return { ok: true, status: 200, statusText: 'OK', json: async () => body };
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/999003']}>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    await screen.findByText('2026-09-28');
+    const select = await screen.findByRole('combobox', { name: '賽季' });
+    // This season first, then earlier ones newest first, each once
+    expect(within(select).getAllByRole('option').map((o) => o.textContent)).toEqual(['2026（本季）', '2025', '2024']);
+
+    fireEvent.change(select, { target: { value: '2025' } });
+    expect(await screen.findByText('2025-09-01')).toBeInTheDocument();
+    const postseasonRow = (await screen.findByText('2025-10-05')).closest('tr')!;
+    expect(within(postseasonRow).getByText('季後')).toBeInTheDocument();
+    expect(screen.queryByText('2026-09-28')).not.toBeInTheDocument();
+
+    fireEvent.change(select, { target: { value: '' } });
+    expect(await screen.findByText('2026-09-28')).toBeInTheDocument();
   });
 });
 
