@@ -376,15 +376,10 @@ describe('transactions', () => {
     expect(trades.length).toBeGreaterThan(10);
     expect(trades.some((t) => teamsById.has(t.fromTeam?.id ?? -1) && teamsById.has(t.toTeam?.id ?? -1))).toBe(true);
 
-    const all = [...offseason, ...deadline];
-    console.info(
-      'Move types in these weeks:',
-      Object.entries(
-        all.reduce<Record<string, number>>((n, t) => ({ ...n, [`${t.typeCode} ${t.typeDesc}`]: (n[`${t.typeCode} ${t.typeDesc}`] ?? 0) + 1 }), {})
-      ),
-      'without a person:',
-      all.filter((t) => !t.person?.id).length
+    const untranslated = [...new Set([...offseason, ...deadline].map((t) => t.typeDesc!))].filter(
+      (desc) => transactionTypeLabel({ typeDesc: desc }, 'zh') === desc
     );
+    if (untranslated.length > 0) console.info('League move types without a Chinese label:', untranslated);
   });
 
   it('numbers moves in filing order, which same-day sorting relies on', async () => {

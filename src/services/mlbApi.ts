@@ -204,7 +204,14 @@ export async function getPlayerTransactions(personId: number): Promise<Transacti
  * list moves and assignments to its minor league clubs.
  */
 export async function getLeagueTransactions(startDate: string, endDate: string): Promise<TransactionsResponse> {
-  return fetchMlb<TransactionsResponse>('/transactions', { sportId: MLB_SPORT_ID, startDate, endDate });
+  return fetchMlb<TransactionsResponse>('/transactions', {
+    sportId: MLB_SPORT_ID,
+    startDate,
+    endDate,
+    // A busy week runs to about 900 moves; keep only what the page reads
+    fields:
+      'transactions,id,person,id,fullName,fromTeam,toTeam,id,name,date,effectiveDate,typeCode,typeDesc,description',
+  });
 }
 
 /**

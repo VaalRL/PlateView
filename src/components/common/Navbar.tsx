@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Compass, Coffee, Trophy, Medal, SlidersHorizontal, MapPin } from 'lucide-react';
+import { Search, Compass, Coffee, Trophy, Medal, SlidersHorizontal, MapPin, ArrowLeftRight } from 'lucide-react';
 import { ThemeSelector } from './ThemeSelector';
 import { SearchModal } from './SearchModal';
 import { PlateViewLogo } from './PlateViewLogo';
@@ -125,6 +125,21 @@ export const Navbar: React.FC = () => {
             >
               <MapPin className="w-4 h-4 text-team-primary" />
               <span className="hidden lg:inline">{t('nav.taiwan')}</span>
+            </Link>
+
+            {/* League transactions: icon only until there is room for its label */}
+            <Link
+              to="/transactions"
+              className={`hidden sm:flex items-center gap-1 text-sm font-medium transition-colors px-2 py-1 rounded-lg hover:bg-card-hover ${
+                location.pathname === '/transactions'
+                  ? 'text-team-primary bg-team-primary/10 font-bold'
+                  : 'text-muted hover:text-main'
+              }`}
+              title={t('nav.moves')}
+              aria-label={t('nav.moves')}
+            >
+              <ArrowLeftRight className="w-4 h-4 text-team-primary" />
+              <span className="hidden xl:inline">{t('nav.moves')}</span>
             </Link>
 
             {/* Standings Quick Scroll Button */}
