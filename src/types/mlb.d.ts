@@ -281,6 +281,15 @@ export interface BoxscoreBattingStats {
   [key: string]: BoxscoreStatValue;
 }
 
+/** Season fielding, every position combined */
+export interface BoxscoreFieldingStats {
+  /** Fielding percentage, e.g. ".985" */
+  fielding?: string;
+  errors?: number;
+  chances?: number;
+  [key: string]: BoxscoreStatValue;
+}
+
 export interface BoxscorePitchingStats {
   inningsPitched?: string;
   hits?: number;
@@ -330,7 +339,7 @@ export interface BoxscorePlayerEntry {
   battingOrder?: string | number;
   status?: { code?: string; description?: string };
   stats?: { batting?: BoxscoreBattingStats; pitching?: BoxscorePitchingStats };
-  seasonStats?: { batting?: BoxscoreBattingStats; pitching?: BoxscorePitchingStats };
+  seasonStats?: { batting?: BoxscoreBattingStats; pitching?: BoxscorePitchingStats; fielding?: BoxscoreFieldingStats };
   gameStatus?: {
     isCurrentBatter?: boolean;
     isCurrentPitcher?: boolean;

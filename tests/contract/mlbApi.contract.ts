@@ -21,7 +21,9 @@ import {
   getSchedule,
   getStandings,
   getTeamDetail,
+  getTeamPreviousGame,
   getTeamRoster,
+  getTeamSeasonGames,
   getTeamSchedule,
   getVenue,
   searchPeople,
@@ -36,6 +38,14 @@ import { buildPostseasonBracket } from '../../src/utils/postseason';
 import { MLB_LEVEL } from '../../src/constants/levels';
 import { COMPARE_ROWS, compareValue } from '../../src/utils/comparison';
 import { getCurrentMlbSeason } from '../../src/utils/season';
+import {
+  COMPARED_GAME_TYPES,
+  DEFENSE_POSITIONS,
+  lastCompletedGame,
+  startingDefense,
+  startingLineup,
+  teamSide,
+} from '../../src/utils/teamComparison';
 import type { GameSchedule, ScheduleResponse } from '../../src/types/mlb';
 
 const DODGERS = 119;
@@ -229,6 +239,56 @@ describe('player comparison', () => {
     expect(missing(JUDGE, 'hitting')).toEqual([]);
     expect(missing(SKENES, 'pitching')).toEqual([]);
     expect(people.find((p) => p.id === SKENES)?.primaryPosition?.type).toBe('Pitcher');
+  });
+});
+
+describe('team comparison', () => {
+  it('finds a club’s last game of a season with the trimmed schedule', async () => {
+    const schedule = await getTeamSeasonGames(DODGERS, LAST_FULL_SEASON);
+    const games = gamesOf(schedule);
+    games.forEach((g) => expect(COMPARED_GAME_TYPES).toContain(g.gameType));
+    // No spring training, the full regular season
+    expect(games.filter((g) => g.gameType === 'R' && isCompletedGame(g)).length).toBeGreaterThanOrEqual(160);
+
+    // Game 7 of the 2025 World Series, on November 1
+    const last = lastCompletedGame(schedule, DODGERS)!;
+    expect(last.gameType).toBe('W');
+    expect(last.officialDate).toBe('2025-11-01');
+    expect(typeof last.teams.home.score).toBe('number');
+    expect(typeof last.teams.away.team.name).toBe('string');
+    expect(teamResult(last, DODGERS)).toBe('W');
+  });
+
+  it('reads who started where from that game’s boxscore', async () => {
+    const previous = (await getTeamPreviousGame(DODGERS, LAST_FULL_SEASON))!;
+    const side = teamSide(previous.boxscore, DODGERS);
+    expect(side).not.toBeNull();
+
+    const lineup = startingLineup(side);
+    expect(lineup.map((s) => s.slot)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    lineup.forEach((s) => {
+      expect(s.fullName).not.toBe('');
+      expect(s.ops).toMatch(/^\d?\.\d{3}$/);
+    });
+
+    const defense = startingDefense(side);
+    expect(DEFENSE_POSITIONS.filter((pos) => !defense[pos])).toEqual([]);
+    // Ohtani started Game 7 on the mound and at DH, under the two-way rule
+    expect(defense.P?.personId).toBe(OHTANI);
+    expect(defense.DH?.personId).toBe(OHTANI);
+    expect(defense.P?.era).toMatch(/^\d+\.\d{2}$/);
+    const fielders = (['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'] as const).map((pos) => defense[pos]!);
+    expect(new Set(fielders.map((f) => f.personId)).size).toBe(8);
+    fielders.forEach((f) => expect(f.fieldingPct).toMatch(/^\d?\.\d{3}$/));
+    // A postseason boxscore carries postseason totals, not the regular season's
+    // (Ohtani hit 55 home runs in the 2025 regular season, 8 in the postseason)
+    expect(lineup.find((s) => s.personId === OHTANI)?.homeRuns).toBe(8);
+  });
+
+  it('has a previous game for a club right now', async () => {
+    const previous = await getTeamPreviousGame(TIGERS);
+    expect(previous).not.toBeNull();
+    expect(startingLineup(teamSide(previous!.boxscore, TIGERS))).toHaveLength(9);
   });
 });
 

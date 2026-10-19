@@ -5,6 +5,7 @@ import { useComparisonPlayersQuery } from '../services/queries';
 import { getPlayerHeadshotUrl } from '../services/mlbApi';
 import { useLanguage } from '../hooks/useLanguage';
 import { ComparePlayerPicker } from '../components/compare/ComparePlayerPicker';
+import { CompareTabs } from '../components/compare/CompareTabs';
 import { PlayerHoverCard } from '../components/common/PlayerHoverCard';
 import { getCurrentMlbSeason } from '../utils/season';
 import { teamDisplayName } from '../utils/teams';
@@ -68,6 +69,8 @@ export const ComparePage: React.FC = () => {
         <ArrowLeft className="w-4 h-4" />
         <span>{t('team.back')}</span>
       </Link>
+
+      <CompareTabs />
 
       <div className="space-y-1.5">
         <h1 className="text-2xl font-extrabold text-main flex items-center gap-2">

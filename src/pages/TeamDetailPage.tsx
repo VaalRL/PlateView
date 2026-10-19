@@ -25,10 +25,12 @@ import {
   Calendar,
   TrendingUp,
   ChevronRight,
+  Columns3,
 } from 'lucide-react';
 import { PlayerHoverCard } from '../components/common/PlayerHoverCard';
 import { TeamHoverCard } from '../components/common/TeamHoverCard';
 import { CALLED_OFF_LABEL, calledOffReason, isCompletedGame, teamResult } from '../utils/gameStatus';
+import { addTeamToComparison, loadTeamComparison } from '../utils/teamComparison';
 
 type MainViewTab = 'roster' | 'schedule';
 type RosterTab = 'active' | '40Man' | 'il';
@@ -271,6 +273,18 @@ export const TeamDetailPage: React.FC = () => {
               <ExternalLink className="w-4 h-4" />
               <span>{t('team.official_site')}</span>
             </a>
+          )}
+
+          {/* Add to the team comparison page's list and open it; big league clubs only */}
+          {!isMinorLeague && (
+            <button
+              type="button"
+              onClick={() => navigate(`/compare/teams?teams=${addTeamToComparison(loadTeamComparison(), idNum).join(',')}`)}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border bg-page border-border text-muted hover:text-main hover:border-team-primary transition-all"
+            >
+              <Columns3 className="w-4 h-4" />
+              <span>{t('team.compare_btn')}</span>
+            </button>
           )}
 
           {/* Favorites track MLB clubs only (the summary reads the MLB scoreboard) */}

@@ -12,6 +12,8 @@ export const STORAGE_KEYS = {
   language: 'plateview_lang',
   /** Players on the comparison page, so the player page can add to the list */
   compare: 'plateview_compare',
+  /** Clubs on the team comparison page, so the team page can add to the list */
+  compareTeams: 'plateview_compare_teams',
 } as const;
 
 /** Default: Dodgers */

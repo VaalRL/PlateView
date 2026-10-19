@@ -25,6 +25,9 @@ const GameDetailPage = lazy(() =>
   import('./pages/GameDetailPage').then((m) => ({ default: m.GameDetailPage }))
 );
 const ComparePage = lazy(() => import('./pages/ComparePage').then((m) => ({ default: m.ComparePage })));
+const TeamComparePage = lazy(() =>
+  import('./pages/TeamComparePage').then((m) => ({ default: m.TeamComparePage }))
+);
 const TaiwanPlayersPage = lazy(() =>
   import('./pages/TaiwanPlayersPage').then((m) => ({ default: m.TaiwanPlayersPage }))
 );
@@ -63,6 +66,7 @@ export const App: React.FC = () => {
                     <Route path="/postseason/:season?" element={<PostseasonPage />} />
                     <Route path="/taiwan" element={<TaiwanPlayersPage />} />
                     <Route path="/compare" element={<ComparePage />} />
+                    <Route path="/compare/teams" element={<TeamComparePage />} />
                   </Routes>
                 </Suspense>
               </PageErrorBoundary>
