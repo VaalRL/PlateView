@@ -12,6 +12,7 @@ import {
   getGameBoxscore,
   getGameSchedule,
   getLeaderboards,
+  getLeagueTransactions,
   getPersonSummary,
   getPlayerDetail,
   getPlayerPostseasonStats,
@@ -34,8 +35,8 @@ import { HITTING_LEADER_CATEGORIES, PITCHING_LEADER_CATEGORIES } from '../../src
 import { isPostseasonGameType, type PlayerStatGroup } from '../../src/utils/playerLevels';
 import { calledOffReason, isCompletedGame, pickGameEntry, teamResult } from '../../src/utils/gameStatus';
 import { findLeaderRanks, findTeamStanding, isMinorLeagueClub, levelAbbreviation } from '../../src/utils/hoverCards';
-import { teamDisplayName } from '../../src/utils/teams';
-import { sortTransactions, transactionTypeLabel } from '../../src/utils/transactions';
+import { teamDisplayName, teamsById } from '../../src/utils/teams';
+import { isTrade, sortTransactions, transactionDate, transactionTypeLabel } from '../../src/utils/transactions';
 import { buildPostseasonBracket } from '../../src/utils/postseason';
 import { MLB_LEVEL } from '../../src/constants/levels';
 import { COMPARE_ROWS, compareValue } from '../../src/utils/comparison';
@@ -357,6 +358,28 @@ describe('transactions', () => {
       (desc) => transactionTypeLabel({ typeDesc: desc }, 'zh') === desc
     );
     if (untranslated.length > 0) console.info('Move types without a Chinese label:', untranslated);
+  });
+
+  it('lists the whole league’s moves between two dates', async () => {
+    // The week after the 2025 World Series: free agency opens
+    const offseason = (await getLeagueTransactions('2025-11-02', '2025-11-08')).transactions ?? [];
+    expect(offseason.length).toBeGreaterThan(50);
+    offseason.forEach((t) => {
+      expect(transactionDate(t) >= '2025-11-02' && transactionDate(t) <= '2025-11-08', transactionDate(t)).toBe(true);
+      expect(typeof t.typeDesc).toBe('string');
+    });
+    expect(offseason.some((t) => t.typeDesc === 'Declared Free Agency')).toBe(true);
+
+    // Deadline week: trades between big league clubs
+    const deadline = (await getLeagueTransactions('2025-07-28', '2025-07-31')).transactions ?? [];
+    const trades = deadline.filter(isTrade);
+    expect(trades.length).toBeGreaterThan(10);
+    expect(trades.some((t) => teamsById.has(t.fromTeam?.id ?? -1) && teamsById.has(t.toTeam?.id ?? -1))).toBe(true);
+
+    const untranslated = [...new Set([...offseason, ...deadline].map((t) => t.typeDesc!))].filter(
+      (desc) => transactionTypeLabel({ typeDesc: desc }, 'zh') === desc
+    );
+    if (untranslated.length > 0) console.info('League move types without a Chinese label:', untranslated);
   });
 
   it('numbers moves in filing order, which same-day sorting relies on', async () => {

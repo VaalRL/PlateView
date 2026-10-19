@@ -11,6 +11,7 @@ import {
   getVenue,
   getPlayerDetail,
   getPlayerTransactions,
+  getLeagueTransactions,
   getPersonSummary,
   getPlayersForComparison,
   searchPeople,
@@ -250,6 +251,15 @@ export function usePostseasonLeadersQuery(
       if (statGroup === 'pitching') pitching.refetch();
     },
   };
+}
+
+/** Every big league club's moves between two dates, for the moves page */
+export function useLeagueTransactionsQuery(startDate: string, endDate: string) {
+  return useQuery({
+    queryKey: ['league-transactions', startDate, endDate],
+    queryFn: () => getLeagueTransactions(startDate, endDate),
+    staleTime: 1000 * 60 * 15, // 15 minutes
+  });
 }
 
 export function usePeopleSearchQuery(query: string) {

@@ -15,6 +15,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.11.0',
+    date: '2026-10-19',
+    changes: {
+      zh: [
+        '新增「球員異動」頁：大聯盟各隊近 7／14／30 天的交易、簽約與離隊，可依球隊與類型篩選，台灣球員的異動置頂',
+        '導覽列與首頁新增異動頁入口',
+      ],
+      en: [
+        'New Transactions page: every big league club’s trades, signings and departures over the last 7, 14 or 30 days, by team and type, with moves of players from Taiwan first',
+        'The navbar and home page link to it',
+      ],
+    },
+  },
+  {
     version: '1.10.0',
     date: '2026-10-19',
     changes: {
