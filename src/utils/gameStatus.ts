@@ -60,3 +60,20 @@ export function teamResult(game: GameLike, teamId: number): 'W' | 'L' | null {
   if (mine.score === undefined || theirs.score === undefined || mine.score === theirs.score) return null;
   return mine.score > theirs.score ? 'W' : 'L';
 }
+
+/**
+ * The entry to show for one gamePk. A postponed game is listed twice under
+ * the same gamePk, once on the called-off date (no score, no linescore) and
+ * once on the date it was played or moved to, so the first entry is not
+ * always the game. Prefer the one in progress, then the one played, then one
+ * still to come; the called-off entry only when there is nothing else.
+ */
+export function pickGameEntry<T extends { status?: StatusLike }>(games: T[]): T | undefined {
+  const playable = games.filter((g) => calledOffReason(g.status) === null);
+  return (
+    playable.find((g) => g.status?.abstractGameState === 'Live') ??
+    playable.find((g) => isCompletedGame(g)) ??
+    playable[0] ??
+    games[games.length - 1]
+  );
+}

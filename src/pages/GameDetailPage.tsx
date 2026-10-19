@@ -14,6 +14,7 @@ import { BoxscorePlayerEntry, BoxscoreResponse, BoxscoreTeamSide, GameSchedule }
 import { ArrowLeft, Loader2, MapPin, Info, Shield, Table2 } from 'lucide-react';
 import { PlayerHoverCard } from '../components/common/PlayerHoverCard';
 import { TeamHoverCard } from '../components/common/TeamHoverCard';
+import { pickGameEntry } from '../utils/gameStatus';
 
 type GameTab = 'lineup' | 'box';
 type GameSide = 'away' | 'home';
@@ -135,7 +136,9 @@ export const GameDetailPage: React.FC = () => {
     refetch: refetchSchedule,
   } = useGameScheduleQuery(pkNum || undefined);
 
-  const game = scheduleData?.dates?.[0]?.games?.[0];
+  // A postponed game appears twice under one gamePk; take the entry that was
+  // (or will be) played, not the called-off one with no score
+  const game = pickGameEntry((scheduleData?.dates ?? []).flatMap((d) => d.games ?? []));
   const isLive = game?.status?.abstractGameState === 'Live';
 
   // Live games poll alongside the scoreboard; finished games stay cached

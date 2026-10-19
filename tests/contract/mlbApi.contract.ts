@@ -9,6 +9,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   getFavoritePlayersGameLog,
+  getGameBoxscore,
+  getGameSchedule,
   getLeaderboards,
   getPersonSummary,
   getPlayerDetail,
@@ -25,7 +27,7 @@ import {
 } from '../../src/services/mlbApi';
 import { HITTING_LEADER_CATEGORIES, PITCHING_LEADER_CATEGORIES } from '../../src/constants/leaderboards';
 import { isPostseasonGameType, type PlayerStatGroup } from '../../src/utils/playerLevels';
-import { calledOffReason, isCompletedGame, teamResult } from '../../src/utils/gameStatus';
+import { calledOffReason, isCompletedGame, pickGameEntry, teamResult } from '../../src/utils/gameStatus';
 import { findLeaderRanks, findTeamStanding, isMinorLeagueClub, levelAbbreviation } from '../../src/utils/hoverCards';
 import { teamDisplayName } from '../../src/utils/teams';
 import { sortTransactions, transactionTypeLabel } from '../../src/utils/transactions';
@@ -75,6 +77,40 @@ describe('schedule', () => {
     expect(teamResult(rainout!, TIGERS)).toBeNull();
     expect(rainout!.teams.home.isWinner).not.toBe(true);
     expect(rainout!.teams.away.isWinner).not.toBe(true);
+  });
+});
+
+describe('game page', () => {
+  it('lists a rained-out game twice under one gamePk, and the page picks the one played', async () => {
+    // 2012 ALCS Game 4: postponed Oct 17, played Oct 18, both as gamePk 345619
+    const entries = gamesOf(await getGameSchedule(345619));
+    expect(entries.length).toBeGreaterThanOrEqual(2);
+    expect(entries.some((g) => calledOffReason(g.status) === 'postponed')).toBe(true);
+    const game = pickGameEntry(entries)!;
+    expect(isCompletedGame(game)).toBe(true);
+    expect(game.linescore?.innings?.length).toBeGreaterThanOrEqual(9);
+    expect(typeof game.teams.home.score).toBe('number');
+  });
+
+  it('has a box score for both sides', async () => {
+    const box = await getGameBoxscore(345619);
+    expect(Object.keys(box.teams?.away?.players ?? {}).length).toBeGreaterThan(9);
+    expect(Object.keys(box.teams?.home?.players ?? {}).length).toBeGreaterThan(9);
+  });
+
+  it('shows the 2026 ALCS Game 4 with its score and linescore', async () => {
+    // Reported blank: score "- : -" and no linescore (gamePk 849817)
+    const entries = gamesOf(await getGameSchedule(849817));
+    console.info(
+      'gamePk 849817 entries:',
+      entries.map((g) => `${g.officialDate} ${g.status.abstractGameState}/${g.status.detailedState} ` +
+        `${g.teams.away.score ?? '-'}:${g.teams.home.score ?? '-'} innings=${g.linescore?.innings?.length ?? 0}`)
+    );
+    const game = pickGameEntry(entries)!;
+    expect(game).toBeDefined();
+    if (!isCompletedGame(game)) return; // not played yet: nothing to show
+    expect(typeof game.teams.away.score).toBe('number');
+    expect(game.linescore?.innings?.length).toBeGreaterThan(0);
   });
 });
 
