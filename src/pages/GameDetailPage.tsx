@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGameScheduleQuery, useGameBoxscoreQuery, useVenueQuery } from '../services/queries';
+import { bundledFieldInfo } from '../utils/venues';
 import { getTeamLogoUrl } from '../services/mlbApi';
 import { useLanguage } from '../hooks/useLanguage';
 import { formatBilingualGameTime } from '../utils/timezone';
@@ -153,8 +154,10 @@ export const GameDetailPage: React.FC = () => {
   };
 
   // Ballpark dimensions shape the outfield wall on the alignment chart
-  const { data: venueData } = useVenueQuery(game?.venue?.id);
-  const fieldInfo = venueData?.venues?.[0]?.fieldInfo;
+  // A club's home park is built in; only another park costs a request
+  const bundledField = bundledFieldInfo(game?.venue?.id);
+  const { data: venueData } = useVenueQuery(bundledField ? undefined : game?.venue?.id);
+  const fieldInfo = bundledField ?? venueData?.venues?.[0]?.fieldInfo;
 
   if (!pkNum) {
     return <div className="max-w-7xl mx-auto px-4 py-16 text-center text-sm text-muted">{t('game.not_found')}</div>;

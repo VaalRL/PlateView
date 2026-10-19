@@ -130,11 +130,36 @@ describe('GameDetailPage', () => {
     renderPage();
 
     expect(await screen.findByText('5 : 3')).toBeInTheDocument();
-    expect(screen.getByText('Dodger Stadium')).toBeInTheDocument();
+    // In the header, and over the chart drawn to its fences
+    expect(screen.getAllByText('Dodger Stadium').length).toBeGreaterThan(0);
     expect(screen.getByText('Final')).toBeInTheDocument();
     // R/H/E row from the shared LinescoreTable
     expect(screen.getByText('TEX')).toBeInTheDocument();
     expect(screen.getByText('LAD')).toBeInTheDocument();
+  });
+
+  it('draws a club’s home park from the built-in data, with no request for it', async () => {
+    renderPage();
+    await screen.findByText('5 : 3');
+    // Dodger Stadium's five published fences from src/data/venues.json, line to line
+    expect(screen.getAllByText('330 · 385 · 395 · 385 · 330').length).toBeGreaterThan(0);
+    const urls = (globalThis.fetch as unknown as { mock: { calls: unknown[][] } }).mock.calls.map((c) => String(c[0]));
+    expect(urls.some((u) => u.includes('/venues'))).toBe(false);
+  });
+
+  it('still asks for a park that is not built in', async () => {
+    const away = { ...scheduleResponse.dates[0].games[0], venue: { id: 5150, name: 'London Stadium' } };
+    globalThis.fetch = vi.fn(async (input: any) => {
+      const url = String(input);
+      const body = url.includes('/boxscore')
+        ? boxscoreResponse
+        : url.includes('/venues/5150')
+        ? { venues: [{ id: 5150, name: 'London Stadium', fieldInfo: { leftLine: 330, center: 392, rightLine: 330 } }] }
+        : { dates: [{ ...scheduleResponse.dates[0], games: [away] }] };
+      return { ok: true, status: 200, statusText: 'OK', json: async () => body } as any;
+    }) as any;
+    renderPage();
+    expect(await screen.findByText('330 · 392 · 330')).toBeInTheDocument();
   });
 
   it('opens on the away team with its chart and lineup on the same view', async () => {

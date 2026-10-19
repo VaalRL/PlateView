@@ -139,8 +139,9 @@ export function useGameBoxscoreQuery(gamePk?: number, isLive: boolean = false) {
 }
 
 /**
- * Venue dimensions. A ballpark is remodelled between seasons at most, and there
- * are only 30 of them, so this is effectively static for the session.
+ * Dimensions of a park not built into src/data/venues.json (a game away from
+ * the 30 clubs' homes). Remodelled between seasons at most, so effectively
+ * static for the session.
  */
 export function useVenueQuery(venueId?: number) {
   return useQuery({

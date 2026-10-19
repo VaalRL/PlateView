@@ -1,8 +1,11 @@
 name: Update player data
 
-# Rebuilds src/data/taiwan-players.json (players born in Taiwan, at every
-# level) from the live MLB Stats API and opens a pull request when it
-# changed. Weekly, and on demand. See scripts/update-taiwan-players.mjs.
+# Rebuilds the data files read from the live MLB Stats API and opens a pull
+# request when one changed, weekly and on demand:
+# - src/data/taiwan-players.json, players born in Taiwan at every level
+#   (scripts/update-taiwan-players.mjs)
+# - src/data/venues.json, the 30 clubs' ballparks and fence distances
+#   (scripts/update-venues.mjs)
 on:
   schedule:
     - cron: '23 10 * * 1' # Mondays, 10:23 UTC
@@ -16,7 +19,8 @@ jobs:
   update:
     runs-on: ubuntu-latest
     env:
-      BRANCH: data/taiwan-players
+      BRANCH: data/weekly-update
+      DATA_FILES: src/data/taiwan-players.json src/data/venues.json
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,32 +35,37 @@ jobs:
           REPORT_FILE: ${{ runner.temp }}/report.md
         run: node scripts/update-taiwan-players.mjs
 
+      - name: Rebuild the ballparks' fence distances
+        env:
+          REPORT_FILE: ${{ runner.temp }}/report.md
+        run: node scripts/update-venues.mjs
+
       - name: Open or update a pull request
         env:
           GH_TOKEN: ${{ github.token }}
           REPORT_FILE: ${{ runner.temp }}/report.md
         run: |
-          if [ -z "$(git status --porcelain src/data/taiwan-players.json)" ]; then
-            echo "No change in the player list."
+          if [ -z "$(git status --porcelain $DATA_FILES)" ]; then
+            echo "No change in the data."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$BRANCH"
-          git add src/data/taiwan-players.json
-          git commit -m "Update the list of players born in Taiwan"
+          git add $DATA_FILES
+          git commit -m "Update player and ballpark data"
           git push --force origin "$BRANCH"
           if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
             # The repository does not let GitHub Actions open pull requests, so this
-            # usually fails; the list then waits on the branch with a link in the
+            # usually fails; the data then waits on the branch with a link in the
             # run's summary, and the run still passes
             if ! gh pr create --head "$BRANCH" --base "${{ github.event.repository.default_branch }}" \
-              --title "Update the list of players born in Taiwan" --body-file "$REPORT_FILE"; then
+              --title "Update player and ballpark data" --body-file "$REPORT_FILE"; then
               COMPARE_URL="${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.repository.default_branch }}...$BRANCH?expand=1"
-              echo "::notice title=Player list updated::The new list is on branch $BRANCH. Open a pull request: $COMPARE_URL"
+              echo "::notice title=Data updated::The new data is on branch $BRANCH. Open a pull request: $COMPARE_URL"
               {
                 echo
-                echo "### The new list is on branch \`$BRANCH\`"
+                echo "### The new data is on branch \`$BRANCH\`"
                 echo
                 echo "[Open a pull request]($COMPARE_URL)"
               } >> "$GITHUB_STEP_SUMMARY"
