@@ -15,6 +15,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.10.0',
+    date: '2026-10-19',
+    changes: {
+      zh: [
+        '球員頁新增「例行賽／季後賽」切換：可看本季季後賽與生涯季後賽成績',
+        '數據排行新增季後賽排行；打擊率、防禦率等比率項目沿用例行賽門檻（每場球隊比賽 3.1 打席或 1 局）',
+        '修正球員頁成績標題的年份固定顯示 2026',
+      ],
+      en: [
+        'Player pages gain a Regular / Postseason switch, with this postseason’s and the career postseason line',
+        'Leaderboards gain postseason leaders; rates such as AVG and ERA use the regular season’s bar (3.1 PA or 1 inning per club game)',
+        'Fixed the player stats title always reading 2026',
+      ],
+    },
+  },
+  {
     version: '1.9.1',
     date: '2026-10-19',
     changes: {

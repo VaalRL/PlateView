@@ -14,9 +14,11 @@ import {
   getLeaderboards,
   getPersonSummary,
   getPlayerDetail,
+  getPlayerPostseasonStats,
   getPlayersForComparison,
   getPlayerTransactions,
   getPostseasonGameLogs,
+  getPostseasonPlayerStats,
   getPostseasonSeries,
   getSchedule,
   getStandings,
@@ -38,6 +40,8 @@ import { buildPostseasonBracket } from '../../src/utils/postseason';
 import { MLB_LEVEL } from '../../src/constants/levels';
 import { COMPARE_ROWS, compareValue } from '../../src/utils/comparison';
 import { getCurrentMlbSeason } from '../../src/utils/season';
+import { buildPostseasonLeaders, teamGamesOf } from '../../src/utils/postseasonLeaders';
+import { getLevelStat } from '../../src/utils/playerLevels';
 import {
   COMPARED_GAME_TYPES,
   DEFENSE_POSITIONS,
@@ -289,6 +293,51 @@ describe('team comparison', () => {
     const previous = await getTeamPreviousGame(TIGERS);
     expect(previous).not.toBeNull();
     expect(startingLineup(teamSide(previous!.boxscore, TIGERS))).toHaveLength(9);
+  });
+});
+
+describe('postseason stats', () => {
+  it('gives a player his postseason line for a season and his career', async () => {
+    const stats = (await getPlayerPostseasonStats(OHTANI, LAST_FULL_SEASON)).people[0].stats as PlayerStatGroup[];
+    const season = getLevelStat(stats, 'hitting', 'season', MLB_LEVEL.id);
+    const career = getLevelStat(stats, 'hitting', 'career', MLB_LEVEL.id);
+    // 8 home runs in the 2025 postseason, 55 in the regular season
+    expect(season?.homeRuns).toBe(8);
+    expect(season?.gamesPlayed).toBe(17);
+    // 2024's postseason too
+    expect(career!.gamesPlayed!).toBeGreaterThan(season!.gamesPlayed!);
+    expect(career!.homeRuns!).toBeGreaterThan(8);
+    expect(getLevelStat(stats, 'pitching', 'season', MLB_LEVEL.id)?.era).toMatch(/^\d+\.\d{2}$/);
+  });
+
+  it('ranks the postseason leaders from every player’s line', async () => {
+    const hitting = await getPostseasonPlayerStats('hitting', LAST_FULL_SEASON);
+    const pitching = await getPostseasonPlayerStats('pitching', LAST_FULL_SEASON);
+    const splits = hitting.stats?.[0]?.splits ?? [];
+    expect(splits.length).toBeGreaterThan(150);
+    // Only postseason games: Ohtani's line is the postseason one
+    expect(splits.find((s) => s.player?.id === OHTANI)?.stat?.homeRuns).toBe(8);
+    // The Dodgers played 17 games: 2 + 4 + 4 + 7
+    expect(teamGamesOf(hitting).get(DODGERS)).toBe(17);
+
+    for (const [group, stats, categories] of [
+      ['hitting', hitting, HITTING_LEADER_CATEGORIES],
+      ['pitching', pitching, PITCHING_LEADER_CATEGORIES],
+    ] as const) {
+      const leaders = buildPostseasonLeaders(stats, hitting, {
+        statGroup: group,
+        categories: [...categories],
+        season: LAST_FULL_SEASON,
+      });
+      leaders.forEach((g) => {
+        expect(g.leaders.length, `${group} ${g.leaderCategory}`).toBeGreaterThanOrEqual(5);
+        g.leaders.forEach((l) => {
+          expect(l.value, `${g.leaderCategory} value`).not.toBe('undefined');
+          expect(l.person.fullName).not.toBe('');
+          expect(l.team.id).toBeGreaterThan(0);
+        });
+      });
+    }
   });
 });
 

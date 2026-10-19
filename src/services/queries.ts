@@ -21,10 +21,13 @@ import {
   withPostseasonGameLogs,
   getPostseasonSeries,
   getTeamPreviousGame,
+  getPlayerPostseasonStats,
+  getPostseasonPlayerStats,
 } from './mlbApi';
 import { getCurrentMlbSeason, mayHavePostseasonGames } from '../utils/season';
 import { MLB_SPORT_ID } from '../constants/levels';
 import { formatApiDate } from '../utils/timezone';
+import { buildPostseasonLeaders } from '../utils/postseasonLeaders';
 import { ScheduleResponse } from '../types/mlb';
 
 /** True when any game in the schedule response is currently live */
@@ -193,6 +196,60 @@ export function useTeamsPreviousGameQueries(teamIds: number[]) {
       staleTime: 1000 * 60 * 10, // 10 minutes
     })),
   });
+}
+
+/** A player's postseason lines, fetched once the postseason view is opened */
+export function usePlayerPostseasonStatsQuery(personId: number | undefined, season: number, enabled: boolean) {
+  return useQuery({
+    queryKey: ['player-postseason-stats', personId, season],
+    queryFn: () => getPlayerPostseasonStats(personId!, season),
+    enabled: enabled && !!personId,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+}
+
+/**
+ * Postseason leaderboards, ranked from every player's line. The hitters'
+ * lines are always fetched, as they tell how many games each club played,
+ * which rate stats qualify by. Switching league reuses the same data.
+ */
+export function usePostseasonLeadersQuery(
+  params: { statGroup: 'hitting' | 'pitching'; categories: string[]; leagueId?: number; season: number; limit?: number },
+  enabled: boolean
+) {
+  const { statGroup, categories, leagueId, season, limit } = params;
+  const options = { staleTime: 1000 * 60 * 10 }; // 10 minutes
+  const hitting = useQuery({
+    queryKey: ['postseason-stats', 'hitting', season],
+    queryFn: () => getPostseasonPlayerStats('hitting', season),
+    enabled,
+    ...options,
+  });
+  const pitching = useQuery({
+    queryKey: ['postseason-stats', 'pitching', season],
+    queryFn: () => getPostseasonPlayerStats('pitching', season),
+    enabled: enabled && statGroup === 'pitching',
+    ...options,
+  });
+  const source = statGroup === 'pitching' ? pitching : hitting;
+  const data = useMemo(
+    () =>
+      source.data && hitting.data
+        ? { leagueLeaders: buildPostseasonLeaders(source.data, hitting.data, { statGroup, categories, season, leagueId, limit }) }
+        : undefined,
+    // categories is rebuilt by the caller on every render; its content is what matters
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [source.data, hitting.data, statGroup, categories.join(','), season, leagueId, limit]
+  );
+  return {
+    data,
+    isLoading: hitting.isLoading || source.isLoading,
+    isError: hitting.isError || source.isError,
+    refetch: () => {
+      hitting.refetch();
+      if (statGroup === 'pitching') pitching.refetch();
+    },
+  };
 }
 
 export function usePeopleSearchQuery(query: string) {

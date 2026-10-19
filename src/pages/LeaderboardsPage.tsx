@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useLeaderboardsQuery } from '../services/queries';
+import { useLeaderboardsQuery, usePostseasonLeadersQuery } from '../services/queries';
 import { useLanguage } from '../hooks/useLanguage';
 import { TranslationKey } from '../i18n/translations';
 import { LeaderCard } from '../components/leaders/LeaderCard';
 import { getCurrentMlbSeason } from '../utils/season';
+import { latestPostseasonSeason } from '../utils/postseasonLeaders';
 import {
   HITTING_LEADER_CATEGORIES,
   PITCHING_LEADER_CATEGORIES,
@@ -25,24 +26,23 @@ export const LeaderboardsPage: React.FC = () => {
   const { t } = useLanguage();
   const [statGroup, setStatGroup] = useState<'hitting' | 'pitching'>('hitting');
   const [leagueFilter, setLeagueFilter] = useState<'all' | 'al' | 'nl'>('all');
+  const [gameType, setGameType] = useState<'regular' | 'postseason'>('regular');
+  const isPostseason = gameType === 'postseason';
 
   const leagueId =
     leagueFilter === 'al' ? 103 : leagueFilter === 'nl' ? 104 : undefined;
 
-  const season = getCurrentMlbSeason();
+  const season = isPostseason ? latestPostseasonSeason() : getCurrentMlbSeason();
 
   const activeCategories =
     statGroup === 'hitting'
       ? [...HITTING_LEADER_CATEGORIES]
       : [...PITCHING_LEADER_CATEGORIES];
 
-  const { data, isLoading, isError, refetch } = useLeaderboardsQuery({
-    statGroup,
-    categories: activeCategories,
-    leagueId,
-    season,
-    limit: 5,
-  });
+  const params = { statGroup, categories: activeCategories, leagueId, season, limit: 5 };
+  const regular = useLeaderboardsQuery(params, !isPostseason);
+  const postseason = usePostseasonLeadersQuery(params, isPostseason);
+  const { data, isLoading, isError, refetch } = isPostseason ? postseason : regular;
 
   const getCategoryTitle = (category: string) =>
     t(`leaders.cat_${category}` as TranslationKey);
@@ -96,7 +96,7 @@ export const LeaderboardsPage: React.FC = () => {
             </h1>
           </div>
           <p className="text-xs text-muted max-w-xl">
-            {t('leaders.subtitle', { season })}
+            {t(isPostseason ? 'leaders.subtitle_postseason' : 'leaders.subtitle', { season })}
           </p>
         </div>
 
@@ -124,6 +124,25 @@ export const LeaderboardsPage: React.FC = () => {
             >
               {t('leaders.tab_pitching')}
             </button>
+          </div>
+
+          {/* Regular Season vs Postseason */}
+          <div role="group" aria-label={t('leaders.game_type_label')} className="flex items-center p-1 bg-page border border-border rounded-xl text-xs font-semibold">
+            {(['regular', 'postseason'] as const).map((type) => (
+              <button
+                key={type}
+                type="button"
+                aria-pressed={gameType === type}
+                onClick={() => setGameType(type)}
+                className={`px-2.5 py-1.5 rounded-lg transition-all ${
+                  gameType === type
+                    ? 'bg-card text-team-primary border border-border shadow-xs'
+                    : 'text-muted hover:text-main'
+                }`}
+              >
+                {t(type === 'regular' ? 'leaders.regular_season' : 'leaders.postseason')}
+              </button>
+            ))}
           </div>
 
           {/* League Filter (MLB / AL / NL) */}
@@ -185,6 +204,10 @@ export const LeaderboardsPage: React.FC = () => {
             {t('sb.retry')}
           </button>
         </div>
+      )}
+
+      {isPostseason && !isLoading && !isError && (
+        <p className="text-xs text-muted">{t('leaders.postseason_note')}</p>
       )}
 
       {/* Leaderboards Grid */}

@@ -5,6 +5,7 @@ import { TransactionsResponse } from '../types/transactions';
 import { getCurrentMlbSeason } from '../utils/season';
 import { MLB_LEVEL, MLB_MILB_LEAGUE_LIST, MLB_SPORT_ID } from '../constants/levels';
 import { mergeGameLogs, type PlayerStatGroup } from '../utils/playerLevels';
+import type { PostseasonStatsResponse } from '../utils/postseasonLeaders';
 import { COMPARED_GAME_TYPES, lastCompletedGame } from '../utils/teamComparison';
 import {
   HITTING_LEADER_CATEGORIES,
@@ -263,6 +264,43 @@ export async function getPostseasonGameLogs(personIds: number[], season?: number
   return fetchMlb<PeopleResponse>('/people', {
     personIds: personIds.join(','),
     hydrate: `stats(group=[hitting,pitching],type=[gameLog],gameType=P${seasonParam},leagueListId=${MLB_MILB_LEAGUE_LIST})`,
+  });
+}
+
+/**
+ * A player's postseason lines: one season's and his career's. MLB only, as
+ * the minors' playoffs are not postseason games to the API.
+ */
+export async function getPlayerPostseasonStats(personId: number, season: number) {
+  return fetchMlb<any>(`/people/${personId}`, {
+    hydrate: `stats(group=[hitting,pitching],type=[season,career],gameType=P,season=${season})`,
+  });
+}
+
+/** The stat fields the postseason leaderboards read, per group */
+const POSTSEASON_LEADER_FIELDS = {
+  hitting: 'gamesPlayed,plateAppearances,avg,obp,slg,ops,homeRuns,rbi,hits,stolenBases',
+  pitching: 'gamesPlayed,era,whip,strikeOuts,wins,saves,holds,strikeoutsPer9Inn,inningsPitched',
+} as const;
+
+/**
+ * Every big leaguer's line of one postseason, for the postseason
+ * leaderboards: `/stats/leaders` ignores `gameType=P`, `/stats` does not.
+ * The whole player pool comes back (a few hundred), trimmed with `fields=`.
+ */
+export async function getPostseasonPlayerStats(
+  group: 'hitting' | 'pitching',
+  season: number
+): Promise<PostseasonStatsResponse> {
+  return fetchMlb<PostseasonStatsResponse>('/stats', {
+    stats: 'season',
+    group,
+    gameType: 'P',
+    season,
+    sportId: MLB_SPORT_ID,
+    playerPool: 'ALL',
+    limit: 1000,
+    fields: `stats,splits,stat,${POSTSEASON_LEADER_FIELDS[group]},player,id,fullName,team,id,name`,
   });
 }
 
