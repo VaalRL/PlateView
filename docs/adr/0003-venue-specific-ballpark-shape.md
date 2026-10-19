@@ -75,3 +75,12 @@ PNC Park 的實際回傳(文件範例):`leftLine=325, left=389, leftCenter=410, 
   - 每場比賽多一次 `/venues` 請求(可由後續烤成靜態檔消除)。
   - 春訓場、海外賽場地(如東京巨蛋)可能缺 `fieldInfo`,一律走 fallback。
   - 15° 等距的角度指派是建模選擇,與真實球場的實際角度有出入。
+
+## Update (2026-10-19): 烤成靜態檔
+
+Alternatives 第 3 項當初「待資料實測確認後再做」，現在條件成立：每週資料工作（`.github/workflows/update-player-data.yml`）在 GitHub Actions 上連得到 API，由 `scripts/update-venues.mjs` 產生 `src/data/venues.json`。
+
+- 內容：30 隊本季主場（`/teams?sportId=1` 取主場 id，`/venues?venueIds=…&hydrate=fieldInfo` 一次取回）的牆距離、草皮與屋頂。少於 28 座、或任一座缺中外野距離就不寫入。
+- 逐場頁先查內建檔，查不到（倫敦、東京等特別賽場地）才發 `/venues/{id}` 請求；Consequences 中「每場比賽多一次 `/venues` 請求」因此消除。
+- 首份資料由這個工作實際產生（2026 年 30 座），不是手填：道奇球場只公布 5 個角度（沒有 left / right），PNC 左中外野 410 深於中外野 399，與上文一致。
+

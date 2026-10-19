@@ -15,6 +15,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.13.1',
+    date: '2026-10-19',
+    changes: {
+      zh: [
+        '30 隊主場的全壘打牆距離改為內建資料（每週自動更新），比賽頁的守備配置圖不必再等球場資料就能畫出外野形狀',
+      ],
+      en: [
+        'The 30 clubs’ ballpark fence distances are now built in (updated weekly), so the game page draws the outfield without waiting for them',
+      ],
+    },
+  },
+  {
     version: '1.13.0',
     date: '2026-10-19',
     changes: {

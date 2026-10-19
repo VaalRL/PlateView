@@ -1,0 +1,444 @@
+{
+  "season": 2026,
+  "venues": [
+    {
+      "id": 1,
+      "name": "Angel Stadium",
+      "fieldInfo": {
+        "capacity": 45517,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 330,
+        "left": 347,
+        "leftCenter": 389,
+        "center": 396,
+        "rightCenter": 365,
+        "right": 348,
+        "rightLine": 330
+      }
+    },
+    {
+      "id": 2,
+      "name": "Oriole Park at Camden Yards",
+      "fieldInfo": {
+        "capacity": 42455,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 333,
+        "left": 363,
+        "leftCenter": 376,
+        "center": 410,
+        "rightCenter": 373,
+        "rightLine": 318
+      }
+    },
+    {
+      "id": 3,
+      "name": "Fenway Park",
+      "fieldInfo": {
+        "capacity": 37755,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 310,
+        "left": 379,
+        "leftCenter": 390,
+        "center": 420,
+        "rightCenter": 380,
+        "rightLine": 302
+      }
+    },
+    {
+      "id": 4,
+      "name": "Rate Field",
+      "fieldInfo": {
+        "capacity": 40126,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 330,
+        "leftCenter": 377,
+        "center": 400,
+        "rightCenter": 372,
+        "rightLine": 335
+      }
+    },
+    {
+      "id": 5,
+      "name": "Progressive Field",
+      "fieldInfo": {
+        "capacity": 34830,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 325,
+        "left": 370,
+        "leftCenter": 410,
+        "center": 405,
+        "rightCenter": 375,
+        "rightLine": 325
+      }
+    },
+    {
+      "id": 7,
+      "name": "Kauffman Stadium",
+      "fieldInfo": {
+        "capacity": 38179,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 347,
+        "left": 364,
+        "leftCenter": 379,
+        "center": 410,
+        "rightCenter": 379,
+        "right": 364,
+        "rightLine": 344
+      }
+    },
+    {
+      "id": 12,
+      "name": "Tropicana Field",
+      "fieldInfo": {
+        "capacity": 25025,
+        "turfType": "Artificial Turf",
+        "roofType": "Dome",
+        "leftLine": 315,
+        "left": 370,
+        "leftCenter": 410,
+        "center": 404,
+        "rightCenter": 404,
+        "right": 370,
+        "rightLine": 322
+      }
+    },
+    {
+      "id": 14,
+      "name": "Rogers Centre",
+      "fieldInfo": {
+        "capacity": 39150,
+        "turfType": "Artificial Turf",
+        "roofType": "Retractable",
+        "leftLine": 328,
+        "leftCenter": 375,
+        "center": 404,
+        "rightCenter": 375,
+        "rightLine": 328
+      }
+    },
+    {
+      "id": 15,
+      "name": "Chase Field",
+      "fieldInfo": {
+        "capacity": 48405,
+        "turfType": "Artificial Turf",
+        "roofType": "Retractable",
+        "leftLine": 328,
+        "left": 376,
+        "leftCenter": 412,
+        "center": 407,
+        "rightCenter": 414,
+        "right": 376,
+        "rightLine": 335
+      }
+    },
+    {
+      "id": 17,
+      "name": "Wrigley Field",
+      "fieldInfo": {
+        "capacity": 41298,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 355,
+        "leftCenter": 368,
+        "center": 400,
+        "rightCenter": 368,
+        "rightLine": 353
+      }
+    },
+    {
+      "id": 19,
+      "name": "Coors Field",
+      "fieldInfo": {
+        "capacity": 50480,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 347,
+        "left": 390,
+        "leftCenter": 420,
+        "center": 415,
+        "rightCenter": 424,
+        "right": 375,
+        "rightLine": 350
+      }
+    },
+    {
+      "id": 22,
+      "name": "UNIQLO Field at Dodger Stadium",
+      "fieldInfo": {
+        "capacity": 56000,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 330,
+        "leftCenter": 385,
+        "center": 395,
+        "rightCenter": 385,
+        "rightLine": 330
+      }
+    },
+    {
+      "id": 31,
+      "name": "PNC Park",
+      "fieldInfo": {
+        "capacity": 38705,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 325,
+        "left": 389,
+        "leftCenter": 410,
+        "center": 399,
+        "rightCenter": 375,
+        "rightLine": 320
+      }
+    },
+    {
+      "id": 32,
+      "name": "American Family Field",
+      "fieldInfo": {
+        "capacity": 40100,
+        "turfType": "Grass",
+        "roofType": "Retractable",
+        "leftLine": 344,
+        "leftCenter": 371,
+        "center": 400,
+        "rightCenter": 374,
+        "rightLine": 345
+      }
+    },
+    {
+      "id": 680,
+      "name": "T-Mobile Park",
+      "fieldInfo": {
+        "capacity": 47378,
+        "turfType": "Grass",
+        "roofType": "Retractable",
+        "leftLine": 331,
+        "leftCenter": 390,
+        "center": 405,
+        "rightCenter": 387,
+        "rightLine": 327
+      }
+    },
+    {
+      "id": 2392,
+      "name": "Daikin Park",
+      "fieldInfo": {
+        "capacity": 41168,
+        "turfType": "Grass",
+        "roofType": "Retractable",
+        "leftLine": 315,
+        "leftCenter": 362,
+        "center": 409,
+        "rightCenter": 373,
+        "rightLine": 326
+      }
+    },
+    {
+      "id": 2394,
+      "name": "Comerica Park",
+      "fieldInfo": {
+        "capacity": 41083,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 345,
+        "leftCenter": 370,
+        "center": 420,
+        "rightCenter": 365,
+        "rightLine": 330
+      }
+    },
+    {
+      "id": 2395,
+      "name": "Oracle Park",
+      "fieldInfo": {
+        "capacity": 41311,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 339,
+        "leftCenter": 399,
+        "center": 391,
+        "rightCenter": 415,
+        "rightLine": 309
+      }
+    },
+    {
+      "id": 2529,
+      "name": "Sutter Health Park",
+      "fieldInfo": {
+        "capacity": 13416,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 330,
+        "leftCenter": 380,
+        "center": 403,
+        "rightCenter": 380,
+        "rightLine": 325
+      }
+    },
+    {
+      "id": 2602,
+      "name": "Great American Ball Park",
+      "fieldInfo": {
+        "capacity": 42319,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 328,
+        "leftCenter": 379,
+        "center": 404,
+        "rightCenter": 370,
+        "rightLine": 325
+      }
+    },
+    {
+      "id": 2680,
+      "name": "Petco Park",
+      "fieldInfo": {
+        "capacity": 40000,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 336,
+        "leftCenter": 386,
+        "center": 396,
+        "rightCenter": 391,
+        "rightLine": 322
+      }
+    },
+    {
+      "id": 2681,
+      "name": "Citizens Bank Park",
+      "fieldInfo": {
+        "capacity": 42901,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 329,
+        "left": 369,
+        "leftCenter": 381,
+        "center": 401,
+        "rightCenter": 398,
+        "right": 369,
+        "rightLine": 330
+      }
+    },
+    {
+      "id": 2889,
+      "name": "Busch Stadium",
+      "fieldInfo": {
+        "capacity": 43435,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 336,
+        "leftCenter": 375,
+        "center": 400,
+        "rightCenter": 375,
+        "rightLine": 335
+      }
+    },
+    {
+      "id": 3289,
+      "name": "Citi Field",
+      "fieldInfo": {
+        "capacity": 41922,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 335,
+        "left": 358,
+        "leftCenter": 370,
+        "center": 408,
+        "rightCenter": 380,
+        "right": 370,
+        "rightLine": 330
+      }
+    },
+    {
+      "id": 3309,
+      "name": "Nationals Park",
+      "fieldInfo": {
+        "capacity": 41376,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 336,
+        "leftCenter": 377,
+        "center": 402,
+        "rightCenter": 370,
+        "rightLine": 335
+      }
+    },
+    {
+      "id": 3312,
+      "name": "Target Field",
+      "fieldInfo": {
+        "capacity": 38544,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 339,
+        "leftCenter": 377,
+        "center": 404,
+        "rightCenter": 367,
+        "rightLine": 328
+      }
+    },
+    {
+      "id": 3313,
+      "name": "Yankee Stadium",
+      "fieldInfo": {
+        "capacity": 46537,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 318,
+        "leftCenter": 399,
+        "center": 408,
+        "rightCenter": 385,
+        "rightLine": 314
+      }
+    },
+    {
+      "id": 4169,
+      "name": "loanDepot park",
+      "fieldInfo": {
+        "capacity": 37446,
+        "turfType": "Artificial Turf",
+        "roofType": "Retractable",
+        "leftLine": 344,
+        "leftCenter": 386,
+        "center": 407,
+        "rightCenter": 392,
+        "rightLine": 335
+      }
+    },
+    {
+      "id": 4705,
+      "name": "Truist Park",
+      "fieldInfo": {
+        "capacity": 40819,
+        "turfType": "Grass",
+        "roofType": "Open",
+        "leftLine": 335,
+        "left": 375,
+        "leftCenter": 385,
+        "center": 400,
+        "rightCenter": 375,
+        "rightLine": 325
+      }
+    },
+    {
+      "id": 5325,
+      "name": "Globe Life Field",
+      "fieldInfo": {
+        "capacity": 40518,
+        "turfType": "Artificial Turf",
+        "roofType": "Retractable",
+        "leftLine": 329,
+        "leftCenter": 372,
+        "center": 407,
+        "rightCenter": 374,
+        "rightLine": 326
+      }
+    }
+  ]
+}
