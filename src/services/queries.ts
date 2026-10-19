@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import {
   getSchedule,
   getStandings,
@@ -20,6 +20,7 @@ import {
   getPostseasonGameLogs,
   withPostseasonGameLogs,
   getPostseasonSeries,
+  getTeamPreviousGame,
 } from './mlbApi';
 import { getCurrentMlbSeason, mayHavePostseasonGames } from '../utils/season';
 import { MLB_SPORT_ID } from '../constants/levels';
@@ -180,6 +181,17 @@ export function useComparisonPlayersQuery(personIds: number[], season: number) {
     queryFn: () => getPlayersForComparison(personIds, season),
     enabled: personIds.length > 0,
     staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+}
+
+/** Each compared club's last completed game with its boxscore; a finished game does not change */
+export function useTeamsPreviousGameQueries(teamIds: number[]) {
+  return useQueries({
+    queries: teamIds.map((teamId) => ({
+      queryKey: ['team-previous-game', teamId],
+      queryFn: () => getTeamPreviousGame(teamId),
+      staleTime: 1000 * 60 * 10, // 10 minutes
+    })),
   });
 }
 

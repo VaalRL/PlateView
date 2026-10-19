@@ -1,10 +1,11 @@
-import { ScheduleResponse, StandingsResponse, VenuesResponse } from '../types/mlb';
+import { BoxscoreResponse, ScheduleResponse, StandingsResponse, VenuesResponse } from '../types/mlb';
 import { PeopleResponse } from '../types/favorites';
 import { PostseasonSeriesResponse } from '../types/postseason';
 import { TransactionsResponse } from '../types/transactions';
 import { getCurrentMlbSeason } from '../utils/season';
 import { MLB_LEVEL, MLB_MILB_LEAGUE_LIST, MLB_SPORT_ID } from '../constants/levels';
 import { mergeGameLogs, type PlayerStatGroup } from '../utils/playerLevels';
+import { COMPARED_GAME_TYPES, lastCompletedGame } from '../utils/teamComparison';
 import {
   HITTING_LEADER_CATEGORIES,
   PITCHING_LEADER_CATEGORIES,
@@ -106,6 +107,38 @@ export async function getGameSchedule(gamePk: number): Promise<ScheduleResponse>
     gamePk,
     hydrate: 'linescore,team,probablePitcher(note),decisions,venue',
   });
+}
+
+/**
+ * A club's big league games of one season, trimmed to what finding its last
+ * completed game needs (status, date, teams, score): about 40 KB for a full
+ * season instead of several hundred.
+ */
+export async function getTeamSeasonGames(teamId: number, season: number): Promise<ScheduleResponse> {
+  return fetchMlb<ScheduleResponse>('/schedule', {
+    sportId: MLB_SPORT_ID,
+    teamId,
+    season,
+    gameType: COMPARED_GAME_TYPES.join(','),
+    fields:
+      'dates,games,gamePk,gameType,gameDate,officialDate,status,abstractGameState,codedGameState,detailedState,' +
+      'teams,away,home,team,id,name,score,isWinner',
+  });
+}
+
+/**
+ * A club's last completed game and its boxscore. Before opening day the
+ * season has none yet, so the previous season's last game stands in.
+ */
+export async function getTeamPreviousGame(teamId: number, season: number = getCurrentMlbSeason()) {
+  for (const year of [season, season - 1]) {
+    const game = lastCompletedGame(await getTeamSeasonGames(teamId, year), teamId);
+    if (game) {
+      const boxscore: BoxscoreResponse = await getGameBoxscore(game.gamePk);
+      return { game, boxscore };
+    }
+  }
+  return null;
 }
 
 /**
