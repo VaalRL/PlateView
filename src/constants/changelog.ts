@@ -15,6 +15,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.9.1',
+    date: '2026-10-19',
+    changes: {
+      zh: [
+        '補上 10 位台灣旅外球員的中文名（林台加、黃仲翔、林睿杰、蘇嵐鴻、林盛恩、賴謙凡、何樺、陽念希、林鉑濬、廖宥霖），台灣球員頁全部以中文名顯示，也能用中文名搜尋',
+      ],
+      en: [
+        'Added Chinese names for 10 more players from Taiwan, so every player on the Players from Taiwan page now has one and can be searched by it',
+      ],
+    },
+  },
+  {
     version: '1.9.0',
     date: '2026-10-19',
     changes: {

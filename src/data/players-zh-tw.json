@@ -712,5 +712,124 @@
     ],
     "team": "LAD",
     "teamId": 119
+  },
+  {
+    "id": 694834,
+    "nameEn": "Tyler Wilson",
+    "nameZh": "林台加",
+    "nicknames": [
+      "林台加",
+      "台加",
+      "洋基台將"
+    ],
+    "team": "NYY",
+    "teamId": 147
+  },
+  {
+    "id": 829473,
+    "nameEn": "Chung-Hsiang Huang",
+    "nameZh": "黃仲翔",
+    "nicknames": [
+      "黃仲翔",
+      "仲翔",
+      "響尾蛇台將"
+    ],
+    "team": "ARI",
+    "teamId": 109
+  },
+  {
+    "id": 842158,
+    "nameEn": "Jui-Chieh Lin",
+    "nameZh": "林睿杰",
+    "nicknames": [
+      "林睿杰",
+      "睿杰",
+      "雙城台將"
+    ],
+    "team": "MIN",
+    "teamId": 142
+  },
+  {
+    "id": 837088,
+    "nameEn": "Lan-Hong Su",
+    "nameZh": "蘇嵐鴻",
+    "nicknames": [
+      "蘇嵐鴻",
+      "嵐鴻",
+      "教士台將"
+    ],
+    "team": "SD",
+    "teamId": 135
+  },
+  {
+    "id": 806823,
+    "nameEn": "Sheng-En Lin",
+    "nameZh": "林盛恩",
+    "nicknames": [
+      "林盛恩",
+      "盛恩",
+      "紅人台將"
+    ],
+    "team": "CIN",
+    "teamId": 113
+  },
+  {
+    "id": 843397,
+    "nameEn": "Chien-Fan Lai",
+    "nameZh": "賴謙凡",
+    "nicknames": [
+      "賴謙凡",
+      "謙凡",
+      "洋基台將"
+    ],
+    "team": "NYY",
+    "teamId": 147
+  },
+  {
+    "id": 843974,
+    "nameEn": "Hua Ho",
+    "nameZh": "何樺",
+    "nicknames": [
+      "何樺",
+      "費城人台將"
+    ],
+    "team": "PHI",
+    "teamId": 143
+  },
+  {
+    "id": 806825,
+    "nameEn": "Nien-Hsi Yang",
+    "nameZh": "陽念希",
+    "nicknames": [
+      "陽念希",
+      "念希",
+      "巨人台將"
+    ],
+    "team": "SF",
+    "teamId": 137
+  },
+  {
+    "id": 806836,
+    "nameEn": "Po-Chun Lin",
+    "nameZh": "林鉑濬",
+    "nicknames": [
+      "林鉑濬",
+      "鉑濬",
+      "水手台將"
+    ],
+    "team": "SEA",
+    "teamId": 136
+  },
+  {
+    "id": 835879,
+    "nameEn": "Yu-Lin Liao",
+    "nameZh": "廖宥霖",
+    "nicknames": [
+      "廖宥霖",
+      "宥霖",
+      "釀酒人台將"
+    ],
+    "team": "MIL",
+    "teamId": 158
   }
 ]
