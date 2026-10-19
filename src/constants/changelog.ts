@@ -15,6 +15,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.13.0',
+    date: '2026-10-19',
+    changes: {
+      zh: [
+        '球員頁逐場紀錄可選擇賽季，查看往年每一場（含當年季後賽），篩選與合計一樣可用',
+      ],
+      en: [
+        'The player game log can go back to earlier seasons, that year’s postseason included, with the same filters and totals',
+      ],
+    },
+  },
+  {
     version: '1.12.0',
     date: '2026-10-19',
     changes: {
