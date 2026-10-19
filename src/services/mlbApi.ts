@@ -191,6 +191,40 @@ export async function getPlayerDetail(personId: number) {
 }
 
 /**
+ * The seasons a player has a line in, at any level, newest first: the
+ * choices for his game log. Trimmed to the season numbers.
+ */
+export async function getPlayerSeasons(personId: number): Promise<number[]> {
+  const response = await fetchMlb<PeopleResponse>(`/people/${personId}`, {
+    hydrate: `stats(group=[hitting,pitching],type=[yearByYear],leagueListId=${MLB_MILB_LEAGUE_LIST})`,
+    fields: 'people,id,stats,splits,season',
+  });
+  const seasons = (response.people?.[0]?.stats ?? []).flatMap((g) =>
+    (g.splits ?? []).map((s) => Number((s as { season?: string }).season))
+  );
+  return [...new Set(seasons.filter((y) => Number.isInteger(y) && y > 0))].sort((a, b) => b - a);
+}
+
+/**
+ * One past season's game log at every level, postseason games folded in.
+ * A postseason that fails to load leaves the regular season standing,
+ * flagged like the current season's.
+ */
+export async function getPlayerSeasonGameLogs(personId: number, season: number) {
+  const [regular, postseason] = await Promise.allSettled([
+    fetchMlb<PeopleResponse>(`/people/${personId}`, {
+      hydrate: `stats(group=[hitting,pitching],type=[gameLog],season=${season},leagueListId=${MLB_MILB_LEAGUE_LIST})`,
+    }),
+    getPostseasonGameLogs([personId], season),
+  ]);
+  if (regular.status === 'rejected') throw regular.reason;
+  return {
+    data: withPostseasonGameLogs(regular.value, postseason.status === 'fulfilled' ? postseason.value : undefined),
+    postseasonFailed: postseason.status === 'rejected',
+  };
+}
+
+/**
  * Every roster move on a player's record (trades, signings, options,
  * releases, injured list ...), across MLB and the minors.
  */

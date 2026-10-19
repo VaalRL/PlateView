@@ -11,6 +11,8 @@ import {
   getVenue,
   getPlayerDetail,
   getPlayerTransactions,
+  getPlayerSeasons,
+  getPlayerSeasonGameLogs,
   getLeagueTransactions,
   getPersonSummary,
   getPlayersForComparison,
@@ -259,6 +261,26 @@ export function useLeagueTransactionsQuery(startDate: string, endDate: string) {
     queryKey: ['league-transactions', startDate, endDate],
     queryFn: () => getLeagueTransactions(startDate, endDate),
     staleTime: 1000 * 60 * 15, // 15 minutes
+  });
+}
+
+/** Seasons a player has played, for the game log's season choice */
+export function usePlayerSeasonsQuery(personId?: number) {
+  return useQuery({
+    queryKey: ['player-seasons', personId],
+    queryFn: () => getPlayerSeasons(personId!),
+    enabled: !!personId,
+    staleTime: 1000 * 60 * 60, // an hour: a new season shows up once a year
+  });
+}
+
+/** A past season's game log; a finished season does not change */
+export function usePlayerSeasonGameLogsQuery(personId: number | undefined, season: number | null) {
+  return useQuery({
+    queryKey: ['player-season-game-logs', personId, season],
+    queryFn: () => getPlayerSeasonGameLogs(personId!, season!),
+    enabled: !!personId && season !== null,
+    staleTime: 1000 * 60 * 60, // an hour
   });
 }
 

@@ -16,6 +16,8 @@ import {
   getPersonSummary,
   getPlayerDetail,
   getPlayerPostseasonStats,
+  getPlayerSeasonGameLogs,
+  getPlayerSeasons,
   getPlayersForComparison,
   getPlayerTransactions,
   getPostseasonGameLogs,
@@ -231,6 +233,25 @@ describe('players', () => {
   it('finds players by name', async () => {
     const people: { id: number }[] = (await searchPeople('Ohtani')).people ?? [];
     expect(people.map((p) => p.id)).toContain(OHTANI);
+  });
+});
+
+describe('past seasons’ game logs', () => {
+  it('lists the seasons a player has played, newest first', async () => {
+    const seasons = await getPlayerSeasons(OHTANI);
+    expect(seasons).toEqual([...seasons].sort((a, b) => b - a));
+    // His big league career began in 2018
+    expect(seasons).toEqual(expect.arrayContaining([2018, 2024, LAST_FULL_SEASON]));
+  });
+
+  it('gives an earlier season’s games with its postseason folded in', async () => {
+    const { data, postseasonFailed } = await getPlayerSeasonGameLogs(OHTANI, 2024);
+    expect(postseasonFailed).toBe(false);
+    const games = gameLogOf(data?.people?.[0]?.stats as PlayerStatGroup[], 'hitting');
+    // 159 regular season games and 16 in the postseason, on the way to the 2024 title
+    expect(games.filter((g) => g.gameType === 'R')).toHaveLength(159);
+    expect(games.filter((g) => isPostseasonGameType(g.gameType))).toHaveLength(16);
+    games.forEach((g) => expect(g.date?.startsWith('2024-')).toBe(true));
   });
 });
 
