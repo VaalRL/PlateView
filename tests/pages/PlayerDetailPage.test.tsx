@@ -462,6 +462,83 @@ describe('PlayerDetailPage postseason games', () => {
     const regularRow = screen.getByText('2026-09-28').closest('tr')!;
     expect(within(regularRow).queryByText('季後')).not.toBeInTheDocument();
   });
+
+  it('shows the postseason line for the season and the career when asked', async () => {
+    const line = (homeRuns: number, gamesPlayed: number) => ({
+      splits: [{ stat: { gamesPlayed, atBats: gamesPlayed * 4, avg: '.300', homeRuns, rbi: 9, ops: '.950' } }],
+    });
+    const fetchMock = vi.fn(async (url: string) => ({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () =>
+        decodeURIComponent(url).includes('type=[season,career],gameType=P')
+          ? {
+              people: [
+                {
+                  id: 999003,
+                  stats: [
+                    { group: { displayName: 'hitting' }, type: { displayName: 'season' }, ...line(5, 11) },
+                    { group: { displayName: 'hitting' }, type: { displayName: 'career' }, ...line(12, 30) },
+                  ],
+                },
+              ],
+            }
+          : hitter('R', '2026-09-28', 776003),
+    }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/999003']}>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    await screen.findByText('2026-09-28');
+    const statsCalls = () =>
+      fetchMock.mock.calls.filter(([u]) => decodeURIComponent(u).includes('type=[season,career],gameType=P'));
+    // Not fetched until asked for
+    expect(statsCalls()).toHaveLength(0);
+
+    fireEvent.click(screen.getByRole('button', { name: '季後賽' }));
+    expect(await screen.findByText(/2026 季後賽打擊成績/)).toBeInTheDocument();
+    expect(screen.getByText(/11 場/)).toBeInTheDocument();
+    expect(decodeURIComponent(statsCalls()[0][0])).toContain('season=2026');
+
+    fireEvent.click(screen.getByRole('button', { name: '生涯累積' }));
+    expect(screen.getByText(/MLB 生涯季後賽打擊累計/)).toBeInTheDocument();
+    expect(screen.getByText(/30 場/)).toBeInTheDocument();
+  });
+
+  it('says so when the player has no postseason games', async () => {
+    globalThis.fetch = vi.fn(async (url: string) => ({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () =>
+        decodeURIComponent(url).includes('type=[season,career],gameType=P')
+          ? { people: [{ id: 999003, stats: [] }] }
+          : hitter('R', '2026-09-28', 776003),
+    })) as unknown as typeof fetch;
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/999003']}>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    await screen.findByText('2026-09-28');
+    fireEvent.click(screen.getByRole('button', { name: '季後賽' }));
+    expect(await screen.findByText('2026 季後賽沒有出賽紀錄。')).toBeInTheDocument();
+  });
 });
 
 describe('PlayerDetailPage game logs and transactions tabs', () => {
