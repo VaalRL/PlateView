@@ -15,6 +15,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.12.0',
+    date: '2026-10-19',
+    changes: {
+      zh: [
+        '可以加到手機主畫面，像 App 一樣全螢幕開啟：Android 與電腦版 Chrome／Edge 在頁尾按「加到主畫面」，iPhone／iPad 在 Safari 點「分享」→「加入主畫面」',
+        '從主畫面開啟時，導覽列不會被 iPhone 的狀態列擋住',
+      ],
+      en: [
+        'Add PlateView to your home screen and open it full screen like an app: “Add to home screen” in the footer on Android and desktop Chrome or Edge, Share → Add to Home Screen in Safari on iPhone and iPad',
+        'Opened from the home screen, the navbar no longer sits under the iPhone status bar',
+      ],
+    },
+  },
+  {
     version: '1.11.0',
     date: '2026-10-19',
     changes: {

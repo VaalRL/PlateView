@@ -3,6 +3,7 @@ import { Heart, Github } from 'lucide-react';
 import { PlateViewLogo } from './PlateViewLogo';
 import { useLanguage } from '../../hooks/useLanguage';
 import { ChangelogModal } from './ChangelogModal';
+import { InstallHint } from './InstallHint';
 import { CHANGELOG } from '../../constants/changelog';
 
 export const Footer: React.FC = () => {
@@ -50,6 +51,8 @@ export const Footer: React.FC = () => {
             </div>
           </div>
         </div>
+
+        <InstallHint />
 
         {/* Buy Me a Coffee Section (Official Badge Image) */}
         <div className="max-w-md mx-auto bg-card border border-border p-5 rounded-2xl shadow-sm space-y-3">

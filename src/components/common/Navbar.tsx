@@ -45,7 +45,8 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-md border-b border-border transition-colors">
+      {/* Opened from the home screen on iOS the page runs under the status bar; keep the bar below it */}
+      <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-md border-b border-border transition-colors pt-[env(safe-area-inset-top)]">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
           {/* Logo & Brand */}
           <Link to="/" className="flex items-center gap-2 group shrink-0">
