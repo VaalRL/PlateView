@@ -1,5 +1,7 @@
 import React, { Suspense, cloneElement, isValidElement, lazy, useCallback, useEffect, useId, useRef, useState } from 'react';
 
+import { ErrorBoundary } from './ErrorBoundary';
+
 const HoverCardPopup = lazy(() => import('./HoverCardPopup'));
 
 /** A short rest before opening, so sweeping the mouse across a list loads nothing */
@@ -109,11 +111,15 @@ export const HoverCard: React.FC<HoverCardProps> = ({ children, renderContent })
         onClick: chain(own.onClick, () => setNow(false)),
       } as Record<string, unknown>)}
       {open && reference && (
-        <Suspense fallback={null}>
-          <HoverCardPopup reference={reference} id={cardId}>
-            {renderContent()}
-          </HoverCardPopup>
-        </Suspense>
+        // A card that fails to load (its file gone after a deploy) just does
+        // not show; it must not take the page down with it
+        <ErrorBoundary fallback={() => null}>
+          <Suspense fallback={null}>
+            <HoverCardPopup reference={reference} id={cardId}>
+              {renderContent()}
+            </HoverCardPopup>
+          </Suspense>
+        </ErrorBoundary>
       )}
     </>
   );

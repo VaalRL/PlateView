@@ -15,6 +15,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.7.1',
+    date: '2026-10-19',
+    changes: {
+      zh: [
+        '修正網站更新後，已開著的頁面在換頁或滑過球員時整個變成白畫面；現在會自動載入新版本',
+        '頁面發生錯誤時只影響該頁並顯示「重新整理」，導覽列仍可使用，不再整個白畫面',
+        '修正曾經延賽的比賽（例如雨延的季後賽）在比賽頁沒有比分與逐局紀錄',
+      ],
+      en: [
+        'Fixed pages going blank after a site update when moving to another page or hovering a player; the new version now loads by itself',
+        'An error on one page now stays on that page with a reload button, and the navbar keeps working',
+        'Fixed games that had been postponed (such as a rained-out playoff game) showing no score or linescore on the game page',
+      ],
+    },
+  },
+  {
     version: '1.7.0',
     date: '2026-10-18',
     changes: {

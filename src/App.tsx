@@ -5,6 +5,7 @@ import { LanguageProvider } from './hooks/useLanguage';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { OfflineBanner } from './components/common/OfflineBanner';
+import { PageErrorBoundary } from './components/common/PageErrorBoundary';
 import { HomePage } from './pages/HomePage';
 
 // Route-level code splitting keeps the initial bundle to the home page
@@ -50,17 +51,19 @@ export const App: React.FC = () => {
           <div className="min-h-screen flex flex-col bg-page text-main">
             <Navbar />
             <main className="flex-1">
-              <Suspense fallback={<RouteFallback />}>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/teams/:teamId" element={<TeamDetailPage />} />
-                  <Route path="/players/:personId" element={<PlayerDetailPage />} />
-                  <Route path="/leaders" element={<LeaderboardsPage />} />
-                  <Route path="/games/:gamePk" element={<GameDetailPage />} />
-                  <Route path="/postseason/:season?" element={<PostseasonPage />} />
-                  <Route path="/taiwan" element={<TaiwanPlayersPage />} />
-                </Routes>
-              </Suspense>
+              <PageErrorBoundary>
+                <Suspense fallback={<RouteFallback />}>
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/teams/:teamId" element={<TeamDetailPage />} />
+                    <Route path="/players/:personId" element={<PlayerDetailPage />} />
+                    <Route path="/leaders" element={<LeaderboardsPage />} />
+                    <Route path="/games/:gamePk" element={<GameDetailPage />} />
+                    <Route path="/postseason/:season?" element={<PostseasonPage />} />
+                    <Route path="/taiwan" element={<TaiwanPlayersPage />} />
+                  </Routes>
+                </Suspense>
+              </PageErrorBoundary>
             </main>
             <Footer />
             <OfflineBanner />

@@ -176,6 +176,36 @@ describe('GameDetailPage', () => {
     expect(screen.getByText(/Seager \(30\)/)).toBeInTheDocument();
   });
 
+  it('shows the game that was played when a rainout lists it twice', async () => {
+    // As the API returns a postponed game: the called-off date first, with no
+    // score and no linescore, then the date it was played, same gamePk
+    const played = scheduleResponse.dates[0].games[0];
+    const rainout = {
+      ...played,
+      status: { abstractGameState: 'Final', detailedState: 'Postponed', codedGameState: 'D' },
+      teams: {
+        away: { team: played.teams.away.team, leagueRecord: played.teams.away.leagueRecord },
+        home: { team: played.teams.home.team, leagueRecord: played.teams.home.leagueRecord },
+      },
+      linescore: undefined,
+      decisions: undefined,
+    };
+    globalThis.fetch = vi.fn(async (input: any) => {
+      const url = String(input);
+      const body = url.includes('/boxscore')
+        ? boxscoreResponse
+        : { dates: [{ date: '2026-09-14', games: [rainout] }, { date: '2026-09-15', games: [played] }] };
+      return { ok: true, status: 200, statusText: 'OK', json: async () => body } as any;
+    }) as any;
+
+    renderPage();
+
+    expect(await screen.findByText('5 : 3')).toBeInTheDocument();
+    expect(screen.getByText('Final')).toBeInTheDocument();
+    expect(screen.queryByText('Postponed')).not.toBeInTheDocument();
+    expect(screen.getByText('TEX')).toBeInTheDocument();
+  });
+
   it('shows a not-found message for an invalid gamePk', async () => {
     globalThis.fetch = vi.fn(async () => ({
       ok: true,

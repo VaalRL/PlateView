@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calledOffReason, isCompletedGame, teamResult } from '../../src/utils/gameStatus';
+import { calledOffReason, isCompletedGame, pickGameEntry, teamResult } from '../../src/utils/gameStatus';
 
 const game = (status: object, away: object = {}, home: object = {}) => ({
   status,
@@ -53,5 +53,30 @@ describe('teamResult', () => {
     const final = { abstractGameState: 'Final', detailedState: 'Final' };
     expect(teamResult(game(final, { score: 2 }, { score: 4 }), 119)).toBe('L');
     expect(teamResult(game(final, { score: 3 }, { score: 3 }), 119)).toBeNull();
+  });
+});
+
+describe('pickGameEntry', () => {
+  const entry = (state: string, detailed: string, coded = '') => ({
+    status: { abstractGameState: state, detailedState: detailed, codedGameState: coded },
+    teams: { away: { team: { id: 1 } }, home: { team: { id: 2 } } },
+  });
+  const rainout = entry('Final', 'Postponed', 'D');
+  const played = entry('Final', 'Final', 'F');
+  const live = entry('Live', 'In Progress', 'I');
+  const later = entry('Preview', 'Scheduled', 'S');
+
+  it('skips the called-off entry of a postponed game', () => {
+    expect(pickGameEntry([rainout, played])).toBe(played);
+    expect(pickGameEntry([rainout, later])).toBe(later);
+  });
+
+  it('prefers the game in progress', () => {
+    expect(pickGameEntry([played, live])).toBe(live);
+  });
+
+  it('falls back to the called-off entry when that is all there is', () => {
+    expect(pickGameEntry([rainout])).toBe(rainout);
+    expect(pickGameEntry([])).toBeUndefined();
   });
 });
