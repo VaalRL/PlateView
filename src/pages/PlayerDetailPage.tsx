@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { usePlayerDetailQuery, usePlayerPostseasonLogsQuery } from '../services/queries';
 import { getPlayerHeadshotUrl, getTeamLogoUrl, withPostseasonGameLogs } from '../services/mlbApi';
 import { useFavorites } from '../hooks/useFavorites';
@@ -41,7 +41,8 @@ import {
   sumPitching,
   type GameLogFilter,
 } from '../utils/gameLogFilters';
-import { Star, ArrowLeft, Activity, Calendar, Award, Zap, ArrowLeftRight } from 'lucide-react';
+import { Star, ArrowLeft, Activity, Calendar, Award, Zap, ArrowLeftRight, Columns3 } from 'lucide-react';
+import { addToComparison, loadComparison } from '../utils/comparison';
 import type { TranslationKey } from '../i18n/translations';
 
 function gameLogsOf(stats: PlayerStatGroup[], group: 'hitting' | 'pitching'): GameLogSplit[] {
@@ -78,6 +79,7 @@ export const PlayerDetailPage: React.FC = () => {
   const postseasonLogs = usePlayerPostseasonLogsQuery(idNum);
   const data = useMemo(() => withPostseasonGameLogs(detail, postseasonLogs.data), [detail, postseasonLogs.data]);
   const { isFavoritePlayer, toggleFavoritePlayer } = useFavorites();
+  const navigate = useNavigate();
   const { lang, t } = useLanguage();
 
   const isFav = isFavoritePlayer(idNum);
@@ -342,23 +344,35 @@ export const PlayerDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Favorite Button */}
-        <button
-          onClick={() =>
-            toggleFavoritePlayer(idNum, {
-              nameZh: zhPlayerMeta?.nameZh,
-              nameEn: person?.fullName,
-            })
-          }
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
-            isFav
-              ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 shadow-sm'
-              : 'bg-page border-border text-muted hover:text-main hover:border-team-primary'
-          }`}
-        >
-          <Star className={`w-4 h-4 ${isFav ? 'fill-amber-500 text-amber-500' : ''}`} />
-          <span>{isFav ? t('player.fav_active') : t('player.fav_btn')}</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Add to the comparison page's list and open it */}
+          <button
+            type="button"
+            onClick={() => navigate(`/compare?players=${addToComparison(loadComparison(), idNum).join(',')}`)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border bg-page border-border text-muted hover:text-main hover:border-team-primary transition-all"
+          >
+            <Columns3 className="w-4 h-4" />
+            <span>{t('player.compare_btn')}</span>
+          </button>
+
+          {/* Favorite Button */}
+          <button
+            onClick={() =>
+              toggleFavoritePlayer(idNum, {
+                nameZh: zhPlayerMeta?.nameZh,
+                nameEn: person?.fullName,
+              })
+            }
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+              isFav
+                ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 shadow-sm'
+                : 'bg-page border-border text-muted hover:text-main hover:border-team-primary'
+            }`}
+          >
+            <Star className={`w-4 h-4 ${isFav ? 'fill-amber-500 text-amber-500' : ''}`} />
+            <span>{isFav ? t('player.fav_active') : t('player.fav_btn')}</span>
+          </button>
+        </div>
       </div>
 
       {isLoading && (

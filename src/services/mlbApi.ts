@@ -175,6 +175,18 @@ export async function getPersonSummary(personId: number): Promise<PeopleResponse
 }
 
 /**
+ * Season and sabermetric lines for several big leaguers at once, for the
+ * comparison page: one request however many players are compared.
+ */
+export async function getPlayersForComparison(personIds: number[], season: number): Promise<PeopleResponse> {
+  if (personIds.length === 0) return { people: [] };
+  return fetchMlb<PeopleResponse>('/people', {
+    personIds: personIds.join(','),
+    hydrate: `currentTeam,stats(group=[hitting,pitching],type=[season,sabermetrics],season=${season})`,
+  });
+}
+
+/**
  * Search people by name via official MLB API
  */
 export async function searchPeople(name: string) {

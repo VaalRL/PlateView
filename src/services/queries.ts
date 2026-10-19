@@ -12,6 +12,7 @@ import {
   getPlayerDetail,
   getPlayerTransactions,
   getPersonSummary,
+  getPlayersForComparison,
   searchPeople,
   getLeaderboards,
   getPeopleBatch,
@@ -169,6 +170,16 @@ export function usePersonSummaryQuery(personId?: number) {
     queryFn: () => getPersonSummary(personId!),
     enabled: !!personId,
     staleTime: 1000 * 60 * 30, // 30 minutes
+  });
+}
+
+/** The players on the comparison page, in one request; order does not matter to the cache */
+export function useComparisonPlayersQuery(personIds: number[], season: number) {
+  return useQuery({
+    queryKey: ['compare-players', personIds.slice().sort((a, b) => a - b).join(','), season],
+    queryFn: () => getPlayersForComparison(personIds, season),
+    enabled: personIds.length > 0,
+    staleTime: 1000 * 60 * 10, // 10 minutes
   });
 }
 

@@ -10,6 +10,8 @@ export const STORAGE_KEYS = {
   themeMode: 'plateview_mode',
   themeTeam: 'plateview_team',
   language: 'plateview_lang',
+  /** Players on the comparison page, so the player page can add to the list */
+  compare: 'plateview_compare',
 } as const;
 
 /** Default: Dodgers */
