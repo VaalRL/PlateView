@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { usePlayerDetailQuery, usePlayerPostseasonLogsQuery } from '../services/queries';
+import { usePlayerDetailQuery, usePlayerPostseasonLogsQuery, usePlayerPostseasonStatsQuery } from '../services/queries';
 import { getPlayerHeadshotUrl, getTeamLogoUrl, withPostseasonGameLogs } from '../services/mlbApi';
 import { useFavorites } from '../hooks/useFavorites';
 import { useLanguage } from '../hooks/useLanguage';
@@ -43,6 +43,8 @@ import {
 } from '../utils/gameLogFilters';
 import { Star, ArrowLeft, Activity, Calendar, Award, Zap, ArrowLeftRight, Columns3 } from 'lucide-react';
 import { addToComparison, loadComparison } from '../utils/comparison';
+import { latestPostseasonSeason } from '../utils/postseasonLeaders';
+import { getCurrentMlbSeason } from '../utils/season';
 import type { TranslationKey } from '../i18n/translations';
 
 function gameLogsOf(stats: PlayerStatGroup[], group: 'hitting' | 'pitching'): GameLogSplit[] {
@@ -63,6 +65,7 @@ export const PlayerDetailPage: React.FC = () => {
   const zhPlayerMeta = playersData.find((p) => p.id === idNum);
 
   const [statTypeTab, setStatTypeTab] = useState<'season' | 'career'>('season');
+  const [gameScope, setGameScope] = useState<'regular' | 'postseason'>('regular');
   const [roleTab, setRoleTab] = useState<'auto' | 'hitting' | 'pitching'>('auto');
   // Transactions load only once their tab is opened. The tab, like the game
   // log filters and "show all", belongs to one player (see the level choice below)
@@ -152,8 +155,28 @@ export const PlayerDetailPage: React.FC = () => {
       ? 'pitching'
       : 'hitting';
 
-  const activeHittingStats = statTypeTab === 'season' ? hittingSeasonStats : hittingCareerStats;
-  const activePitchingStats = statTypeTab === 'season' ? pitchingSeasonStats : pitchingCareerStats;
+  // Postseason lines exist for big league games only, and load when asked for
+  const isPostseasonView = gameScope === 'postseason' && level === MLB_SPORT_ID;
+  const postseasonSeason = latestPostseasonSeason();
+  const postseasonStats = usePlayerPostseasonStatsQuery(idNum, postseasonSeason, isPostseasonView);
+  const postseasonGroups = postseasonStats.data?.people?.[0]?.stats as PlayerStatGroup[] | undefined;
+  const postseasonLine = (group: 'hitting' | 'pitching') =>
+    getLevelStat(postseasonGroups, group, statTypeTab, MLB_SPORT_ID);
+
+  const activeHittingStats = isPostseasonView
+    ? postseasonLine('hitting')
+    : statTypeTab === 'season'
+    ? hittingSeasonStats
+    : hittingCareerStats;
+  const activePitchingStats = isPostseasonView
+    ? postseasonLine('pitching')
+    : statTypeTab === 'season'
+    ? pitchingSeasonStats
+    : pitchingCareerStats;
+  const statsTitle = (group: 'hitting' | 'pitching') => {
+    const key = `player.${isPostseasonView ? 'postseason_' : ''}${statTypeTab}_${group}_title` as TranslationKey;
+    return t(key, { season: isPostseasonView ? postseasonSeason : getCurrentMlbSeason() });
+  };
 
   // Derived pitching stats (FIP / FIP+)
   const derivedFip = useMemo(() => {
@@ -423,6 +446,25 @@ export const PlayerDetailPage: React.FC = () => {
                 </div>
               )}
 
+              {/* Regular Season vs Postseason, big league lines only */}
+              {level === MLB_SPORT_ID && (
+                <div role="group" aria-label={t('player.game_scope_label')} className="flex items-center p-1 bg-card border border-border rounded-lg text-xs font-semibold">
+                  {(['regular', 'postseason'] as const).map((scope) => (
+                    <button
+                      key={scope}
+                      type="button"
+                      aria-pressed={gameScope === scope}
+                      onClick={() => setGameScope(scope)}
+                      className={`px-3 py-1 rounded-md transition-colors ${
+                        gameScope === scope ? 'bg-team-primary text-white shadow-sm' : 'text-muted hover:text-main'
+                      }`}
+                    >
+                      {t(scope === 'regular' ? 'player.tab_regular' : 'player.tab_postseason')}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Season vs Career Switcher */}
               <div className="flex items-center p-1 bg-card border border-border rounded-lg text-xs font-semibold">
                 <button
@@ -484,7 +526,7 @@ export const PlayerDetailPage: React.FC = () => {
                   <h3 className="font-bold text-xs text-muted uppercase tracking-wider flex items-center gap-1.5">
                     <Award className="w-4 h-4 text-team-primary" />
                     <span>
-                      🏏 {statTypeTab === 'season' ? t('player.season_hitting_title') : t('player.career_hitting_title')}
+                      🏏 {statsTitle('hitting')}
                     </span>
                   </h3>
                   <span className="text-xs font-mono text-muted">
@@ -539,6 +581,8 @@ export const PlayerDetailPage: React.FC = () => {
                 </div>
 
                 {/* Advanced Sabermetrics Panel */}
+                {/* Postseason lines have no sabermetrics */}
+                {!isPostseasonView && (
                 <div className="pt-3 border-t border-border/40 space-y-2.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-main">
@@ -635,6 +679,7 @@ export const PlayerDetailPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             )}
 
@@ -645,7 +690,7 @@ export const PlayerDetailPage: React.FC = () => {
                   <h3 className="font-bold text-xs text-muted uppercase tracking-wider flex items-center gap-1.5">
                     <Award className="w-4 h-4 text-team-primary" />
                     <span>
-                      ⚾ {statTypeTab === 'season' ? t('player.season_pitching_title') : t('player.career_pitching_title')}
+                      ⚾ {statsTitle('pitching')}
                     </span>
                   </h3>
                   <span className="text-xs font-mono text-muted">
@@ -700,6 +745,8 @@ export const PlayerDetailPage: React.FC = () => {
                 </div>
 
                 {/* Advanced Sabermetrics Panel */}
+                {/* Postseason lines have no sabermetrics */}
+                {!isPostseasonView && (
                 <div className="pt-3 border-t border-border/40 space-y-2.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-main">
@@ -793,11 +840,27 @@ export const PlayerDetailPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             )}
 
             {/* If no hitting or pitching stats exist */}
-            {!activeHittingStats && !activePitchingStats && (
+            {isPostseasonView && postseasonStats.isLoading && (
+              <div className="bg-card border border-border rounded-2xl h-48 animate-pulse" />
+            )}
+            {isPostseasonView && postseasonStats.isError && (
+              <div className="bg-card border border-border rounded-2xl p-8 text-center text-sm text-rose-500">
+                {t('player.postseason_stats_error')}
+              </div>
+            )}
+            {isPostseasonView && postseasonStats.isSuccess && !activeHittingStats && !activePitchingStats && (
+              <div className="bg-card border border-border rounded-2xl p-8 text-center text-sm text-muted">
+                {statTypeTab === 'season'
+                  ? t('player.postseason_none_season', { season: postseasonSeason })
+                  : t('player.postseason_none_career')}
+              </div>
+            )}
+            {!isPostseasonView && !activeHittingStats && !activePitchingStats && (
               <div className="bg-card border border-border rounded-2xl p-8 text-center space-y-3 shadow-sm">
                 <div className="text-4xl">🌱</div>
                 <h3 className="text-base font-bold text-main">
