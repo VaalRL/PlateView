@@ -280,11 +280,9 @@ describe('team comparison', () => {
     const fielders = (['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'] as const).map((pos) => defense[pos]!);
     expect(new Set(fielders.map((f) => f.personId)).size).toBe(8);
     fielders.forEach((f) => expect(f.fieldingPct).toMatch(/^\d?\.\d{3}$/));
-    console.info(
-      'Season lines in a World Series boxscore:',
-      lineup.map((s) => `${s.fullName} ${s.avg}/${s.ops} HR ${s.homeRuns}`),
-      `SP ${defense.P?.fullName} ERA ${defense.P?.era} ${defense.P?.wins}-${defense.P?.losses}`
-    );
+    // A postseason boxscore carries postseason totals, not the regular season's
+    // (Ohtani hit 55 home runs in the 2025 regular season, 8 in the postseason)
+    expect(lineup.find((s) => s.personId === OHTANI)?.homeRuns).toBe(8);
   });
 
   it('has a previous game for a club right now', async () => {

@@ -15,6 +15,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.9.0',
+    date: '2026-10-19',
+    changes: {
+      zh: [
+        '新增「球隊比較」：最多 4 隊並排，比較各隊前一場完賽比賽的先發打線（每一棒標示 OPS 較高者、先發平均 OPS）與守備位置（先發投手標示防禦率較低者）',
+        '球隊頁新增「加入比較」按鈕；比較頁上方可切換球員比較與球隊比較',
+      ],
+      en: [
+        'New Compare Teams page: up to four clubs side by side, comparing the starting lineup (higher OPS in each slot, starters’ mean OPS) and fielding positions (lower-ERA starting pitcher) from each one’s last completed game',
+        'Team pages gain a Compare button, and the comparison pages switch between players and teams',
+      ],
+    },
+  },
+  {
     version: '1.8.0',
     date: '2026-10-19',
     changes: {
