@@ -431,3 +431,10 @@
   - [x] 安裝提示：瀏覽器拒絕時不再產生未處理的錯誤
   - [x] 整理：共用 `bestIndexes`（球員／球隊比較）、`outsOf`（局數換算）、`zhNameOf`（中文譯名查詢，取代 4 份重複的 Map）；`startingDefense` 沿用已算好的打線
   - [x] 版本升為 1.13.2；測試 427 項全數通過（新增 2 項回歸測試）
+
+- [x] **Phase 49: 每頁瀏覽器檢查（2026-10-20）**
+  - [x] `e2e/smoke.e2e.ts`（Playwright）：對建置後的網站（`vite preview`）逐頁開啟 11 個頁面，手機寬度中英文、桌機中文，共 33 次；每頁須顯示該頁內容、不進錯誤畫面、沒有執行期錯誤、手機寬度不左右滑動
+  - [x] `e2e/mockApi.ts`：依網址回傳精簡但合理的 MLB API 資料（沿用 `tests/fixtures` 的戰績、季後賽、球員），圖片與第三方資源一律擋掉
+  - [x] `.github/workflows/e2e.yml`：每個 PR 執行；失敗時上傳截圖與頁面快照
+  - [x] 驗證有效：故意讓異動頁拋錯，檢查即失敗（錯誤畫面、沒有內容）；還原後 33 項全過
+  - [x] `npm run test:e2e`；本機可用 `CHROMIUM_PATH` 指向已安裝的瀏覽器；`tsconfig.e2e.json` 納入型別檢查
