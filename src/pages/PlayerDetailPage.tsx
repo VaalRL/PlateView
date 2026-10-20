@@ -5,7 +5,7 @@ import {
   usePlayerPostseasonLogsQuery,
   usePlayerPostseasonStatsQuery,
   usePlayerSeasonGameLogsQuery,
-  usePlayerSeasonsQuery,
+  usePlayerYearByYearQuery,
 } from '../services/queries';
 import { getPlayerHeadshotUrl, getTeamLogoUrl, withPostseasonGameLogs } from '../services/mlbApi';
 import { useFavorites } from '../hooks/useFavorites';
@@ -38,6 +38,8 @@ import {
 import { MLB_SPORT_ID } from '../constants/levels';
 import { PlayerTransactions } from '../components/player/PlayerTransactions';
 import { GameLogFilterBar } from '../components/player/GameLogFilterBar';
+import { YearByYearTable } from '../components/player/YearByYearTable';
+import { seasonsOf, yearRows } from '../utils/yearByYear';
 import { TeamHoverCard } from '../components/common/TeamHoverCard';
 import {
   DEFAULT_GAME_LOG_FILTER,
@@ -48,7 +50,7 @@ import {
   sumPitching,
   type GameLogFilter,
 } from '../utils/gameLogFilters';
-import { Star, ArrowLeft, Activity, Calendar, Award, Zap, ArrowLeftRight, Columns3 } from 'lucide-react';
+import { Star, ArrowLeft, Activity, Calendar, CalendarRange, Award, Zap, ArrowLeftRight, Columns3 } from 'lucide-react';
 import { addToComparison, loadComparison } from '../utils/comparison';
 import { latestPostseasonSeason } from '../utils/postseasonLeaders';
 import { getCurrentMlbSeason } from '../utils/season';
@@ -59,10 +61,11 @@ function gameLogsOf(stats: PlayerStatGroup[], group: 'hitting' | 'pitching'): Ga
   return sortGameLogsByDate((splits || []) as GameLogSplit[]);
 }
 
-type HistoryTab = 'logs' | 'transactions';
+type HistoryTab = 'logs' | 'years' | 'transactions';
 
 const HISTORY_TABS: { key: HistoryTab; Icon: typeof Calendar; title: TranslationKey; short: TranslationKey }[] = [
   { key: 'logs', Icon: Calendar, title: 'player.game_logs_title', short: 'player.tab_game_logs' },
+  { key: 'years', Icon: CalendarRange, title: 'player.years_title', short: 'player.tab_years' },
   { key: 'transactions', Icon: ArrowLeftRight, title: 'player.transactions_title', short: 'player.tab_transactions' },
 ];
 
@@ -94,7 +97,9 @@ export const PlayerDetailPage: React.FC = () => {
   const { data: detail, isLoading, isError } = usePlayerDetailQuery(idNum);
   // Postseason games come from a query of their own, so they never hold up the page
   const postseasonLogs = usePlayerPostseasonLogsQuery(idNum);
-  const seasonsQuery = usePlayerSeasonsQuery(idNum);
+  // Every season's line: the year-by-year table, and the game log's season choice
+  const yearByYear = usePlayerYearByYearQuery(idNum);
+  const yearGroups = yearByYear.data?.people?.[0]?.stats as PlayerStatGroup[] | undefined;
   const pastLogs = usePlayerSeasonGameLogsQuery(idNum, logSeason);
   const data = useMemo(() => withPostseasonGameLogs(detail, postseasonLogs.data), [detail, postseasonLogs.data]);
   const { isFavoritePlayer, toggleFavoritePlayer } = useFavorites();
@@ -157,7 +162,7 @@ export const PlayerDetailPage: React.FC = () => {
   const sortedPitchingGameLogs = useMemo(() => gameLogsOf(logGroups, 'pitching'), [logGroups]);
   // This season's log comes with the page; earlier ones are offered once known
   const currentSeason = getCurrentMlbSeason();
-  const pastSeasons = (seasonsQuery.data ?? []).filter((y) => y < currentSeason);
+  const pastSeasons = useMemo(() => seasonsOf(yearGroups).filter((y) => y < currentSeason), [yearGroups, currentSeason]);
   const logsLoading = logSeason !== null && pastLogs.isLoading;
   const postseasonLogsFailed = logSeason === null ? postseasonLogs.isError : pastLogs.postseasonFailed;
 
@@ -244,6 +249,12 @@ export const PlayerDetailPage: React.FC = () => {
   // available) shows as a secondary line in either language mode
   const primaryName = person?.fullName || zhPlayerMeta?.nameEn || 'MLB Player';
   const secondaryName = zhPlayerMeta?.nameZh || '';
+
+  // Seasons at the level shown, in the role shown; a player with lines in
+  // only one role gets that one
+  const yearsRole: 'hitting' | 'pitching' =
+    effectiveRole === 'pitching' ? (hasPitching ? 'pitching' : 'hitting') : hasHitting ? 'hitting' : 'pitching';
+  const yearsRows = useMemo(() => yearRows(yearGroups, yearsRole, level), [yearGroups, yearsRole, level]);
 
   // The whole season's log is on hand; ten rows show until expanded
   const roleGameLogs = effectiveRole === 'pitching' ? sortedPitchingGameLogs : sortedHittingGameLogs;
@@ -922,7 +933,9 @@ export const PlayerDetailPage: React.FC = () => {
                 className="flex items-end gap-4 sm:gap-6"
                 onKeyDown={(e) => {
                   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-                  const next = historyTab === 'logs' ? 'transactions' : 'logs';
+                  const at = HISTORY_TABS.findIndex((tab) => tab.key === historyTab);
+                  const step = e.key === 'ArrowRight' ? 1 : HISTORY_TABS.length - 1;
+                  const next = HISTORY_TABS[(at + step) % HISTORY_TABS.length].key;
                   setHistoryTab(next);
                   document.getElementById(`player-tab-${next}`)?.focus();
                 }}
@@ -946,19 +959,36 @@ export const PlayerDetailPage: React.FC = () => {
                       }`}
                     >
                       <Icon className={`w-5 h-5 ${selected ? 'text-team-primary' : ''}`} />
-                      {/* The full titles don't fit side by side at phone width */}
-                      <span className="hidden sm:inline text-lg">{t(title)}</span>
-                      <span className="sm:hidden text-base">{t(short)}</span>
+                      {/* Three full titles side by side need a wide screen */}
+                      <span className="hidden lg:inline text-lg">{t(title)}</span>
+                      <span className="lg:hidden text-base">{t(short)}</span>
                     </button>
                   );
                 })}
               </div>
               {historyTab === 'logs' && (
-                <span className="text-xs text-muted pb-3 shrink-0">
+                <span className="hidden sm:inline text-xs text-muted pb-3 shrink-0">
                   {effectiveRole === 'pitching' ? t('player.pitching_logs') : t('player.hitting_logs')}
                 </span>
               )}
+              {historyTab === 'years' && (
+                <span className="hidden sm:inline text-xs text-muted pb-3 shrink-0">
+                  {yearsRole === 'pitching' ? t('player.years_pitching') : t('player.years_hitting')}
+                </span>
+              )}
             </div>
+
+            {historyTab === 'years' && (
+              <div role="tabpanel" id="player-panel-years" aria-labelledby="player-tab-years">
+                <YearByYearTable
+                  rows={yearsRows}
+                  career={yearsRole === 'pitching' ? pitchingCareerStats : hittingCareerStats}
+                  role={yearsRole}
+                  isLoading={yearByYear.isLoading}
+                  isError={yearByYear.isError}
+                />
+              </div>
+            )}
 
             {historyTab === 'transactions' && (
               <div role="tabpanel" id="player-panel-transactions" aria-labelledby="player-tab-transactions">

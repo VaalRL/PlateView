@@ -140,6 +140,34 @@ const award = (id: string, playerId: number, fullName: string, teamId: number) =
   ],
 });
 
+const yearLine = (season: string, team: { id: number; name: string } | undefined, extra: object = {}) => ({
+  season,
+  sport: { id: 1, abbreviation: 'MLB' },
+  ...(team ? { team } : {}),
+  ...extra,
+  stat: { gamesPlayed: 60, atBats: 200, runs: 20, hits: 50, homeRuns: 6, rbi: 25, stolenBases: 1, baseOnBalls: 15, strikeOuts: 60, avg: '.250', obp: '.310', ops: '.700' },
+});
+/** Brian Serven's seasons, one of them split between two clubs */
+const servenYears = {
+  people: [
+    {
+      id: 661531,
+      stats: [
+        {
+          group: { displayName: 'hitting' },
+          type: { displayName: 'yearByYear' },
+          splits: [
+            yearLine('2025', { id: 115, name: 'Colorado Rockies' }),
+            yearLine('2025', { id: 133, name: 'Athletics' }),
+            yearLine('2025', undefined, { numTeams: 2 }),
+            yearLine('2026', { id: 133, name: 'Athletics' }),
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 /** The answer for one API URL */
 export function answer(url: string): unknown {
   const u = decodeURIComponent(url);
@@ -159,7 +187,8 @@ export function answer(url: string): unknown {
   if (/^\/teams\/\d+\/roster/.test(path)) return { roster: [] };
   if (/^\/teams\/\d+$/.test(path)) return dodgers;
   if (/^\/people\/\d+$/.test(path)) {
-    if (u.includes('gameType=P') || u.includes('yearByYear')) return { people: [] };
+    if (u.includes('yearByYear')) return path === '/people/661531' ? servenYears : { people: [] };
+    if (u.includes('gameType=P')) return { people: [] };
     return promoted;
   }
   if (path === '/people') return people;

@@ -29,7 +29,7 @@ export interface PlayerStatGroup {
 type StatGroupName = 'hitting' | 'pitching';
 
 /** Splits without a sport predate leagueListId requests and are big league stats */
-const sportIdOf = (split: LevelSplit) => split.sport?.id ?? MLB_SPORT_ID;
+export const sportIdOf = (split: LevelSplit) => split.sport?.id ?? MLB_SPORT_ID;
 
 function findSplits(stats: PlayerStatGroup[] | undefined, group: StatGroupName, type: string): LevelSplit[] {
   return (

@@ -768,9 +768,114 @@ describe('PlayerDetailPage game logs and transactions tabs', () => {
 
     const logsTab = await screen.findByRole('tab', { name: /逐場比賽紀錄/ });
     fireEvent.keyDown(logsTab, { key: 'ArrowRight' });
+    const yearsTab = screen.getByRole('tab', { name: /逐年成績/ });
+    expect(yearsTab).toHaveAttribute('aria-selected', 'true');
+    expect(yearsTab).toHaveFocus();
+
+    // Left from the first tab wraps round to the last
+    fireEvent.keyDown(yearsTab, { key: 'ArrowLeft' });
+    fireEvent.keyDown(logsTab, { key: 'ArrowLeft' });
     const transactionsTab = screen.getByRole('tab', { name: /轉隊記錄/ });
     expect(transactionsTab).toHaveAttribute('aria-selected', 'true');
     expect(transactionsTab).toHaveFocus();
+  });
+});
+
+describe('PlayerDetailPage year by year', () => {
+  const globalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = globalFetch;
+    queryClient.clear();
+  });
+
+  const hitting = (avg: string, homeRuns: number) => ({ gamesPlayed: 100, atBats: 400, homeRuns, avg, ops: '.800' });
+  const MLB = { id: 1, abbreviation: 'MLB' };
+  const AAA = { id: 11, abbreviation: 'AAA' };
+
+  /** Two big league seasons, the first split between the Rangers and the Dodgers, and one at AAA */
+  const yearByYear = {
+    people: [
+      {
+        id: 999005,
+        stats: [
+          {
+            group: { displayName: 'hitting' },
+            type: { displayName: 'yearByYear' },
+            splits: [
+              { season: '2024', sport: AAA, team: { id: 431, name: 'Oklahoma City Comets' }, stat: hitting('.320', 9) },
+              { season: '2025', sport: MLB, team: { id: 140, name: 'Texas Rangers' }, stat: hitting('.250', 11) },
+              { season: '2025', sport: MLB, team: { id: 119, name: 'Los Angeles Dodgers' }, stat: hitting('.290', 7) },
+              { season: '2025', sport: MLB, numTeams: 2, stat: hitting('.268', 18) },
+              { season: '2026', sport: MLB, team: { id: 119, name: 'Los Angeles Dodgers' }, stat: hitting('.301', 25) },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  const detail = {
+    people: [
+      {
+        id: 999005,
+        fullName: 'Year Tester',
+        primaryPosition: { abbreviation: 'LF', type: 'Outfielder' },
+        currentTeam: { id: 119, sport: { id: 1 } },
+        stats: [
+          { group: { displayName: 'hitting' }, type: { displayName: 'season' }, splits: [{ sport: MLB, stat: hitting('.301', 25) }] },
+          {
+            group: { displayName: 'hitting' },
+            type: { displayName: 'career' },
+            splits: [
+              { sport: MLB, stat: hitting('.287', 43) },
+              { sport: AAA, stat: hitting('.320', 9) },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  it('lists each season at the level shown, a traded season as its total and each club', async () => {
+    globalThis.fetch = vi.fn(async (url: string) => ({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () =>
+        decodeURIComponent(url).includes('yearByYear')
+          ? yearByYear
+          : decodeURIComponent(url).includes('gameType=P')
+          ? { people: [] }
+          : detail,
+    })) as unknown as typeof fetch;
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/999005']}>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    fireEvent.click(await screen.findByRole('tab', { name: /逐年成績/ }));
+    const panel = screen.getByRole('tabpanel', { name: /逐年成績/ });
+    const rows = within(panel).getAllByRole('row').slice(1);
+    // Career first, then newest first
+    expect(rows.slice(1).map((r) => within(r).getAllByRole('cell')[1].textContent)).toEqual(['LAD', '2 隊', 'TEX', 'LAD']);
+    expect(rows[0]).toHaveTextContent('生涯');
+    expect(rows[0]).toHaveTextContent('43');
+    expect(rows[1]).toHaveTextContent('2026');
+    expect(rows[2]).toHaveTextContent('.268');
+    expect(within(rows[3]).getByRole('link', { name: 'TEX' })).toHaveAttribute('href', '/teams/140');
+    expect(screen.queryByText('Oklahoma City Comets')).not.toBeInTheDocument();
+
+    // The AAA season comes with the AAA level
+    fireEvent.click(screen.getByRole('button', { name: 'AAA' }));
+    expect(await within(panel).findByText('Oklahoma City Comets')).toBeInTheDocument();
+    expect(within(panel).queryByText('2026')).not.toBeInTheDocument();
   });
 });
 
