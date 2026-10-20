@@ -26,7 +26,11 @@ describe('TaiwanPlayersPage', () => {
 
   it('groups every player in the list by level, top level first', () => {
     renderPage();
-    const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
+    // Level headings only: the birthdays box comes and goes with the date
+    const headings = screen
+      .getAllByRole('heading', { level: 2 })
+      .map((h) => h.textContent)
+      .filter((text) => text !== '本週生日');
     expect(headings[0]).toMatch(/^大聯盟/);
     const levels = new Set(taiwanPlayers.players.map((p) => p.level));
     expect(headings).toHaveLength(levels.size);
@@ -75,4 +79,16 @@ describe('TaiwanPlayersPage', () => {
     const anyMinorLeaguer = taiwanPlayers.players.find((p) => p.level !== 'MLB')!;
     expect(await screen.findByText(anyMinorLeaguer.fullName)).toBeInTheDocument();
   });
+
+  it('lists the birthdays of the coming week', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 10, 2, 12)); // November 2, 2026
+    renderPage();
+    const box = screen.getByRole('region', { name: '本週生日' });
+    // Wei-En Lin, born November 4, 2005
+    const lin = within(box).getByRole('link', { name: '林維恩' }).closest('li')!;
+    expect(lin).toHaveTextContent('11 月 4 日 · 21 歲');
+    vi.useRealTimers();
+  });
 });
+

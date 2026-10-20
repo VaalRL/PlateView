@@ -15,6 +15,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.15.0',
+    date: '2026-10-20',
+    changes: {
+      zh: [
+        '球員頁顯示生日與出生地，生日當天另有標示',
+        '首頁新增「今日壽星」：今天生日的大聯盟球員與他們滿幾歲',
+        '台灣球員頁新增「本週生日」：未來 7 天生日的台灣球員',
+      ],
+      en: [
+        'Player pages show the birth date and birthplace, and mark the birthday itself',
+        'The home page lists big leaguers whose birthday is today and the age they turn',
+        'The Players from Taiwan page lists birthdays in the coming week',
+      ],
+    },
+  },
+  {
     version: '1.14.0',
     date: '2026-10-20',
     changes: {

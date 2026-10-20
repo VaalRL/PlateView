@@ -233,6 +233,18 @@ export async function getAwardRecipients(awardId: string, season?: number): Prom
 }
 
 /**
+ * Every player on a big league roster in a season, trimmed to who he is,
+ * his club and his birth date: for the home page's birthdays. About 1,500
+ * players, 60 KB.
+ */
+export async function getSeasonPlayers(season: number): Promise<PeopleResponse> {
+  return fetchMlb<PeopleResponse>(`/sports/${MLB_SPORT_ID}/players`, {
+    season,
+    fields: 'people,id,fullName,birthDate,currentTeam,id,primaryPosition,abbreviation',
+  });
+}
+
+/**
  * Every roster move filed by a big league club between two dates
  * (YYYY-MM-DD, inclusive): signings, trades, releases, options, injured
  * list moves and assignments to its minor league clubs.

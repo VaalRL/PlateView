@@ -15,6 +15,7 @@ import {
   getPlayerSeasonGameLogs,
   getLeagueTransactions,
   getAwardRecipients,
+  getSeasonPlayers,
   getPersonSummary,
   getPlayersForComparison,
   searchPeople,
@@ -318,6 +319,15 @@ export function useAwardHistoryQuery(awardId: string | undefined) {
     queryFn: () => getAwardRecipients(awardId!),
     enabled: !!awardId,
     staleTime: 1000 * 60 * 60,
+  });
+}
+
+/** The season's big leaguers with their birth dates; a roster changes slowly */
+export function useSeasonPlayersQuery(season: number) {
+  return useQuery({
+    queryKey: ['season-players', season],
+    queryFn: () => getSeasonPlayers(season),
+    staleTime: 1000 * 60 * 60 * 6, // 6 hours
   });
 }
 

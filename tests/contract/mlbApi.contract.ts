@@ -25,6 +25,7 @@ import {
   getPostseasonPlayerStats,
   getPostseasonSeries,
   getSchedule,
+  getSeasonPlayers,
   getStandings,
   getTeamDetail,
   getTeamPreviousGame,
@@ -365,6 +366,23 @@ describe('postseason stats', () => {
         });
       });
     }
+  });
+});
+
+describe('birthdays', () => {
+  it('gives every big leaguer of a season a birth date', async () => {
+    const people = (await getSeasonPlayers(LAST_FULL_SEASON)).people ?? [];
+    expect(people.length).toBeGreaterThan(1000);
+    const dated = people.filter((p) => /^\d{4}-\d{2}-\d{2}$/.test(p.birthDate ?? ''));
+    expect(dated.length / people.length).toBeGreaterThan(0.99);
+    // Ohtani was born on July 5, 1994
+    expect(people.find((p) => p.id === OHTANI)).toMatchObject({ birthDate: '1994-07-05', currentTeam: { id: DODGERS } });
+  });
+
+  it('has the birth date and place on the player page request', async () => {
+    const person = (await getPlayerDetail(OHTANI)).people[0];
+    expect(person).toMatchObject({ birthDate: '1994-07-05', birthCountry: 'Japan' });
+    expect(typeof person.birthCity).toBe('string');
   });
 });
 
