@@ -72,3 +72,7 @@ claude/
 ref of PRD/
 .cursor/
 .cursorrules
+
+# Playwright smoke test output
+test-results/
+playwright-report/

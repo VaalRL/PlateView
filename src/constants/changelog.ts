@@ -15,6 +15,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.13.3',
+    date: '2026-10-20',
+    changes: {
+      zh: ['修正英文介面的比賽頁在部分手機上可左右滑動（球隊切換按鈕的長隊名不會縮短）'],
+      en: ['Fixed the game page scrolling sideways on some phones in English: long team names on the team switch now shorten'],
+    },
+  },
+  {
     version: '1.13.2',
     date: '2026-10-20',
     changes: {

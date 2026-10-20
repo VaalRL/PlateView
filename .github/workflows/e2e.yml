@@ -1,0 +1,44 @@
+name: Browser smoke test
+
+# Opens every page of the production build in Chromium, with the MLB API
+# mocked (e2e/mockApi.ts), on phone and desktop widths: each page must show
+# its content, throw nothing and not scroll sideways. See e2e/smoke.e2e.ts.
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build static site
+        run: npm run build
+
+      - name: Open every page
+        run: npm run test:e2e
+
+      - name: Keep the failure screenshots and page snapshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-results
+          path: test-results/
+          retention-days: 7
