@@ -1,20 +1,13 @@
 import { it } from 'vitest';
 import { fetchMlb } from '../../src/services/mlbApi';
 
-// Temporary: what the awards endpoints return
+// Temporary: the big league awards' ids
 it('probes the awards endpoints', async () => {
-  const list = await fetchMlb<any>('/awards', { sportId: 1 }).catch((e) => ({ error: String(e) }));
-  const awards = list.awards ?? [];
-  console.info('AWARDS count', awards.length, 'keys', Object.keys(awards[0] ?? {}));
-  console.info('AWARDS ids', awards.map((a: any) => `${a.id}|${a.name}|${a.sortOrder ?? ''}`).join('\n'));
-  for (const id of ['ALMVP', 'NLMVP', 'ALCY', 'NLCY', 'ALROY', 'NLROY', 'WSMVP', 'ALGG', 'MLBHOF']) {
+  const list = await fetchMlb<any>('/awards', { sportId: 1 });
+  const awards = (list.awards ?? []).filter((a: any) => Number(a.sortOrder ?? 9999) < 2000);
+  console.info('MLBAWARDS\n' + awards.map((a: any) => `${a.id}|${a.name}|${a.sortOrder}|${a.sport?.id ?? ''}|${a.league?.id ?? ''}`).join('\n'));
+  for (const id of ['ALMOY', 'NLMOY', 'ALCPOY', 'NLCPOY', 'ALSS', 'NLSS', 'ALRELOY', 'NLRELOY', 'ALHAA', 'NLHAA', 'ALCSMVP', 'NLCSMVP', 'MLBASGMVP']) {
     const r = await fetchMlb<any>(`/awards/${id}/recipients`, { season: 2025 }).catch((e) => ({ error: String(e) }));
-    console.info('RECIP', id, JSON.stringify(r).slice(0, 900));
+    console.info('RECIP', id, (r.awards ?? []).length, JSON.stringify((r.awards ?? [])[0] ?? r).slice(0, 300));
   }
-  const all = await fetchMlb<any>('/awards/ALMVP/recipients', {}).catch((e) => ({ error: String(e) }));
-  console.info('ALMVP all seasons', (all.awards ?? []).length, JSON.stringify((all.awards ?? []).slice(-2)).slice(0, 600));
-  const hydrated = await fetchMlb<any>('/awards/ALMVP/recipients', { season: 2025, hydrate: 'player(currentTeam)' }).catch((e) => ({ error: String(e) }));
-  console.info('HYDRATED', JSON.stringify(hydrated).slice(0, 700));
-  const person = await fetchMlb<any>('/people/660271', { hydrate: 'awards' }).catch((e) => ({ error: String(e) }));
-  console.info('PERSON AWARDS', JSON.stringify(person.people?.[0]?.awards?.slice(0, 3)).slice(0, 600), (person.people?.[0]?.awards ?? []).length);
 }, 60000);
