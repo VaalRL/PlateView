@@ -362,7 +362,7 @@ export const GameDetailPage: React.FC = () => {
                     type="button"
                     onClick={() => setSide(option)}
                     aria-pressed={side === option}
-                    className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors ${
+                    className={`flex-1 min-w-0 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors ${
                       side === option
                         ? 'bg-team-primary/10 text-team-primary border-team-primary'
                         : 'bg-page/60 text-muted border-border hover:text-main'
@@ -371,9 +371,10 @@ export const GameDetailPage: React.FC = () => {
                     <img
                       src={getTeamLogoUrl(game.teams[option].team.id)}
                       alt=""
-                      className="w-5 h-5"
+                      className="w-5 h-5 shrink-0"
                       loading="lazy"
                     />
+                    {/* min-w-0 above lets a long English name truncate instead of widening the page */}
                     <span className="truncate">
                       {option === 'away' ? awayName : homeName}
                     </span>

@@ -47,8 +47,20 @@ for (const viewport of VIEWPORTS) {
           await expect(page.locator('main').getByText(text[lang]).first()).toBeVisible();
           await expect(page.getByRole('heading', { name: /這個頁面載入失敗|This page failed to load/ })).toHaveCount(0);
 
-          const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-          expect(overflow, 'page scrolls sideways').toBeLessThanOrEqual(0);
+          // On failure, name the outermost elements past the right edge
+          const { overflow, culprits } = await page.evaluate(() => {
+            const width = window.innerWidth;
+            const wide = [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > width + 0.5);
+            const outermost = wide.filter((e) => !wide.includes(e.parentElement as Element));
+            return {
+              overflow: document.documentElement.scrollWidth - width,
+              culprits: outermost.slice(0, 5).map((e) => {
+                const r = e.getBoundingClientRect();
+                return `<${e.tagName.toLowerCase()} class="${String(e.className).slice(0, 80)}"> right=${Math.round(r.right)} text="${(e.textContent ?? '').trim().slice(0, 40)}"`;
+              }),
+            };
+          });
+          expect(overflow, `page scrolls sideways:\n${culprits.join('\n')}`).toBeLessThanOrEqual(0);
           expect(errors).toEqual([]);
         });
       }
