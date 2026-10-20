@@ -275,14 +275,28 @@ export function usePlayerSeasonsQuery(personId?: number) {
   });
 }
 
-/** A past season's game log; a finished season does not change */
+/**
+ * A past season's game log with its postseason games folded in. The two are
+ * separate queries, so a postseason request that failed is retried rather
+ * than cached as part of a success; until then the regular season shows.
+ */
 export function usePlayerSeasonGameLogsQuery(personId: number | undefined, season: number | null) {
-  return useQuery({
+  const enabled = !!personId && season !== null;
+  const options = { staleTime: 1000 * 60 * 60 }; // an hour: a finished season does not change
+  const regular = useQuery({
     queryKey: ['player-season-game-logs', personId, season],
     queryFn: () => getPlayerSeasonGameLogs(personId!, season!),
-    enabled: !!personId && season !== null,
-    staleTime: 1000 * 60 * 60, // an hour
+    enabled,
+    ...options,
   });
+  const postseason = useQuery({
+    queryKey: ['postseason-gamelogs', String(personId), season],
+    queryFn: () => getPostseasonGameLogs([personId!], season!),
+    enabled,
+    ...options,
+  });
+  const data = useMemo(() => withPostseasonGameLogs(regular.data, postseason.data), [regular.data, postseason.data]);
+  return { data, isLoading: regular.isLoading, isError: regular.isError, postseasonFailed: postseason.isError };
 }
 
 export function usePeopleSearchQuery(query: string) {

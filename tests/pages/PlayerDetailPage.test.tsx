@@ -349,6 +349,58 @@ describe('PlayerDetailPage game logs', () => {
     vi.stubGlobal('fetch', globalFetch);
   });
 
+  it('forgets the postseason view when moving on to another player', async () => {
+    const regular = (id: number, games: number) => ({
+      people: [
+        {
+          id,
+          fullName: `Player ${id}`,
+          primaryPosition: { type: 'Catcher' },
+          stats: [
+            {
+              group: { displayName: 'hitting' },
+              type: { displayName: 'season' },
+              splits: [{ sport: { id: 1, abbreviation: 'MLB' }, stat: { gamesPlayed: games } }],
+            },
+          ],
+        },
+      ],
+    });
+    const globalFetch = globalThis.fetch;
+    queryClient.clear();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: unknown) => {
+        const url = decodeURIComponent(String(input));
+        const body = url.includes('type=[season,career],gameType=P')
+          ? { people: [{ id: 2, stats: [] }] }
+          : regular(url.includes('/people/3') ? 3 : 2, url.includes('/people/3') ? 120 : 140);
+        return { ok: true, status: 200, statusText: 'OK', json: async () => body };
+      })
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/2']}>
+          <Link to="/players/3">next player</Link>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    await screen.findByText(/出賽 140 場/);
+    fireEvent.click(screen.getByRole('button', { name: '季後賽' }));
+    expect(screen.getByRole('button', { name: '季後賽' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByText('next player'));
+
+    // The next player opens on his regular season line
+    expect(await screen.findByText(/出賽 120 場/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '例行賽' })).toHaveAttribute('aria-pressed', 'true');
+    vi.stubGlobal('fetch', globalFetch);
+  });
+
   describe('league-relative stats at a minor league level', () => {
     const globalFetch = globalThis.fetch;
     afterEach(() => vi.stubGlobal('fetch', globalFetch));

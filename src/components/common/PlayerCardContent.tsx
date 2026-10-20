@@ -3,13 +3,11 @@ import { useLeaderboardsQuery, usePersonSummaryQuery, useTeamDetailQuery } from 
 import { getPlayerHeadshotUrl } from '../../services/mlbApi';
 import { useLanguage } from '../../hooks/useLanguage';
 import { teamDisplayName } from '../../utils/teams';
-import playersData from '../../data/players-zh-tw.json';
 import type { TranslationKey } from '../../i18n/translations';
 import { HITTING_LEADER_CATEGORIES, PITCHING_LEADER_CATEGORIES } from '../../constants/leaderboards';
 import { getCurrentMlbSeason } from '../../utils/season';
 import { findLeaderRanks, isMinorLeagueClub, levelAbbreviation, ordinal } from '../../utils/hoverCards';
-
-const zhNames = new Map(playersData.map((p) => [p.id, p.nameZh]));
+import { zhNameOf } from '../../utils/players';
 
 /** Leader categories listed on the card at most */
 const MAX_RANKS = 4;
@@ -51,7 +49,7 @@ const PlayerCardContent: React.FC<{ personId: number }> = ({ personId }) => {
         ...(pitching.data?.leagueLeaders ?? []),
       ]).slice(0, MAX_RANKS)
     : [];
-  const zhName = zhNames.get(personId);
+  const zhName = zhNameOf(personId);
 
   return (
     <>

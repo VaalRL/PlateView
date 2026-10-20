@@ -32,6 +32,7 @@ import {
   getTeamSchedule,
   getVenue,
   searchPeople,
+  withPostseasonGameLogs,
 } from '../../src/services/mlbApi';
 import { HITTING_LEADER_CATEGORIES, PITCHING_LEADER_CATEGORIES } from '../../src/constants/leaderboards';
 import { isPostseasonGameType, type PlayerStatGroup } from '../../src/utils/playerLevels';
@@ -245,8 +246,10 @@ describe('past seasons’ game logs', () => {
   });
 
   it('gives an earlier season’s games with its postseason folded in', async () => {
-    const { data, postseasonFailed } = await getPlayerSeasonGameLogs(OHTANI, 2024);
-    expect(postseasonFailed).toBe(false);
+    const data = withPostseasonGameLogs(
+      await getPlayerSeasonGameLogs(OHTANI, 2024),
+      await getPostseasonGameLogs([OHTANI], 2024)
+    );
     const games = gameLogOf(data?.people?.[0]?.stats as PlayerStatGroup[], 'hitting');
     // 159 regular season games and 16 in the postseason, on the way to the 2024 title
     expect(games.filter((g) => g.gameType === 'R')).toHaveLength(159);

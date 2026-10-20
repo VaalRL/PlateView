@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   buildPostseasonLeaders,
   latestPostseasonSeason,
-  outsOfInnings,
   teamGamesOf,
   type PostseasonStatSplit,
   type PostseasonStatsResponse,
@@ -99,18 +98,12 @@ describe('buildPostseasonLeaders', () => {
   });
 });
 
-describe('outsOfInnings', () => {
-  it('reads thirds of an inning', () => {
-    expect(outsOfInnings('9.2')).toBe(29);
-    expect(outsOfInnings('12.0')).toBe(36);
-    expect(outsOfInnings(undefined)).toBe(0);
-  });
-});
-
 describe('latestPostseasonSeason', () => {
-  it('is this season’s from late September, last season’s before', () => {
+  it('is this season’s from October, last season’s before', () => {
     expect(latestPostseasonSeason(new Date(2026, 9, 19))).toBe(2026);
-    expect(latestPostseasonSeason(new Date(2026, 8, 25))).toBe(2026);
+    expect(latestPostseasonSeason(new Date(2026, 9, 1))).toBe(2026);
+    // The last week of September has no postseason games yet
+    expect(latestPostseasonSeason(new Date(2026, 8, 28))).toBe(2025);
     expect(latestPostseasonSeason(new Date(2026, 4, 1))).toBe(2025);
     // January still belongs to last season, whose postseason is over
     expect(latestPostseasonSeason(new Date(2027, 0, 10))).toBe(2026);

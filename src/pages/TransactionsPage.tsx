@@ -20,13 +20,12 @@ import {
 import type { Transaction, TransactionTeam } from '../types/transactions';
 import type { TranslationKey } from '../i18n/translations';
 import taiwanPlayers from '../data/taiwan-players.json';
-import playersData from '../data/players-zh-tw.json';
+import { zhNameOf } from '../utils/players';
 
 const RANGES = [7, 14, 30] as const;
 /** Moves listed before "show more"; a month of "all" runs to thousands */
 const PAGE_SIZE = 60;
 
-const zhNames = new Map(playersData.map((p) => [p.id, p.nameZh]));
 const taiwanIds: ReadonlySet<number> = new Set(taiwanPlayers.players.map((p) => p.id));
 
 const TeamLabel: React.FC<{ team: TransactionTeam }> = ({ team }) => {
@@ -56,7 +55,7 @@ const MoveRow: React.FC<{ move: Transaction }> = ({ move }) => {
   const { fromTeam: from, toTeam: to, person } = move;
   const moved = from?.id !== undefined && to?.id !== undefined && from.id !== to.id;
   const team = to ?? from;
-  const zh = lang === 'zh' && person?.id ? zhNames.get(person.id) : undefined;
+  const zh = lang === 'zh' && person?.id ? zhNameOf(person.id) : undefined;
   return (
     <li className="px-4 py-3 space-y-1">
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs">

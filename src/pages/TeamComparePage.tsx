@@ -8,12 +8,12 @@ import { CompareTabs } from '../components/compare/CompareTabs';
 import { PlayerHoverCard } from '../components/common/PlayerHoverCard';
 import { TeamHoverCard } from '../components/common/TeamHoverCard';
 import { teamResult } from '../utils/gameStatus';
+import { bestIndexes } from '../utils/comparison';
 import { teamDisplayName, teamsById } from '../utils/teams';
 import {
   DEFENSE_POSITIONS,
   MAX_COMPARED_TEAMS,
   addTeamToComparison,
-  bestIndexes,
   lineupOps,
   loadTeamComparison,
   parseCompareTeamIds,
@@ -24,11 +24,10 @@ import {
   type DefensePosition,
   type Starter,
 } from '../utils/teamComparison';
-import playersData from '../data/players-zh-tw.json';
 
-const zhNames = new Map(playersData.map((p) => [p.id, p.nameZh]));
 import type { GameSchedule } from '../types/mlb';
 import type { TranslationKey } from '../i18n/translations';
+import { zhNameOf } from '../utils/players';
 
 type View = 'offense' | 'defense';
 
@@ -51,14 +50,14 @@ export const TeamComparePage: React.FC = () => {
   const ids = useMemo(() => parseCompareTeamIds(params.get('teams')), [params]);
   const setIds = (next: number[]) => setParams({ teams: next.join(',') }, { replace: true });
 
+  // Opened without a list (a bookmark, or the tab link while already here):
+  // pick up the last one. An emptied list keeps its empty `teams=`
   useEffect(() => {
     if (!params.has('teams')) {
       const stored = loadTeamComparison();
       if (stored.length > 0) setParams({ teams: stored.join(',') }, { replace: true });
     }
-    // Only on arrival; afterwards the URL is the source
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [params, setParams]);
   useEffect(() => {
     if (params.has('teams')) saveTeamComparison(ids);
   }, [ids, params]);
@@ -70,7 +69,8 @@ export const TeamComparePage: React.FC = () => {
     if (r.isError) return { state: 'error', teamId };
     const side = r.data ? teamSide(r.data.boxscore, teamId) : null;
     if (!r.data || !side) return { state: 'none', teamId };
-    return { state: 'ready', teamId, game: r.data.game, lineup: startingLineup(side), defense: startingDefense(side) };
+    const lineup = startingLineup(side);
+    return { state: 'ready', teamId, game: r.data.game, lineup, defense: startingDefense(side, lineup) };
   });
 
   const [view, setView] = useState<View>('offense');
@@ -262,6 +262,7 @@ const StarterCell: React.FC<{ column: Column; starter?: Starter; view: View }> =
   if (column.state === 'loading') return <span className="inline-block h-8 w-24 rounded bg-page animate-pulse" />;
   if (!starter) return <span className="text-muted">{column.state === 'ready' ? '—' : ''}</span>;
 
+  const zh = lang === 'zh' ? zhNameOf(starter.personId) : undefined;
   let line: string;
   if (view === 'offense') {
     line = [starter.position, starter.avg && `AVG ${starter.avg}`, starter.ops && `OPS ${starter.ops}`, starter.homeRuns !== undefined && `HR ${starter.homeRuns}`]
@@ -284,8 +285,8 @@ const StarterCell: React.FC<{ column: Column; starter?: Starter; view: View }> =
           {starter.fullName}
         </Link>
       </PlayerHoverCard>
-      {lang === 'zh' && zhNames.has(starter.personId) && (
-        <span className="text-xs font-semibold text-main/80">{zhNames.get(starter.personId)}</span>
+      {zh && (
+        <span className="text-xs font-semibold text-main/80">{zh}</span>
       )}
       {line && <span className="text-[11px] font-mono text-muted whitespace-nowrap">{line}</span>}
     </div>

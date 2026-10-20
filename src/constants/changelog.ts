@@ -15,6 +15,24 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.13.2',
+    date: '2026-10-20',
+    changes: {
+      zh: [
+        '修正在比較頁再點一次目前的「球員／球隊」分頁時，已選的名單會消失',
+        '修正在球員頁切到「季後賽」後，換看下一位球員時仍停在季後賽',
+        '季後賽排行與球員季後賽成績改在 10 月（外卡賽開打）才切到本季，9 月底不再顯示一整頁空白',
+        '往年逐場紀錄的季後賽場次暫時載入失敗時，會自動重試，不再一小時內都缺',
+      ],
+      en: [
+        'Fixed the comparison list disappearing when the active Players or Teams tab was clicked again',
+        'Fixed the player page staying on the postseason view when moving on to another player',
+        'Postseason leaders and player postseason lines switch to this season in October, when the Wild Card round opens, instead of showing empty pages in late September',
+        'A past season’s postseason games that fail to load are retried instead of staying missing for an hour',
+      ],
+    },
+  },
+  {
     version: '1.13.1',
     date: '2026-10-19',
     changes: {
