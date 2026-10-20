@@ -192,18 +192,21 @@ export async function getPlayerDetail(personId: number) {
 }
 
 /**
- * The seasons a player has a line in, at any level, newest first: the
- * choices for his game log. Trimmed to the season numbers.
+ * A player's line for every season at every level, for his year-by-year
+ * table and the game log's season choice. A season split between clubs has
+ * a line per club plus a combined one without a team (`numTeams`); a season
+ * at several minor league levels also has an all-minors line (sport 21).
+ * Trimmed to the columns the table shows.
  */
-export async function getPlayerSeasons(personId: number): Promise<number[]> {
-  const response = await fetchMlb<PeopleResponse>(`/people/${personId}`, {
+export async function getPlayerYearByYear(personId: number): Promise<PeopleResponse> {
+  return fetchMlb<PeopleResponse>(`/people/${personId}`, {
     hydrate: `stats(group=[hitting,pitching],type=[yearByYear],leagueListId=${MLB_MILB_LEAGUE_LIST})`,
-    fields: 'people,id,stats,splits,season',
+    fields: [
+      'people,id,stats,group,type,displayName,splits,season,numTeams,team,name,sport,abbreviation,stat',
+      'gamesPlayed,gamesStarted,atBats,runs,hits,homeRuns,rbi,stolenBases,baseOnBalls,strikeOuts,avg,obp,ops',
+      'wins,losses,saves,inningsPitched,era,whip',
+    ].join(','),
   });
-  const seasons = (response.people?.[0]?.stats ?? []).flatMap((g) =>
-    (g.splits ?? []).map((s) => Number((s as { season?: string }).season))
-  );
-  return [...new Set(seasons.filter((y) => Number.isInteger(y) && y > 0))].sort((a, b) => b - a);
 }
 
 /**

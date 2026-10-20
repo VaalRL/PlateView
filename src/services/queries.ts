@@ -11,7 +11,7 @@ import {
   getVenue,
   getPlayerDetail,
   getPlayerTransactions,
-  getPlayerSeasons,
+  getPlayerYearByYear,
   getPlayerSeasonGameLogs,
   getLeagueTransactions,
   getAwardRecipients,
@@ -267,13 +267,13 @@ export function useLeagueTransactionsQuery(startDate: string, endDate: string) {
   });
 }
 
-/** Seasons a player has played, for the game log's season choice */
-export function usePlayerSeasonsQuery(personId?: number) {
+/** A player's season-by-season lines, for his year-by-year table and the game log's season choice */
+export function usePlayerYearByYearQuery(personId?: number) {
   return useQuery({
-    queryKey: ['player-seasons', personId],
-    queryFn: () => getPlayerSeasons(personId!),
+    queryKey: ['player-year-by-year', personId],
+    queryFn: () => getPlayerYearByYear(personId!),
     enabled: !!personId,
-    staleTime: 1000 * 60 * 60, // an hour: a new season shows up once a year
+    staleTime: 1000 * 60 * 60, // an hour: past seasons never change, this one moves a game a day
   });
 }
 

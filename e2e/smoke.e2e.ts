@@ -8,11 +8,13 @@ import { mockApi } from './mockApi';
  * components cannot: a white screen, a lazy chunk that fails, a page too wide.
  */
 
-const PAGES: { path: string; expect: { zh: string; en: string } }[] = [
+/** `tab`: a tab to open first, for a view the page does not open on */
+const PAGES: { path: string; tab?: { zh: string; en: string }; expect: { zh: string; en: string } }[] = [
   { path: '/', expect: { zh: '洛杉磯道奇', en: 'Los Angeles Dodgers' } },
   { path: '/teams/119', expect: { zh: '洛杉磯道奇', en: 'Los Angeles Dodgers' } },
   { path: '/teams/534', expect: { zh: 'Rochester', en: 'Rochester' } },
   { path: '/players/661531', expect: { zh: 'Brian Serven', en: 'Brian Serven' } },
+  { path: '/players/661531', tab: { zh: '逐年成績', en: 'Years' }, expect: { zh: '2 隊', en: '2 teams' } },
   { path: '/leaders', expect: { zh: 'Aaron Judge', en: 'Aaron Judge' } },
   { path: '/games/776633', expect: { zh: 'Nathan Eovaldi', en: 'Nathan Eovaldi' } },
   { path: '/postseason/2025', expect: { zh: '洛杉磯道奇', en: 'Los Angeles Dodgers' } },
@@ -34,8 +36,8 @@ for (const viewport of VIEWPORTS) {
     test.describe(`${viewport.name} ${lang}`, () => {
       test.use({ viewport: { width: viewport.width, height: viewport.height } });
 
-      for (const { path, expect: text } of PAGES) {
-        test(path, async ({ page }) => {
+      for (const { path, tab, expect: text } of PAGES) {
+        test(tab ? `${path} ${tab.en}` : path, async ({ page }) => {
           const errors: string[] = [];
           page.on('pageerror', (e) => errors.push(e.message));
           page.on('console', (m) => {
@@ -46,6 +48,7 @@ for (const viewport of VIEWPORTS) {
           await mockApi(page);
 
           await page.goto(`./#${path}`);
+          if (tab) await page.getByRole('tab', { name: tab[lang] }).click();
           await expect(page.locator('main').getByText(text[lang]).first()).toBeVisible();
           await expect(page.getByRole('heading', { name: /這個頁面載入失敗|This page failed to load/ })).toHaveCount(0);
 

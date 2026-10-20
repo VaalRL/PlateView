@@ -15,6 +15,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.16.0',
+    date: '2026-10-20',
+    changes: {
+      zh: [
+        '球員頁新增「逐年成績」分頁：每個球季一列，打者看出賽、安打、全壘打、打擊率、OPS 等，投手看勝敗、局數、三振、防禦率、WHIP，最上方為生涯合計',
+        '季中被交易的球季先列合計，再分列每支球隊；小聯盟各層級可用上方的層級切換分開看',
+      ],
+      en: [
+        'Player pages have a Years tab: one row per season, batting (games, hits, home runs, average, OPS…) or pitching (record, innings, strikeouts, ERA, WHIP…), under a career line',
+        'A season split by a trade shows its total, then each club; each minor league level has its own seasons under the level switch',
+      ],
+    },
+  },
+  {
     version: '1.15.0',
     date: '2026-10-20',
     changes: {

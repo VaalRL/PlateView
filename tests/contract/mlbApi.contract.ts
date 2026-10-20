@@ -18,7 +18,7 @@ import {
   getPlayerDetail,
   getPlayerPostseasonStats,
   getPlayerSeasonGameLogs,
-  getPlayerSeasons,
+  getPlayerYearByYear,
   getPlayersForComparison,
   getPlayerTransactions,
   getPostseasonGameLogs,
@@ -49,6 +49,7 @@ import { getCurrentMlbSeason } from '../../src/utils/season';
 import { ALL_AWARD_IDS, POSITION_AWARDS } from '../../src/constants/awards';
 import { buildPostseasonLeaders, teamGamesOf } from '../../src/utils/postseasonLeaders';
 import { getLevelStat } from '../../src/utils/playerLevels';
+import { seasonsOf, yearRows } from '../../src/utils/yearByYear';
 import {
   COMPARED_GAME_TYPES,
   DEFENSE_POSITIONS,
@@ -240,9 +241,49 @@ describe('players', () => {
   });
 });
 
+describe('year by year', () => {
+  const groupsOf = async (id: number) => (await getPlayerYearByYear(id)).people?.[0]?.stats as PlayerStatGroup[];
+
+  it('gives each big league season its own line, with the columns the table shows', async () => {
+    const rows = yearRows(await groupsOf(OHTANI), 'hitting', MLB_LEVEL.id);
+    expect(rows.map((r) => r.season)).toEqual(expect.arrayContaining([2018, 2023, 2024]));
+    const year2024 = rows.find((r) => r.season === 2024)!;
+    // 54 home runs for the Dodgers in 2024
+    expect(year2024).toMatchObject({ team: { id: 119 }, isPart: false });
+    expect(year2024.stat).toMatchObject({ gamesPlayed: 159, homeRuns: 54, avg: '.310' });
+    ['atBats', 'runs', 'hits', 'rbi', 'stolenBases', 'baseOnBalls', 'strikeOuts', 'obp', 'ops'].forEach((k) =>
+      expect(year2024.stat).toHaveProperty(k)
+    );
+    // He did not pitch in 2024
+    const pitching = yearRows(await groupsOf(OHTANI), 'pitching', MLB_LEVEL.id);
+    expect(pitching.map((r) => r.season)).not.toContain(2024);
+    ['gamesStarted', 'wins', 'losses', 'saves', 'inningsPitched', 'era', 'whip'].forEach((k) =>
+      expect(pitching[0].stat).toHaveProperty(k)
+    );
+  });
+
+  it('splits a season traded through into a total and each club', async () => {
+    // Max Scherzer, Nationals to Dodgers at the 2021 deadline
+    const rows = yearRows(await groupsOf(453286), 'pitching', MLB_LEVEL.id).filter((r) => r.season === 2021);
+    expect(rows.map((r) => [r.numTeams, r.team?.id, r.isPart])).toEqual([
+      [2, undefined, false],
+      [undefined, 120, true],
+      [undefined, 119, true],
+    ]);
+    expect(rows[0].stat.inningsPitched).toBe('179.1');
+  });
+
+  it('keeps the minor league levels apart', async () => {
+    // Hao-Yu Lee: Erie (AA) in 2024
+    const groups = await groupsOf(701678);
+    expect(yearRows(groups, 'hitting', 12).map((r) => r.season)).toContain(2024);
+    expect(yearRows(groups, 'hitting', MLB_LEVEL.id).map((r) => r.season)).not.toContain(2024);
+  });
+});
+
 describe('past seasons’ game logs', () => {
   it('lists the seasons a player has played, newest first', async () => {
-    const seasons = await getPlayerSeasons(OHTANI);
+    const seasons = seasonsOf((await getPlayerYearByYear(OHTANI)).people?.[0]?.stats as PlayerStatGroup[]);
     expect(seasons).toEqual([...seasons].sort((a, b) => b - a));
     // His big league career began in 2018
     expect(seasons).toEqual(expect.arrayContaining([2018, 2024, LAST_FULL_SEASON]));
