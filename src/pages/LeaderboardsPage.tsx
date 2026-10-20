@@ -98,6 +98,10 @@ export const LeaderboardsPage: React.FC = () => {
           <p className="text-xs text-muted max-w-xl">
             {t(isPostseason ? 'leaders.subtitle_postseason' : 'leaders.subtitle', { season })}
           </p>
+          <Link to="/awards" className="inline-flex items-center gap-1 text-xs font-semibold text-team-primary hover:underline">
+            <Award className="w-3.5 h-3.5" />
+            {t('leaders.awards_link')}
+          </Link>
         </div>
 
         {/* Filters Controls Toolbar */}

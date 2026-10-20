@@ -15,6 +15,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.14.0',
+    date: '2026-10-20',
+    changes: {
+      zh: [
+        '新增「年度獎項」頁：MVP、賽揚獎、新人王、最佳總教練、東山再起獎、漢克阿倫獎、世界大賽與聯盟冠軍賽 MVP、金手套、銀棒獎與名人堂，可選賽季，台灣球員得獎會標示',
+        '點獎項名稱可看歷屆得主（美聯／國聯切換）；入口在數據排行頁與首頁',
+      ],
+      en: [
+        'New Awards page: MVP, Cy Young, Rookie of the Year, Manager of the Year, Comeback Player, Hank Aaron Award, World Series and LCS MVPs, Gold Gloves, Silver Sluggers and the Hall of Fame, by season, with players from Taiwan marked',
+        'Each award opens its full history (AL or NL); linked from the leaderboards and the home page',
+      ],
+    },
+  },
+  {
     version: '1.13.3',
     date: '2026-10-20',
     changes: {

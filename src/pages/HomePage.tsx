@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowLeftRight, MapPin } from 'lucide-react';
+import { ArrowLeftRight, Award, MapPin } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
 import { ScoreboardGrid } from '../components/scoreboard/ScoreboardGrid';
 import { StandingsTable } from '../components/standings/StandingsTable';
@@ -33,10 +33,17 @@ export const HomePage: React.FC = () => {
       <FavoritesBar games={games} />
 
       {/* Level switcher: scores and standings follow it; favorites stay MLB.
-          The Taiwan and transactions links sit beside it, their only entry on a phone */}
+          The awards, transactions and Taiwan links sit beside it, their only entry on a phone */}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <LevelSelector value={level} onChange={setLevel} />
         <div className="flex items-center gap-3">
+          <Link
+            to="/awards"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-team-primary hover:underline"
+          >
+            <Award className="w-3.5 h-3.5" />
+            {t('awards.title')}
+          </Link>
           <Link
             to="/transactions"
             className="inline-flex items-center gap-1 text-xs font-semibold text-team-primary hover:underline"
