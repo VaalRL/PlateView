@@ -128,6 +128,18 @@ const dodgers = {
   ],
 };
 
+const award = (id: string, playerId: number, fullName: string, teamId: number) => ({
+  awards: [
+    {
+      id,
+      name: id,
+      season: '2025',
+      team: { id: teamId },
+      player: { id: playerId, nameFirstLast: fullName, primaryPosition: { abbreviation: 'OF' } },
+    },
+  ],
+});
+
 /** The answer for one API URL */
 export function answer(url: string): unknown {
   const u = decodeURIComponent(url);
@@ -139,6 +151,10 @@ export function answer(url: string): unknown {
   if (path === '/stats/leaders') return leaders;
   if (path === '/stats') return { stats: [{ splits: [] }] };
   if (path === '/transactions') return transactions;
+  if (/^\/awards\/[A-Z]+\/recipients$/.test(path)) {
+    const id = path.split('/')[2];
+    return id.startsWith('NL') ? award(id, 660271, 'Shohei Ohtani', 119) : award(id, 592450, 'Aaron Judge', 147);
+  }
   if (/^\/teams\/534$/.test(path)) return rochester;
   if (/^\/teams\/\d+\/roster/.test(path)) return { roster: [] };
   if (/^\/teams\/\d+$/.test(path)) return dodgers;

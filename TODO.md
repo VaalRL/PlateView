@@ -440,3 +440,11 @@
   - [x] `npm run test:e2e`；本機可用 `CHROMIUM_PATH` 指向已安裝的瀏覽器；`tsconfig.e2e.json` 納入型別檢查
   - [x] 第一次在 GitHub 上執行就抓到真問題：比賽頁英文介面在 GitHub 機器的字型下寬出 3px（球隊切換按鈕 `flex-1` 少了 `min-w-0`，長隊名無法截斷）；已修正，320px 也不再溢出；版本升為 1.13.3
   - [x] 寬度超出時，失敗訊息會列出超出右緣的元素，方便直接定位
+
+- [x] **Phase 50: 年度獎項頁（2026-10-20）**
+  - [x] 先以 CI 探查真實 API：`/awards/{id}/recipients?season=` 回傳 `{ awards: [{ id, name, date, season, team, player: { id, nameFirstLast, primaryPosition }, votes?, notes? }] }`；不帶 season 為歷屆（新到舊，美聯 MVP 95 筆）；確認 15 個獎項 id（MVP／賽揚／新人王／總教練／東山再起／漢克阿倫各分美聯國聯、`WSMVP`、`ALCSMVP`／`NLCSMVP`、`ALGG`／`NLGG`、`ALSS`／`NLSS`、`MLBHOF`）；救援獎與明星賽 MVP 用猜的 id 查無，不列
+  - [x] `#/awards?season=`：11 月起預設為剛結束的賽季，之前為上一季；可選近 25 季；金手套與銀棒依守位對照美聯／國聯；台灣球員得獎標示「台灣」；中文介面以中文名為主
+  - [x] `#/awards/:awardId`：歷屆得主，美聯／國聯切換，年份連回該季
+  - [x] 入口：數據排行頁標題下、首頁層級切換旁
+  - [x] 真實 API 檢查新增：2025 每個獎項都有得主、金手套與銀棒各 9 位以上、國聯 MVP 為大谷（道奇）、美聯 MVP 歷屆 90 季以上且新到舊；瀏覽器檢查新增兩頁（共 39 次）
+  - [x] 版本升為 1.14.0

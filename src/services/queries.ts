@@ -14,6 +14,7 @@ import {
   getPlayerSeasons,
   getPlayerSeasonGameLogs,
   getLeagueTransactions,
+  getAwardRecipients,
   getPersonSummary,
   getPlayersForComparison,
   searchPeople,
@@ -297,6 +298,27 @@ export function usePlayerSeasonGameLogsQuery(personId: number | undefined, seaso
   });
   const data = useMemo(() => withPostseasonGameLogs(regular.data, postseason.data), [regular.data, postseason.data]);
   return { data, isLoading: regular.isLoading, isError: regular.isError, postseasonFailed: postseason.isError };
+}
+
+/** One season's winners of each award, a request per award */
+export function useSeasonAwardsQueries(awardIds: readonly string[], season: number) {
+  return useQueries({
+    queries: awardIds.map((awardId) => ({
+      queryKey: ['award-recipients', awardId, season],
+      queryFn: () => getAwardRecipients(awardId, season),
+      staleTime: 1000 * 60 * 60, // an hour: awards are announced once a year
+    })),
+  });
+}
+
+/** Every season's winners of one award */
+export function useAwardHistoryQuery(awardId: string | undefined) {
+  return useQuery({
+    queryKey: ['award-history', awardId],
+    queryFn: () => getAwardRecipients(awardId!),
+    enabled: !!awardId,
+    staleTime: 1000 * 60 * 60,
+  });
 }
 
 export function usePeopleSearchQuery(query: string) {

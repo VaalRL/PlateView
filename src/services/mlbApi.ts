@@ -2,6 +2,7 @@ import { BoxscoreResponse, ScheduleResponse, StandingsResponse, VenuesResponse }
 import { PeopleResponse } from '../types/favorites';
 import { PostseasonSeriesResponse } from '../types/postseason';
 import { TransactionsResponse } from '../types/transactions';
+import type { AwardRecipientsResponse } from '../types/awards';
 import { getCurrentMlbSeason } from '../utils/season';
 import { MLB_LEVEL, MLB_MILB_LEAGUE_LIST, MLB_SPORT_ID } from '../constants/levels';
 import { mergeGameLogs, type PlayerStatGroup } from '../utils/playerLevels';
@@ -221,6 +222,14 @@ export async function getPlayerSeasonGameLogs(personId: number, season: number):
  */
 export async function getPlayerTransactions(personId: number): Promise<TransactionsResponse> {
   return fetchMlb<TransactionsResponse>('/transactions', { playerId: personId });
+}
+
+/**
+ * Who won an award: one season's winners, or every season's (newest first)
+ * when no season is given.
+ */
+export async function getAwardRecipients(awardId: string, season?: number): Promise<AwardRecipientsResponse> {
+  return fetchMlb<AwardRecipientsResponse>(`/awards/${awardId}/recipients`, season ? { season } : {});
 }
 
 /**

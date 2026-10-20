@@ -11,6 +11,7 @@ import {
   getFavoritePlayersGameLog,
   getGameBoxscore,
   getGameSchedule,
+  getAwardRecipients,
   getLeaderboards,
   getLeagueTransactions,
   getPersonSummary,
@@ -44,6 +45,7 @@ import { buildPostseasonBracket } from '../../src/utils/postseason';
 import { MLB_LEVEL } from '../../src/constants/levels';
 import { COMPARE_ROWS, compareValue } from '../../src/utils/comparison';
 import { getCurrentMlbSeason } from '../../src/utils/season';
+import { ALL_AWARD_IDS, POSITION_AWARDS } from '../../src/constants/awards';
 import { buildPostseasonLeaders, teamGamesOf } from '../../src/utils/postseasonLeaders';
 import { getLevelStat } from '../../src/utils/playerLevels';
 import {
@@ -363,6 +365,26 @@ describe('postseason stats', () => {
         });
       });
     }
+  });
+});
+
+describe('awards', () => {
+  it('has a winner of every award on the page in a finished season', async () => {
+    const results = await Promise.all(ALL_AWARD_IDS.map((id) => getAwardRecipients(id, LAST_FULL_SEASON)));
+    const counts = Object.fromEntries(ALL_AWARD_IDS.map((id, i) => [id, results[i].awards?.length ?? 0]));
+    ALL_AWARD_IDS.forEach((id) => expect(counts[id], id).toBeGreaterThan(0));
+    // A Gold Glove or Silver Slugger per position
+    POSITION_AWARDS.flatMap((g) => g.ids).forEach((id) => expect(counts[id], id).toBeGreaterThanOrEqual(9));
+
+    const nlMvp = results[ALL_AWARD_IDS.indexOf('NLMVP')].awards![0];
+    expect(nlMvp).toMatchObject({ season: String(LAST_FULL_SEASON), player: { id: OHTANI }, team: { id: DODGERS } });
+    expect(typeof nlMvp.player?.nameFirstLast).toBe('string');
+  });
+
+  it('lists an award’s whole history, newest first', async () => {
+    const seasons = ((await getAwardRecipients('ALMVP')).awards ?? []).map((a) => Number(a.season));
+    expect(seasons.length).toBeGreaterThan(90);
+    expect(seasons).toEqual([...seasons].sort((a, b) => b - a));
   });
 });
 

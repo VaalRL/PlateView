@@ -20,6 +20,8 @@ const PAGES: { path: string; expect: { zh: string; en: string } }[] = [
   { path: '/compare?players=660271,592450', expect: { zh: 'Aaron Judge', en: 'Aaron Judge' } },
   { path: '/compare/teams?teams=119,140', expect: { zh: 'Corey Seager', en: 'Corey Seager' } },
   { path: '/transactions', expect: { zh: 'Traded Guy', en: 'Traded Guy' } },
+  { path: '/awards?season=2025', expect: { zh: 'Aaron Judge', en: 'Aaron Judge' } },
+  { path: '/awards/NLMVP', expect: { zh: '大谷翔平', en: 'Shohei Ohtani' } },
 ];
 
 const VIEWPORTS = [

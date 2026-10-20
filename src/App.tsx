@@ -31,6 +31,10 @@ const TeamComparePage = lazy(() =>
 const TransactionsPage = lazy(() =>
   import('./pages/TransactionsPage').then((m) => ({ default: m.TransactionsPage }))
 );
+const AwardsPage = lazy(() => import('./pages/AwardsPage').then((m) => ({ default: m.AwardsPage })));
+const AwardHistoryPage = lazy(() =>
+  import('./pages/AwardsPage').then((m) => ({ default: m.AwardHistoryPage }))
+);
 const TaiwanPlayersPage = lazy(() =>
   import('./pages/TaiwanPlayersPage').then((m) => ({ default: m.TaiwanPlayersPage }))
 );
@@ -69,6 +73,8 @@ export const App: React.FC = () => {
                     <Route path="/postseason/:season?" element={<PostseasonPage />} />
                     <Route path="/taiwan" element={<TaiwanPlayersPage />} />
                     <Route path="/transactions" element={<TransactionsPage />} />
+                    <Route path="/awards" element={<AwardsPage />} />
+                    <Route path="/awards/:awardId" element={<AwardHistoryPage />} />
                     <Route path="/compare" element={<ComparePage />} />
                     <Route path="/compare/teams" element={<TeamComparePage />} />
                   </Routes>
