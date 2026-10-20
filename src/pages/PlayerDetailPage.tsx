@@ -22,6 +22,7 @@ import {
   getPitchingDecision,
 } from '../utils/statsFormatters';
 import { formatPhysique } from '../utils/units';
+import { daysUntilBirthday, formatBirthDate } from '../utils/birthdays';
 import playersData from '../data/players-zh-tw.json';
 import teamsData from '../data/teams.json';
 import { GameLogSplit } from '../types/favorites';
@@ -236,6 +237,9 @@ export const PlayerDetailPage: React.FC = () => {
     return Math.max(0, val);
   }, [hittingSabermetrics, activeHittingStats]);
 
+  // Birthplace as the API spells it: city, state or province, country
+  const birthPlace = [person?.birthCity, person?.birthStateProvince, person?.birthCountry].filter(Boolean).join(', ');
+
   // Primary name is always English; the dictionary Chinese name (when
   // available) shows as a secondary line in either language mode
   const primaryName = person?.fullName || zhPlayerMeta?.nameEn || 'MLB Player';
@@ -384,6 +388,16 @@ export const PlayerDetailPage: React.FC = () => {
                   <span>&bull;</span>
                   <span>
                     {t('player.physique')}：{formatPhysique(person.height, person.weight, lang)}
+                  </span>
+                </>
+              )}
+              {formatBirthDate(person?.birthDate, lang) && (
+                <>
+                  <span>&bull;</span>
+                  <span>
+                    {t('player.born')}：{formatBirthDate(person?.birthDate, lang)}
+                    {birthPlace && (lang === 'zh' ? `（${birthPlace}）` : ` (${birthPlace})`)}
+                    {daysUntilBirthday(person?.birthDate) === 0 && ` 🎂 ${t('player.birthday_today')}`}
                   </span>
                 </>
               )}

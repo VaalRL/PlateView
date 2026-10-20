@@ -163,6 +163,11 @@ export function answer(url: string): unknown {
     return promoted;
   }
   if (path === '/people') return people;
+  if (/^\/sports\/1\/players$/.test(path)) {
+    // Someone with a birthday today, so the home page shows its birthdays line
+    const monthDay = new Date().toISOString().slice(5, 10);
+    return { people: [{ id: 660271, fullName: 'Shohei Ohtani', birthDate: `1994-${monthDay}`, currentTeam: { id: 119 } }] };
+  }
   if (path === '/people/search') return { people: [] };
   return {};
 }

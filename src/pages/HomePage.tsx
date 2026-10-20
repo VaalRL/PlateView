@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowLeftRight, Award, MapPin } from 'lucide-react';
+import { BirthdaysToday } from '../components/common/BirthdaysToday';
 import { useLanguage } from '../hooks/useLanguage';
 import { ScoreboardGrid } from '../components/scoreboard/ScoreboardGrid';
 import { StandingsTable } from '../components/standings/StandingsTable';
@@ -60,6 +61,9 @@ export const HomePage: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      {/* Big leaguers whose birthday is today, when there are any */}
+      <BirthdaysToday />
 
       {/* Main Scoreboard */}
       <ScoreboardGrid

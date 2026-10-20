@@ -401,6 +401,26 @@ describe('PlayerDetailPage game logs', () => {
     vi.stubGlobal('fetch', globalFetch);
   });
 
+  it('shows the birth date and birthplace', async () => {
+    const globalFetch = globalThis.fetch;
+    queryClient.clear();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, status: 200, statusText: 'OK', json: async () => promoted }))
+    );
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/players/661531']}>
+          <Routes>
+            <Route path="/players/:personId" element={<PlayerDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+    expect(await screen.findByText(/生日：1995 年 5 月 5 日（Palm Desert, CA, USA）/)).toBeInTheDocument();
+    vi.stubGlobal('fetch', globalFetch);
+  });
+
   describe('league-relative stats at a minor league level', () => {
     const globalFetch = globalThis.fetch;
     afterEach(() => vi.stubGlobal('fetch', globalFetch));

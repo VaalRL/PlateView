@@ -4,6 +4,7 @@
     {
       "id": 701678,
       "fullName": "Hao-Yu Lee",
+      "birthDate": "2003-02-03",
       "birthCity": "New Taipei",
       "position": "2B",
       "teamId": 116,
@@ -14,6 +15,7 @@
     {
       "id": 678906,
       "fullName": "Kai-Wei Teng",
+      "birthDate": "1998-12-01",
       "birthCity": "Taichung",
       "position": "P",
       "teamId": 117,
@@ -24,6 +26,7 @@
     {
       "id": 691907,
       "fullName": "Tsung-Che Cheng",
+      "birthDate": "2001-07-26",
       "birthCity": "Pingtung County",
       "position": "SS",
       "teamId": 111,
@@ -34,6 +37,7 @@
     {
       "id": 800018,
       "fullName": "Chen Zhong-Ao Zhuang",
+      "birthDate": "2000-08-25",
       "birthCity": "Taipei",
       "position": "P",
       "teamId": 400,
@@ -44,6 +48,7 @@
     {
       "id": 827734,
       "fullName": "Wei-En Lin",
+      "birthDate": "2005-11-04",
       "birthCity": "Taoyuen",
       "position": "P",
       "teamId": 400,
@@ -54,6 +59,7 @@
     {
       "id": 801179,
       "fullName": "Yu-Min Lin",
+      "birthDate": "2003-07-12",
       "birthCity": "Taitung",
       "position": "P",
       "teamId": 2310,
@@ -64,6 +70,7 @@
     {
       "id": 813820,
       "fullName": "Chen-Wei Lin",
+      "birthDate": "2001-11-22",
       "birthCity": "Tainan",
       "position": "P",
       "teamId": 440,
@@ -74,6 +81,7 @@
     {
       "id": 696040,
       "fullName": "Po-Yu Chen",
+      "birthDate": "2001-10-02",
       "birthCity": "Taoyuan City",
       "position": "P",
       "teamId": 452,
@@ -84,6 +92,7 @@
     {
       "id": 808207,
       "fullName": "Wen-Hui Pan",
+      "birthDate": "2002-09-19",
       "birthCity": "Hualien",
       "position": "P",
       "teamId": 522,
@@ -94,6 +103,7 @@
     {
       "id": 800213,
       "fullName": "Hung-Leng Chang",
+      "birthDate": "2001-10-07",
       "birthCity": "Taichung",
       "position": "P",
       "teamId": 477,
@@ -104,6 +114,7 @@
     {
       "id": 694834,
       "fullName": "Tyler Wilson",
+      "birthDate": "2002-07-10",
       "birthCity": "Tainan",
       "position": "OF",
       "teamId": 537,
@@ -114,6 +125,7 @@
     {
       "id": 809223,
       "fullName": "Tzu-Chen Sha",
+      "birthDate": "2003-10-15",
       "birthCity": "Taipei",
       "position": "P",
       "teamId": 499,
@@ -124,6 +136,7 @@
     {
       "id": 808486,
       "fullName": "Chen-Hsun Lee",
+      "birthDate": "2002-01-14",
       "birthCity": "Taoyuen",
       "position": "P",
       "teamId": 476,
@@ -134,6 +147,7 @@
     {
       "id": 828667,
       "fullName": "Ching-Hsien Ko",
+      "birthDate": "2006-08-11",
       "birthCity": "Taiping",
       "position": "OF",
       "teamId": 6482,
@@ -144,6 +158,7 @@
     {
       "id": 829473,
       "fullName": "Chung-Hsiang Huang",
+      "birthDate": "2005-10-26",
       "birthCity": "Keelung",
       "position": "P",
       "teamId": 516,
@@ -154,6 +169,7 @@
     {
       "id": 842158,
       "fullName": "Jui-Chieh Lin",
+      "birthDate": "2002-08-16",
       "birthCity": "Taipei",
       "position": "P",
       "teamId": 509,
@@ -164,6 +180,7 @@
     {
       "id": 837088,
       "fullName": "Lan-Hong Su",
+      "birthDate": "2007-03-04",
       "birthCity": "Taipei",
       "position": "P",
       "teamId": 103,
@@ -174,6 +191,7 @@
     {
       "id": 806823,
       "fullName": "Sheng-En Lin",
+      "birthDate": "2005-09-01",
       "birthCity": "Taitung",
       "position": "P",
       "teamId": 450,
@@ -184,6 +202,7 @@
     {
       "id": 843397,
       "fullName": "Chien-Fan Lai",
+      "birthDate": "2008-01-21",
       "birthCity": "Taitung",
       "position": "P",
       "teamId": 475,
@@ -194,6 +213,7 @@
     {
       "id": 843974,
       "fullName": "Hua Ho",
+      "birthDate": "2008-07-11",
       "birthCity": "Yuli",
       "position": "P",
       "teamId": 623,
@@ -204,6 +224,7 @@
     {
       "id": 806825,
       "fullName": "Nien-Hsi Yang",
+      "birthDate": "2006-08-10",
       "birthCity": "Tainan",
       "position": "P",
       "teamId": 408,
@@ -214,6 +235,7 @@
     {
       "id": 806836,
       "fullName": "Po-Chun Lin",
+      "birthDate": "2006-07-21",
       "birthCity": "Taipei",
       "position": "P",
       "teamId": 409,
@@ -224,6 +246,7 @@
     {
       "id": 835879,
       "fullName": "Yu-Lin Liao",
+      "birthDate": "2007-07-29",
       "birthCity": "Taoyuen",
       "position": "3B",
       "teamId": 406,

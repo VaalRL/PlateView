@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, MapPin } from 'lucide-react';
+import { ArrowLeft, Cake, MapPin } from 'lucide-react';
 import { useFavoritePlayersGameLogQuery } from '../services/queries';
 import { useLanguage } from '../hooks/useLanguage';
 import { FavoritePlayerSummaryCard } from '../components/favorite/FavoritePlayerSummaryCard';
 import { PlayerHoverCard } from '../components/common/PlayerHoverCard';
 import { getEasternDateStr } from '../utils/timezone';
+import { ageOnNextBirthday, daysUntilBirthday, formatMonthDay } from '../utils/birthdays';
 import type { TranslationKey } from '../i18n/translations';
 import taiwanPlayers from '../data/taiwan-players.json';
 import playersData from '../data/players-zh-tw.json';
@@ -30,6 +31,12 @@ export const TaiwanPlayersPage: React.FC = () => {
   // MLB game log dates are US dates
   const todayDateStr = getEasternDateStr();
 
+  // Birthdays in the coming week, today first
+  const birthdays = players
+    .map((player) => ({ player, days: daysUntilBirthday(player.birthDate ?? undefined) }))
+    .filter((b): b is { player: (typeof players)[number]; days: number } => b.days !== null && b.days <= 6)
+    .sort((a, b) => a.days - b.days);
+
   const groups = LEVELS.map((level) => ({ level, players: players.filter((p) => p.level === level) })).filter(
     (g) => g.players.length > 0
   );
@@ -50,6 +57,31 @@ export const TaiwanPlayersPage: React.FC = () => {
           {t('taiwan.subtitle', { season: taiwanPlayers.season, count: players.length })}
         </p>
       </div>
+
+      {birthdays.length > 0 && (
+        <section aria-labelledby="taiwan-birthdays" className="bg-card border border-border rounded-2xl p-4 shadow-sm space-y-2">
+          <h2 id="taiwan-birthdays" className="flex items-center gap-1.5 text-sm font-bold text-main">
+            <Cake className="w-4 h-4 text-rose-500" />
+            {t('birthdays.this_week')}
+          </h2>
+          <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs">
+            {birthdays.map(({ player, days }) => (
+              <li key={player.id}>
+                <PlayerHoverCard personId={player.id}>
+                  <Link to={`/players/${player.id}`} className="font-semibold text-main hover:text-team-primary">
+                    {(lang === 'zh' ? zhNames.get(player.id)?.nameZh : undefined) ?? player.fullName}
+                  </Link>
+                </PlayerHoverCard>{' '}
+                <span className="text-muted">
+                  {days === 0 ? `🎂 ${t('player.birthday_today')}` : formatMonthDay(player.birthDate, lang)}
+                  {' · '}
+                  {t('birthdays.turns', { age: ageOnNextBirthday(player.birthDate) ?? '' })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {groups.map(({ level, players: atLevel }) => (
         <section key={level} className="space-y-3" aria-labelledby={`taiwan-${level}`}>
