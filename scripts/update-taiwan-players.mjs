@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Rebuild src/data/taiwan-players.json: every player born in Taiwan on an
- * MLB or minor league roster this season, with his club and level.
+ * MLB or minor league roster this season, with his club, level and birth date.
  *
  * Run by .github/workflows/update-player-data.yml (the development machine
  * may not reach statsapi.mlb.com). Usage:
@@ -48,7 +48,7 @@ for (const { sportId, abbreviation } of LEVELS) {
   const [roster, clubs] = await Promise.all([
     get(`/sports/${sportId}/players`, {
       season,
-      fields: 'people,id,fullName,birthCountry,birthCity,primaryPosition,abbreviation,currentTeam,id',
+      fields: 'people,id,fullName,birthDate,birthCountry,birthCity,primaryPosition,abbreviation,currentTeam,id',
     }),
     get('/teams', { sportId, season, fields: 'teams,id,name,parentOrgId' }),
   ]);
@@ -71,6 +71,7 @@ const list = [...players.values()]
     return {
       id: p.id,
       fullName: p.fullName,
+      birthDate: p.birthDate ?? null,
       birthCity: p.birthCity ?? null,
       position: p.primaryPosition?.abbreviation ?? null,
       teamId: club?.id ?? p.currentTeam?.id ?? null,
