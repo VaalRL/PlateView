@@ -30,12 +30,18 @@ jobs:
         with:
           node-version: 20
 
+      # Each file is rebuilt on its own: one failing must not hold back the
+      # other's update. The run still fails at the end if either did
       - name: Rebuild the list of players born in Taiwan
+        id: players
+        continue-on-error: true
         env:
           REPORT_FILE: ${{ runner.temp }}/report.md
         run: node scripts/update-taiwan-players.mjs
 
       - name: Rebuild the ballparks' fence distances
+        id: venues
+        continue-on-error: true
         env:
           REPORT_FILE: ${{ runner.temp }}/report.md
         run: node scripts/update-venues.mjs
@@ -73,3 +79,9 @@ jobs:
           else
             echo "Updated the open pull request on $BRANCH."
           fi
+
+      - name: Fail if a data file could not be rebuilt
+        if: steps.players.outcome == 'failure' || steps.venues.outcome == 'failure'
+        run: |
+          echo "::error::players: ${{ steps.players.outcome }}, venues: ${{ steps.venues.outcome }}"
+          exit 1

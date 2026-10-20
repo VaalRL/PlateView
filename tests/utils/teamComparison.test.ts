@@ -1,7 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import {
   addTeamToComparison,
-  bestIndexes,
   lastCompletedGame,
   lineupOps,
   loadTeamComparison,
@@ -11,6 +10,7 @@ import {
   startingLineup,
   teamSide,
 } from '../../src/utils/teamComparison';
+import { bestIndexes } from '../../src/utils/comparison';
 import type { BoxscoreTeamSide, ScheduleResponse } from '../../src/types/mlb';
 
 const game = (gamePk: number, gameDate: string, state: string, extra: Record<string, unknown> = {}) => ({

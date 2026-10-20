@@ -41,8 +41,13 @@ export async function promptInstall(): Promise<boolean> {
   if (!event) return false;
   deferred = null;
   notify();
-  await event.prompt();
-  return (await event.userChoice).outcome === 'accepted';
+  try {
+    await event.prompt();
+    return (await event.userChoice).outcome === 'accepted';
+  } catch {
+    // Already used, or the browser withdrew it: nothing to show the user
+    return false;
+  }
 }
 
 /** Already opened from the home screen */

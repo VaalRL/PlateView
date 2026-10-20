@@ -23,9 +23,7 @@ import {
   type CompareGroup,
 } from '../utils/comparison';
 import type { PlayerStatGroup } from '../utils/playerLevels';
-import playersData from '../data/players-zh-tw.json';
-
-const zhNames = new Map(playersData.map((p) => [p.id, p.nameZh]));
+import { zhNameOf } from '../utils/players';
 
 /**
  * Up to four big leaguers side by side for this season, the best value of
@@ -38,15 +36,14 @@ export const ComparePage: React.FC = () => {
   const ids = useMemo(() => parseCompareIds(params.get('players')), [params]);
   const setIds = (next: number[]) => setParams({ players: next.join(',') }, { replace: true });
 
-  // Opened without a list (from a bookmark or the menu): pick up the last one
+  // Opened without a list (a bookmark, or the tab link while already here):
+  // pick up the last one. An emptied list keeps its empty `players=`
   useEffect(() => {
     if (!params.has('players')) {
       const stored = loadComparison();
       if (stored.length > 0) setParams({ players: stored.join(',') }, { replace: true });
     }
-    // Only on arrival; afterwards the URL is the source
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [params, setParams]);
   useEffect(() => {
     if (params.has('players')) saveComparison(ids);
   }, [ids, params]);
@@ -118,7 +115,7 @@ export const ComparePage: React.FC = () => {
                   {t('compare.stat')}
                 </th>
                 {people.map((p) => {
-                  const zh = lang === 'zh' ? zhNames.get(p.id) : undefined;
+                  const zh = lang === 'zh' ? zhNameOf(p.id) : undefined;
                   const team = teamDisplayName(p.currentTeam?.id, lang, p.currentTeam?.name);
                   return (
                     <th key={p.id} scope="col" className="px-3 py-3 align-top min-w-[132px]">

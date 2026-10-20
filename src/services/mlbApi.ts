@@ -206,22 +206,13 @@ export async function getPlayerSeasons(personId: number): Promise<number[]> {
 }
 
 /**
- * One past season's game log at every level, postseason games folded in.
- * A postseason that fails to load leaves the regular season standing,
- * flagged like the current season's.
+ * One past season's game log at every level. Its postseason games come from
+ * getPostseasonGameLogs, in a query of their own, as for the current season.
  */
-export async function getPlayerSeasonGameLogs(personId: number, season: number) {
-  const [regular, postseason] = await Promise.allSettled([
-    fetchMlb<PeopleResponse>(`/people/${personId}`, {
-      hydrate: `stats(group=[hitting,pitching],type=[gameLog],season=${season},leagueListId=${MLB_MILB_LEAGUE_LIST})`,
-    }),
-    getPostseasonGameLogs([personId], season),
-  ]);
-  if (regular.status === 'rejected') throw regular.reason;
-  return {
-    data: withPostseasonGameLogs(regular.value, postseason.status === 'fulfilled' ? postseason.value : undefined),
-    postseasonFailed: postseason.status === 'rejected',
-  };
+export async function getPlayerSeasonGameLogs(personId: number, season: number): Promise<PeopleResponse> {
+  return fetchMlb<PeopleResponse>(`/people/${personId}`, {
+    hydrate: `stats(group=[hitting,pitching],type=[gameLog],season=${season},leagueListId=${MLB_MILB_LEAGUE_LIST})`,
+  });
 }
 
 /**

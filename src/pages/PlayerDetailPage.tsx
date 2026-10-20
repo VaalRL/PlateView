@@ -71,7 +71,11 @@ export const PlayerDetailPage: React.FC = () => {
   const zhPlayerMeta = playersData.find((p) => p.id === idNum);
 
   const [statTypeTab, setStatTypeTab] = useState<'season' | 'career'>('season');
-  const [gameScope, setGameScope] = useState<'regular' | 'postseason'>('regular');
+  // The postseason view, like the level and the game log season, belongs to one player
+  const [gameScopeChoice, setGameScopeChoice] = useState<{ personId: number; scope: 'postseason' } | null>(null);
+  const gameScope = gameScopeChoice?.personId === idNum ? gameScopeChoice.scope : 'regular';
+  const setGameScope = (scope: 'regular' | 'postseason') =>
+    setGameScopeChoice(scope === 'postseason' ? { personId: idNum, scope } : null);
   const [roleTab, setRoleTab] = useState<'auto' | 'hitting' | 'pitching'>('auto');
   // Transactions load only once their tab is opened. The tab, like the game
   // log filters and "show all", belongs to one player (see the level choice below)
@@ -145,7 +149,7 @@ export const PlayerDetailPage: React.FC = () => {
   // Game logs mix every level and the API groups them by level, so sort by
   // date (most recent games first)
   const logGroups: PlayerStatGroup[] = useMemo(
-    () => (logSeason === null ? statsGroups : pastLogs.data?.data?.people?.[0]?.stats ?? []),
+    () => (logSeason === null ? statsGroups : (pastLogs.data?.people?.[0]?.stats as PlayerStatGroup[] | undefined) ?? []),
     [logSeason, statsGroups, pastLogs.data]
   );
   const sortedHittingGameLogs = useMemo(() => gameLogsOf(logGroups, 'hitting'), [logGroups]);
@@ -154,7 +158,7 @@ export const PlayerDetailPage: React.FC = () => {
   const currentSeason = getCurrentMlbSeason();
   const pastSeasons = (seasonsQuery.data ?? []).filter((y) => y < currentSeason);
   const logsLoading = logSeason !== null && pastLogs.isLoading;
-  const postseasonLogsFailed = logSeason === null ? postseasonLogs.isError : !!pastLogs.data?.postseasonFailed;
+  const postseasonLogsFailed = logSeason === null ? postseasonLogs.isError : pastLogs.postseasonFailed;
 
   // True two-way player check (Ohtani or both significant hitting and pitching volume)
   const isTwoWay = useMemo(() => {

@@ -161,4 +161,14 @@ describe('TeamComparePage', () => {
     renderAt('/compare/teams');
     expect(screen.getByText(/還沒有選擇球隊/)).toBeInTheDocument();
   });
+
+  it('keeps the list when the Teams tab is clicked while already on it', async () => {
+    renderAt('/compare/teams?teams=119,147');
+    await screen.findByRole('link', { name: 'Dodger 1' });
+    fireEvent.click(screen.getByRole('link', { name: '球隊' }));
+    // The tab links to the bare page; the saved list comes back
+    expect(await screen.findByRole('link', { name: 'Dodger 1' })).toBeInTheDocument();
+    expect(screen.getByTestId('url')).toHaveTextContent('?teams=119%2C147');
+  });
 });
+

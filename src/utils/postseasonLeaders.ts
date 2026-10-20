@@ -1,5 +1,6 @@
 import type { LeaderCategoryGroup, LeaderItem } from '../types/leaderboards';
-import { getCurrentMlbSeason, mayHavePostseasonGames } from './season';
+import { getCurrentMlbSeason } from './season';
+import { outsOf } from './gameLogFilters';
 import { teamsById } from './teams';
 
 /**
@@ -51,23 +52,18 @@ const PA_PER_TEAM_GAME = 3.1;
 const OUTS_PER_TEAM_GAME = 3;
 
 /**
- * The latest postseason that can have games: this season's from late
- * September, last season's before that.
+ * The latest postseason with games: this season's from October, when the
+ * Wild Card round opens, last season's until then. (The game log's
+ * `mayHavePostseasonGames` opens a week earlier on purpose: a request that
+ * comes back empty costs it nothing, a page of empty leaderboards does.)
  */
 export function latestPostseasonSeason(date: Date = new Date()): number {
   const season = getCurrentMlbSeason(date);
-  return mayHavePostseasonGames(date) ? season : season - 1;
+  const month = date.getMonth(); // 0-based: 2 = March, 9 = October
+  return month >= 2 && month < 9 ? season - 1 : season;
 }
 
 const splitsOf = (r: PostseasonStatsResponse | undefined) => r?.stats?.[0]?.splits ?? [];
-
-/** "12.1" innings, a third of an inning per digit after the point, as outs */
-export function outsOfInnings(ip: unknown): number {
-  const [whole, part] = String(ip ?? '').split('.');
-  const innings = Number(whole);
-  if (!Number.isFinite(innings)) return NaN;
-  return innings * 3 + (Number(part) || 0);
-}
 
 /**
  * Games each club played, read off its hitters: someone plays every game.
@@ -90,11 +86,11 @@ function qualifies(s: PostseasonStatSplit, qualifier: Qualifier | undefined, tea
   if (games === 0) return false;
   return qualifier === 'plateAppearances'
     ? Number(s.stat?.plateAppearances ?? 0) >= PA_PER_TEAM_GAME * games
-    : outsOfInnings(s.stat?.inningsPitched) >= OUTS_PER_TEAM_GAME * games;
+    : outsOf({ inningsPitched: String(s.stat?.inningsPitched ?? '') }) >= OUTS_PER_TEAM_GAME * games;
 }
 
 const numeric = (rule: LeaderRule, value: unknown) =>
-  rule.field === 'inningsPitched' ? outsOfInnings(value) : parseFloat(String(value ?? ''));
+  rule.field === 'inningsPitched' ? outsOf({ inningsPitched: String(value ?? '') }) : parseFloat(String(value ?? ''));
 
 /**
  * The top `limit` of each category, shaped like `/stats/leaders` so the

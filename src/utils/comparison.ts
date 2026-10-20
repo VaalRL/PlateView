@@ -100,13 +100,24 @@ export function hasGroupLine(stats: PlayerStatGroup[] | undefined, group: Compar
  */
 export function bestColumns(values: unknown[], r: CompareRow): Set<number> {
   if (!r.better) return new Set();
-  const numbers = values.map((v) =>
-    r.field === 'inningsPitched' ? outsOf({ inningsPitched: v as string }) : parseFloat(String(v ?? ''))
+  return bestIndexes(
+    values.map((v) =>
+      r.field === 'inningsPitched' ? outsOf({ inningsPitched: v as string }) : parseFloat(String(v ?? ''))
+    ),
+    r.better
   );
-  const present = numbers.filter((n) => Number.isFinite(n));
+}
+
+/**
+ * Columns holding the best value, every one of them on a tie; none unless at
+ * least two columns have a value, as one alone beats nobody. Shared by the
+ * player and team comparison pages.
+ */
+export function bestIndexes(values: (number | null | undefined)[], better: 'high' | 'low'): Set<number> {
+  const present = values.filter((n): n is number => typeof n === 'number' && Number.isFinite(n));
   if (present.length < 2) return new Set();
-  const best = r.better === 'high' ? Math.max(...present) : Math.min(...present);
-  return new Set(numbers.flatMap((n, i) => (n === best ? [i] : [])));
+  const best = better === 'high' ? Math.max(...present) : Math.min(...present);
+  return new Set(values.flatMap((n, i) => (n === best ? [i] : [])));
 }
 
 /** Player ids from the `players` URL parameter: numbers only, no repeats, at most MAX_COMPARED */

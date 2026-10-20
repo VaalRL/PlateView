@@ -109,9 +109,11 @@ export function startingLineup(teamBox: BoxscoreTeamSide | null | undefined): St
  * `pitchers`, as in a DH game he never bats. Under the two-way rule a
  * pitcher can also start at DH, so a pitcher who batted fills that row too.
  */
-export function startingDefense(teamBox: BoxscoreTeamSide | null | undefined): Partial<Record<DefensePosition, Starter>> {
+export function startingDefense(
+  teamBox: BoxscoreTeamSide | null | undefined,
+  lineup: Starter[] = startingLineup(teamBox)
+): Partial<Record<DefensePosition, Starter>> {
   const defense: Partial<Record<DefensePosition, Starter>> = {};
-  const lineup = startingLineup(teamBox);
 
   lineup.forEach((s) => {
     const isField = getPositionNumber(s.position) !== null && s.position !== 'P';
@@ -139,14 +141,6 @@ export function lineupOps(lineup: Starter[]): number | null {
   const values = lineup.map((s) => parseFloat(s.ops ?? '')).filter((n) => Number.isFinite(n));
   if (values.length === 0) return null;
   return values.reduce((sum, n) => sum + n, 0) / values.length;
-}
-
-/** Columns holding the best value; none unless at least two columns have one */
-export function bestIndexes(values: (number | null | undefined)[], better: 'high' | 'low'): Set<number> {
-  const present = values.filter((n): n is number => typeof n === 'number' && Number.isFinite(n));
-  if (present.length < 2) return new Set();
-  const best = better === 'high' ? Math.max(...present) : Math.min(...present);
-  return new Set(values.flatMap((n, i) => (n === best ? [i] : [])));
 }
 
 /** The 30 big league clubs only, each once, at most four */
