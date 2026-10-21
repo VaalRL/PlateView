@@ -54,11 +54,12 @@ describe('AwardsPage', () => {
     queryClient.clear();
   });
 
-  it('shows each award’s winners for the season, Chinese names first', async () => {
+  it('shows each award’s winners for the season, in English', async () => {
     renderAt('/awards?season=2025');
     const mvp = (await screen.findByRole('link', { name: '最有價值球員 (MVP)' })).closest('section')!;
-    expect(within(mvp).getByRole('link', { name: '大谷翔平' })).toBeInTheDocument();
+    expect(within(mvp).getByRole('link', { name: 'Shohei Ohtani' })).toBeInTheDocument();
     expect(within(mvp).getByText('Aaron Judge')).toBeInTheDocument();
+    expect(within(mvp).queryByText('大谷翔平')).not.toBeInTheDocument();
     // Not announced yet for the AL Cy Young in this data
     const cy = screen.getByRole('link', { name: '賽揚獎' }).closest('section')!;
     expect(within(cy).getByText('尚未公布')).toBeInTheDocument();
@@ -68,13 +69,13 @@ describe('AwardsPage', () => {
     renderAt('/awards?season=2025');
     const table = (await screen.findByRole('link', { name: '銀棒獎' })).closest('section')!;
     const secondBase = within(table).getByRole('row', { name: /2B/ });
-    expect(within(secondBase).getByRole('link', { name: '李灝宇' })).toBeInTheDocument();
+    expect(within(secondBase).getByRole('link', { name: 'Hao-Yu Lee' })).toBeInTheDocument();
     expect(within(secondBase).getByText('台灣')).toBeInTheDocument();
   });
 
   it('asks for another season from the menu', async () => {
     const fetchMock = renderAt('/awards?season=2025');
-    await screen.findByRole('link', { name: '大谷翔平' });
+    await screen.findByRole('link', { name: 'Shohei Ohtani' });
     fireEvent.change(screen.getByRole('combobox', { name: '賽季' }), { target: { value: '2024' } });
     expect(screen.getByTestId('url')).toHaveTextContent('/awards?season=2024');
     expect(fetchMock.mock.calls.some(([u]) => String(u).includes('season=2024'))).toBe(true);
@@ -82,7 +83,7 @@ describe('AwardsPage', () => {
 
   it('opens an award’s history, with a switch to the other league', async () => {
     renderAt('/awards/NLMVP');
-    expect(await screen.findByRole('link', { name: '大谷翔平' })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: 'Shohei Ohtani' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '2025' })).toHaveAttribute('href', '/awards?season=2025');
     fireEvent.click(screen.getByRole('link', { name: '美國聯盟' }));
     expect(await screen.findByText('Aaron Judge')).toBeInTheDocument();

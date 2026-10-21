@@ -132,7 +132,8 @@ describe('hover cards', () => {
 
     expect(await screen.findByText('MLB 第 2')).toBeInTheDocument();
     const card = screen.getByRole('tooltip');
-    expect(card).toHaveTextContent('大谷翔平');
+    // The player's name stays English; the club follows the UI language
+    expect(card).not.toHaveTextContent('大谷翔平');
     expect(card).toHaveTextContent('洛杉磯道奇');
     expect(card).toHaveTextContent('全壘打');
     // A category he is not in stays off the card

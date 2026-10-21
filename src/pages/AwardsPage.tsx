@@ -6,7 +6,6 @@ import { getPlayerHeadshotUrl, getTeamLogoUrl } from '../services/mlbApi';
 import { useLanguage } from '../hooks/useLanguage';
 import { PlayerHoverCard } from '../components/common/PlayerHoverCard';
 import { teamDisplayName } from '../utils/teams';
-import { zhNameOf } from '../utils/players';
 import { defaultAwardsSeason, historyBySeason, leagueOf, rowsByPosition } from '../utils/awards';
 import {
   ALL_AWARD_IDS,
@@ -27,11 +26,10 @@ const SEASONS_BACK = 25;
 
 const awardTitle = (group: AwardGroup) => `awards.${group.key}` as TranslationKey;
 
-/** A winner: name (Chinese first in the zh UI), club, and a mark for players from Taiwan */
+/** A winner: name (always English), club, and a mark for players from Taiwan */
 const Winner: React.FC<{ r: AwardRecipient; withPhoto?: boolean }> = ({ r, withPhoto }) => {
   const { lang, t } = useLanguage();
   const id = r.player?.id;
-  const zh = lang === 'zh' ? zhNameOf(id) : undefined;
   const team = teamDisplayName(r.team?.id, lang);
   return (
     <div className="flex items-center gap-2.5 min-w-0">
@@ -50,7 +48,7 @@ const Winner: React.FC<{ r: AwardRecipient; withPhoto?: boolean }> = ({ r, withP
           {id ? (
             <PlayerHoverCard personId={id}>
               <Link to={`/players/${id}`} className="font-bold text-main hover:text-team-primary">
-                {zh ?? r.player?.nameFirstLast}
+                {r.player?.nameFirstLast}
               </Link>
             </PlayerHoverCard>
           ) : (
@@ -64,7 +62,6 @@ const Winner: React.FC<{ r: AwardRecipient; withPhoto?: boolean }> = ({ r, withP
           )}
         </div>
         <div className="flex items-center gap-1 text-[11px] text-muted">
-          {zh && <span>{r.player?.nameFirstLast}</span>}
           {r.team?.id && (
             <img src={getTeamLogoUrl(r.team.id)} alt="" className="w-3.5 h-3.5 object-contain shrink-0" />
           )}

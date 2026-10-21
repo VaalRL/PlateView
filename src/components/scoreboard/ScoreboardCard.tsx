@@ -8,7 +8,6 @@ import { CountDisplay } from './CountDisplay';
 import { useLanguage } from '../../hooks/useLanguage';
 import teamsData from '../../data/teams.json';
 import { LIVE_ACCENT } from '../../constants/gameStatus';
-import playersData from '../../data/players-zh-tw.json';
 import { ChevronRight, AlertCircle } from 'lucide-react';
 import { PlayerHoverCard } from '../common/PlayerHoverCard';
 import { TeamHoverCard } from '../common/TeamHoverCard';
@@ -63,14 +62,8 @@ export const ScoreboardCard: React.FC<ScoreboardCardProps> = ({ game }) => {
   const totalInnings = linescore?.innings?.length || 9;
   const isExtraInnings = isFinal && totalInnings > 9;
 
-  const getPlayerDisplayName = (person?: { id?: number; fullName?: string }) => {
-    if (!person?.fullName) return '';
-    if (lang === 'zh' && person.id) {
-      const zhMeta = playersData.find((p) => p.id === person.id);
-      if (zhMeta?.nameZh) return zhMeta.nameZh;
-    }
-    return person.fullName;
-  };
+  // Player names stay in English in both languages; the Chinese dictionary is for search only
+  const getPlayerDisplayName = (person?: { fullName?: string }) => person?.fullName ?? '';
 
   /**
    * A game only has a detail page worth opening once it has started: before

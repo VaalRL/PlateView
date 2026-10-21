@@ -13,7 +13,7 @@ const queryClient = new QueryClient({
 });
 
 describe('PlayerDetailPage component', () => {
-  it('renders Shohei Ohtani profile with English primary name and Chinese secondary', () => {
+  it('renders Shohei Ohtani profile with his English name only', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={['/players/660271']}>
@@ -26,8 +26,8 @@ describe('PlayerDetailPage component', () => {
 
     // Primary heading is always the English name
     expect(screen.getByRole('heading', { name: /Shohei Ohtani/ })).toBeInTheDocument();
-    // Chinese name from the dictionary stays visible as a secondary line
-    expect(screen.getByText(/大谷翔平/)).toBeInTheDocument();
+    // The dictionary's Chinese name is for search; the page does not show it
+    expect(screen.queryByText(/大谷翔平/)).not.toBeInTheDocument();
     expect(screen.getByText('已收藏球星')).toBeInTheDocument();
   });
 
@@ -43,7 +43,7 @@ describe('PlayerDetailPage component', () => {
     );
 
     expect(screen.getByRole('heading', { name: /Hao-Yu Lee/ })).toBeInTheDocument();
-    expect(screen.getByText(/李灝宇/)).toBeInTheDocument();
+    expect(screen.queryByText(/李灝宇/)).not.toBeInTheDocument();
     expect(screen.getByText('收藏此球星')).toBeInTheDocument();
   });
 

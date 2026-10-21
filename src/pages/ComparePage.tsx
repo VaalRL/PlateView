@@ -23,7 +23,6 @@ import {
   type CompareGroup,
 } from '../utils/comparison';
 import type { PlayerStatGroup } from '../utils/playerLevels';
-import { zhNameOf } from '../utils/players';
 
 /**
  * Up to four big leaguers side by side for this season, the best value of
@@ -115,7 +114,6 @@ export const ComparePage: React.FC = () => {
                   {t('compare.stat')}
                 </th>
                 {people.map((p) => {
-                  const zh = lang === 'zh' ? zhNameOf(p.id) : undefined;
                   const team = teamDisplayName(p.currentTeam?.id, lang, p.currentTeam?.name);
                   return (
                     <th key={p.id} scope="col" className="px-3 py-3 align-top min-w-[132px]">
@@ -143,7 +141,6 @@ export const ComparePage: React.FC = () => {
                             {p.fullName}
                           </Link>
                         </PlayerHoverCard>
-                        {zh && <span className="text-xs font-semibold text-main/80">{zh}</span>}
                         <span className="text-[11px] font-normal text-muted">
                           {[p.primaryPosition?.abbreviation, team].filter(Boolean).join(' · ')}
                         </span>

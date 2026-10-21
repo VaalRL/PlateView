@@ -22,11 +22,42 @@ describe('Navbar component', () => {
     );
 
     expect(screen.getByText(/Plate/i)).toBeInTheDocument();
-    expect(screen.getByText('數據排行')).toBeInTheDocument();
-    expect(screen.getByText('分區榜')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '數據排行' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '分區榜' })).toBeInTheDocument();
     expect(screen.getByText('繁中')).toBeInTheDocument();
     expect(screen.getByLabelText(/Toggle theme mode/i)).toBeInTheDocument();
     expect(screen.getByLabelText('☕ 贊助本專案')).toHaveAttribute('href', 'https://buymeacoffee.com/whoami885');
+  });
+
+  it('shows every entry as an icon named by its tooltip', () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <MemoryRouter initialEntries={['/transactions']}>
+            <Navbar />
+          </MemoryRouter>
+        </LanguageProvider>
+      </QueryClientProvider>
+    );
+
+    for (const [label, href] of [
+      ['數據排行', '/leaders'],
+      ['季後賽', '/postseason'],
+      ['年度獎項', '/awards'],
+      ['球員異動', '/transactions'],
+      ['台灣旅外球員', '/taiwan'],
+    ]) {
+      const link = screen.getByRole('link', { name: label });
+      expect(link).toHaveAttribute('href', href);
+      // Icon only: the name is not text inside the link but its label and tooltip
+      expect(link).not.toHaveTextContent(label);
+      expect(link.parentElement).toHaveTextContent(label);
+    }
+    const standings = screen.getByRole('button', { name: '分區榜' });
+    expect(standings).not.toHaveTextContent('分區榜');
+    expect(standings.parentElement).toHaveTextContent('分區榜');
+    expect(screen.getByRole('link', { name: '球員異動' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: '年度獎項' })).not.toHaveAttribute('aria-current');
   });
 
   it('triggers scrollIntoView when clicking Standings button', () => {
@@ -47,7 +78,7 @@ describe('Navbar component', () => {
       </QueryClientProvider>
     );
 
-    const standingsBtn = screen.getByText('分區榜');
+    const standingsBtn = screen.getByRole('button', { name: '分區榜' });
     fireEvent.click(standingsBtn);
 
     expect(scrollMock).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });

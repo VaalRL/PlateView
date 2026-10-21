@@ -245,10 +245,8 @@ export const PlayerDetailPage: React.FC = () => {
   // Birthplace as the API spells it: city, state or province, country
   const birthPlace = [person?.birthCity, person?.birthStateProvince, person?.birthCountry].filter(Boolean).join(', ');
 
-  // Primary name is always English; the dictionary Chinese name (when
-  // available) shows as a secondary line in either language mode
+  // Names are English only; the Chinese dictionary is for search
   const primaryName = person?.fullName || zhPlayerMeta?.nameEn || 'MLB Player';
-  const secondaryName = zhPlayerMeta?.nameZh || '';
 
   // Seasons at the level shown, in the role shown; a player with lines in
   // only one role gets that one
@@ -307,15 +305,6 @@ export const PlayerDetailPage: React.FC = () => {
                 </span>
               )}
             </div>
-
-            {(secondaryName || (zhPlayerMeta?.nicknames.length ?? 0) > 0) && (
-              <p className="text-sm text-muted mt-0.5">
-                {secondaryName}{' '}
-                {zhPlayerMeta && zhPlayerMeta.nicknames.length > 0
-                  ? `(${zhPlayerMeta.nicknames.slice(0, 3).join(' / ')})`
-                  : ''}
-              </p>
-            )}
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-3 text-xs text-muted">
               {person?.currentTeam ? (

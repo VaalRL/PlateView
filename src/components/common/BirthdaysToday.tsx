@@ -6,7 +6,6 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { PlayerHoverCard } from './PlayerHoverCard';
 import { getCurrentMlbSeason } from '../../utils/season';
 import { ageOnNextBirthday, daysUntilBirthday } from '../../utils/birthdays';
-import { zhNameOf } from '../../utils/players';
 import { teamsById } from '../../utils/teams';
 
 /**
@@ -14,7 +13,7 @@ import { teamsById } from '../../utils/teams';
  * the home page, absent on a day nobody on a roster was born.
  */
 export const BirthdaysToday: React.FC = () => {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
   const { data } = useSeasonPlayersQuery(getCurrentMlbSeason());
   const today = new Date();
   const dayKey = today.toDateString();
@@ -36,7 +35,7 @@ export const BirthdaysToday: React.FC = () => {
         {t('birthdays.today')}
       </h2>
       {birthdays.map((p) => {
-        const name = (lang === 'zh' ? zhNameOf(p.id) : undefined) ?? p.fullName;
+        const name = p.fullName;
         const team = teamsById.get(p.currentTeam?.id ?? -1)?.abbrev;
         return (
           <PlayerHoverCard key={p.id} personId={p.id}>

@@ -58,6 +58,14 @@ describe('HomePage level switcher', () => {
     expect(scheduleSports().every((s) => s === '1')).toBe(true);
   });
 
+  it('leaves awards, transactions and Players from Taiwan to the navbar', async () => {
+    renderHome();
+    await screen.findByText(/戰績與外卡爭霸榜/);
+    for (const href of ['/awards', '/transactions', '/taiwan']) {
+      expect(document.querySelector(`a[href="${href}"]`)).toBeNull();
+    }
+  });
+
   it('loads only the chosen level when switching to AAA', async () => {
     renderHome();
 

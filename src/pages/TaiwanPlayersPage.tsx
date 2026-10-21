@@ -69,7 +69,7 @@ export const TaiwanPlayersPage: React.FC = () => {
               <li key={player.id}>
                 <PlayerHoverCard personId={player.id}>
                   <Link to={`/players/${player.id}`} className="font-semibold text-main hover:text-team-primary">
-                    {(lang === 'zh' ? zhNames.get(player.id)?.nameZh : undefined) ?? player.fullName}
+                    {player.fullName}
                   </Link>
                 </PlayerHoverCard>{' '}
                 <span className="text-muted">
@@ -100,7 +100,6 @@ export const TaiwanPlayersPage: React.FC = () => {
                     person={person}
                     zhMeta={zhMeta}
                     todayDateStr={todayDateStr}
-                    showNameZh
                   />
                 );
               }
@@ -124,9 +123,6 @@ export const TaiwanPlayersPage: React.FC = () => {
                       {player.fullName}
                     </Link>
                   </PlayerHoverCard>
-                  {lang === 'zh' && zhMeta?.nameZh && (
-                    <div className="text-xs font-semibold text-main/80">{zhMeta.nameZh}</div>
-                  )}
                   <div className="mt-1 text-[11px] text-muted">
                     {[player.position, player.teamName].filter(Boolean).join(' · ')}
                   </div>

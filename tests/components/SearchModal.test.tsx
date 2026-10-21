@@ -35,9 +35,9 @@ describe('SearchModal component', () => {
     const input = screen.getByPlaceholderText(/搜尋球員.*或球隊/);
     fireEvent.change(input, { target: { value: '大谷' } });
 
-    // Primary name is English; the matched Chinese name stays visible as secondary
+    // A Chinese query finds the player, whose name shows in English only
     expect(screen.getByText('Shohei Ohtani')).toBeInTheDocument();
-    expect(screen.getByText(/大谷翔平/)).toBeInTheDocument();
+    expect(screen.queryByText(/大谷翔平/)).not.toBeInTheDocument();
   });
 
   it('searches for team in Traditional Chinese and finds Dodgers', () => {

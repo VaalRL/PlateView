@@ -35,9 +35,11 @@ describe('BirthdaysToday', () => {
       { id: 592450, fullName: 'Aaron Judge', birthDate: '1992-04-26', currentTeam: { id: 147 } },
     ]);
     expect(await screen.findByText('今日壽星')).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: /大谷翔平/ });
+    // Names stay in English in the Chinese UI
+    const link = screen.getByRole('link', { name: /Shohei Ohtani/ });
     expect(link).toHaveTextContent('LAD · 32 歲');
-    expect(screen.queryByText(/賈吉/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/大谷翔平/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Aaron Judge/)).not.toBeInTheDocument();
   });
 
   it('shows nothing on a day without birthdays', async () => {

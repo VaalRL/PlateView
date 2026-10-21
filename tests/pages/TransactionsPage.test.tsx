@@ -67,9 +67,9 @@ describe('TransactionsPage', () => {
     expect(within(all).queryByText('Optioned Guy')).not.toBeInTheDocument();
   });
 
-  it('puts players from Taiwan first, every type of move, with the Chinese name', async () => {
+  it('puts players from Taiwan first, every type of move, names in English', async () => {
     const taiwan = await screen.findByRole('region', { name: /台灣球員（1）/ });
-    expect(within(taiwan).getByRole('link', { name: '李灝宇 Hao-Yu Lee' })).toBeInTheDocument();
+    expect(within(taiwan).getByRole('link', { name: 'Hao-Yu Lee' })).toBeInTheDocument();
     expect(within(taiwan).getByText('名單狀態變更')).toBeInTheDocument();
   });
 

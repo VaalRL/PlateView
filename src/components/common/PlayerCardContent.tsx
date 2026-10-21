@@ -7,7 +7,6 @@ import type { TranslationKey } from '../../i18n/translations';
 import { HITTING_LEADER_CATEGORIES, PITCHING_LEADER_CATEGORIES } from '../../constants/leaderboards';
 import { getCurrentMlbSeason } from '../../utils/season';
 import { findLeaderRanks, isMinorLeagueClub, levelAbbreviation, ordinal } from '../../utils/hoverCards';
-import { zhNameOf } from '../../utils/players';
 
 /** Leader categories listed on the card at most */
 const MAX_RANKS = 4;
@@ -49,7 +48,6 @@ const PlayerCardContent: React.FC<{ personId: number }> = ({ personId }) => {
         ...(pitching.data?.leagueLeaders ?? []),
       ]).slice(0, MAX_RANKS)
     : [];
-  const zhName = zhNameOf(personId);
 
   return (
     <>
@@ -69,7 +67,6 @@ const PlayerCardContent: React.FC<{ personId: number }> = ({ personId }) => {
               <span className="ml-1.5 font-mono text-[10px] text-muted">{person.primaryPosition.abbreviation}</span>
             )}
           </div>
-          {zhName && <div className="text-[11px] text-muted truncate">{zhName}</div>}
         </div>
       </div>
 
