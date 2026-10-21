@@ -1,10 +1,47 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Compass, Coffee, Trophy, Medal, SlidersHorizontal, MapPin, ArrowLeftRight } from 'lucide-react';
+import { Search, Compass, Coffee, Trophy, Medal, SlidersHorizontal, MapPin, ArrowLeftRight, Award, type LucideIcon } from 'lucide-react';
 import { ThemeSelector } from './ThemeSelector';
 import { SearchModal } from './SearchModal';
 import { PlateViewLogo } from './PlateViewLogo';
 import { useLanguage } from '../../hooks/useLanguage';
+
+/**
+ * A label under an icon-only control, shown on hover and on keyboard focus.
+ * Out of the layout until then: a hidden label near the edge would still
+ * widen a phone's page.
+ */
+const NavTooltip: React.FC<{ label: string }> = ({ label }) => (
+  <div
+    aria-hidden="true"
+    className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-main text-page text-[11px] font-medium rounded-md shadow-lg hidden group-hover:block group-focus-within:block pointer-events-none whitespace-nowrap z-50"
+  >
+    <span>{label}</span>
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-main" />
+  </div>
+);
+
+/** A page link shown as its icon alone; its name is the tooltip and the accessible label */
+const IconNavLink: React.FC<{ to: string; label: string; icon: LucideIcon; active: boolean }> = ({
+  to,
+  label,
+  icon: Icon,
+  active,
+}) => (
+  <div className="relative group inline-flex">
+    <Link
+      to={to}
+      aria-label={label}
+      aria-current={active ? 'page' : undefined}
+      className={`p-1.5 sm:p-2 rounded-lg transition-colors hover:bg-card-hover ${
+        active ? 'text-team-primary bg-team-primary/10' : 'text-team-primary'
+      }`}
+    >
+      <Icon className="w-4 h-4" />
+    </Link>
+    <NavTooltip label={label} />
+  </div>
+);
 
 export const Navbar: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -51,8 +88,8 @@ export const Navbar: React.FC = () => {
           {/* Logo & Brand */}
           <Link to="/" className="flex items-center gap-2 group shrink-0">
             <PlateViewLogo className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 drop-shadow-md group-hover:scale-105 transition-transform" />
-            {/* Below 360px the mark alone has to stand for the name */}
-            <div className="max-[359px]:sr-only">
+            {/* Below 400px the mark alone has to stand for the name: the icons need the room */}
+            <div className="max-[399px]:sr-only">
               <span className="font-extrabold text-base sm:text-lg tracking-tight text-main">
                 Plate<span className="text-team-primary">View</span>
               </span>
@@ -77,10 +114,10 @@ export const Navbar: React.FC = () => {
           </button>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-1.5 sm:gap-3">
+          <div className="flex items-center gap-0.5 sm:gap-3">
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="lg:hidden p-2 text-muted hover:text-main"
+              className="lg:hidden p-1.5 sm:p-2 text-muted hover:text-main"
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
@@ -89,7 +126,7 @@ export const Navbar: React.FC = () => {
             {/* Leaderboards Page Link */}
             <Link
               to="/leaders"
-              className={`flex items-center gap-1 text-sm font-medium transition-colors px-2 py-1 rounded-lg hover:bg-card-hover ${
+              className={`flex items-center gap-1 text-sm font-medium transition-colors px-1.5 sm:px-2 py-1 rounded-lg hover:bg-card-hover ${
                 location.pathname === '/leaders'
                   ? 'text-team-primary bg-team-primary/10 font-bold'
                   : 'text-muted hover:text-main'
@@ -103,7 +140,7 @@ export const Navbar: React.FC = () => {
             {/* Postseason Bracket Link */}
             <Link
               to="/postseason"
-              className={`flex items-center gap-1 text-sm font-medium transition-colors px-2 py-1 rounded-lg hover:bg-card-hover ${
+              className={`flex items-center gap-1 text-sm font-medium transition-colors px-1.5 sm:px-2 py-1 rounded-lg hover:bg-card-hover ${
                 location.pathname.startsWith('/postseason')
                   ? 'text-team-primary bg-team-primary/10 font-bold'
                   : 'text-muted hover:text-main'
@@ -114,34 +151,15 @@ export const Navbar: React.FC = () => {
               <span className="hidden lg:inline">{t('nav.postseason')}</span>
             </Link>
 
-            {/* Players from Taiwan: no room on a phone, where the home page links to it */}
-            <Link
-              to="/taiwan"
-              className={`hidden sm:flex items-center gap-1 text-sm font-medium transition-colors px-2 py-1 rounded-lg hover:bg-card-hover ${
-                location.pathname === '/taiwan'
-                  ? 'text-team-primary bg-team-primary/10 font-bold'
-                  : 'text-muted hover:text-main'
-              }`}
-              title={t('nav.taiwan')}
-            >
-              <MapPin className="w-4 h-4 text-team-primary" />
-              <span className="hidden lg:inline">{t('nav.taiwan')}</span>
-            </Link>
-
-            {/* League transactions: icon only until there is room for its label */}
-            <Link
+            {/* Awards, transactions and Players from Taiwan: their only entry, icons at every width */}
+            <IconNavLink to="/awards" label={t('nav.awards')} icon={Award} active={location.pathname.startsWith('/awards')} />
+            <IconNavLink
               to="/transactions"
-              className={`hidden sm:flex items-center gap-1 text-sm font-medium transition-colors px-2 py-1 rounded-lg hover:bg-card-hover ${
-                location.pathname === '/transactions'
-                  ? 'text-team-primary bg-team-primary/10 font-bold'
-                  : 'text-muted hover:text-main'
-              }`}
-              title={t('nav.moves')}
-              aria-label={t('nav.moves')}
-            >
-              <ArrowLeftRight className="w-4 h-4 text-team-primary" />
-              <span className="hidden xl:inline">{t('nav.moves')}</span>
-            </Link>
+              label={t('nav.moves')}
+              icon={ArrowLeftRight}
+              active={location.pathname === '/transactions'}
+            />
+            <IconNavLink to="/taiwan" label={t('nav.taiwan')} icon={MapPin} active={location.pathname === '/taiwan'} />
 
             {/* Standings Quick Scroll Button */}
             <button
@@ -160,16 +178,12 @@ export const Navbar: React.FC = () => {
                 rel="noopener noreferrer"
                 aria-label={t('nav.sponsor')}
                 title={t('nav.sponsor')}
-                className="p-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black transition-all shadow-sm flex items-center justify-center"
+                className="p-1.5 sm:p-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black transition-all shadow-sm flex items-center justify-center"
               >
                 <Coffee className="w-4 h-4" />
               </a>
 
-              {/* Hover Tooltip */}
-              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-main text-page text-[11px] font-medium rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none whitespace-nowrap z-50">
-                <span>{t('nav.sponsor')}</span>
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-main" />
-              </div>
+              <NavTooltip label={t('nav.sponsor')} />
             </div>
 
             <div className="h-4 w-px bg-border hidden xl:block" />
@@ -185,7 +199,7 @@ export const Navbar: React.FC = () => {
                 aria-label={t('nav.settings')}
                 aria-expanded={isSettingsOpen}
                 aria-controls="navbar-settings"
-                className={`p-2 rounded-lg border transition-colors ${
+                className={`p-1.5 sm:p-2 rounded-lg border transition-colors ${
                   isSettingsOpen
                     ? 'border-team-primary text-team-primary bg-team-primary/10'
                     : 'border-border text-muted hover:text-main hover:bg-card-hover'

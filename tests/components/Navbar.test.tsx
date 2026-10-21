@@ -29,6 +29,32 @@ describe('Navbar component', () => {
     expect(screen.getByLabelText('☕ 贊助本專案')).toHaveAttribute('href', 'https://buymeacoffee.com/whoami885');
   });
 
+  it('opens awards, transactions and Players from Taiwan from icons named by their tooltips', () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <MemoryRouter initialEntries={['/transactions']}>
+            <Navbar />
+          </MemoryRouter>
+        </LanguageProvider>
+      </QueryClientProvider>
+    );
+
+    for (const [label, href] of [
+      ['年度獎項', '/awards'],
+      ['球員異動', '/transactions'],
+      ['台灣旅外球員', '/taiwan'],
+    ]) {
+      const link = screen.getByRole('link', { name: label });
+      expect(link).toHaveAttribute('href', href);
+      // Icon only: the name is not text inside the link but its label and tooltip
+      expect(link).not.toHaveTextContent(label);
+      expect(link.parentElement).toHaveTextContent(label);
+    }
+    expect(screen.getByRole('link', { name: '球員異動' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: '年度獎項' })).not.toHaveAttribute('aria-current');
+  });
+
   it('triggers scrollIntoView when clicking Standings button', () => {
     // Mock scrollIntoView
     const scrollMock = vi.fn();
