@@ -63,8 +63,8 @@ describe('ComparePage', () => {
 
     expect(await screen.findByRole('link', { name: 'Shohei Ohtani' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Aaron Judge' })).toBeInTheDocument();
-    // Chinese name from the dictionary under the English one
-    expect(screen.getByText('大谷翔平')).toBeInTheDocument();
+    // Names stay English; the dictionary's Chinese names are for search
+    expect(screen.queryByText('大谷翔平')).not.toBeInTheDocument();
 
     const opsRow = screen.getByRole('row', { name: /OPS/ });
     const [ohtaniOps, judgeOps] = within(opsRow).getAllByRole('cell');

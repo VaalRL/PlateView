@@ -18,12 +18,12 @@ const PAGES: { path: string; tab?: { zh: string; en: string }; expect: { zh: str
   { path: '/leaders', expect: { zh: 'Aaron Judge', en: 'Aaron Judge' } },
   { path: '/games/776633', expect: { zh: 'Nathan Eovaldi', en: 'Nathan Eovaldi' } },
   { path: '/postseason/2025', expect: { zh: '洛杉磯道奇', en: 'Los Angeles Dodgers' } },
-  { path: '/taiwan', expect: { zh: '李灝宇', en: 'Hao-Yu Lee' } },
+  { path: '/taiwan', expect: { zh: 'Hao-Yu Lee', en: 'Hao-Yu Lee' } },
   { path: '/compare?players=660271,592450', expect: { zh: 'Aaron Judge', en: 'Aaron Judge' } },
   { path: '/compare/teams?teams=119,140', expect: { zh: 'Corey Seager', en: 'Corey Seager' } },
   { path: '/transactions', expect: { zh: 'Traded Guy', en: 'Traded Guy' } },
   { path: '/awards?season=2025', expect: { zh: 'Aaron Judge', en: 'Aaron Judge' } },
-  { path: '/awards/NLMVP', expect: { zh: '大谷翔平', en: 'Shohei Ohtani' } },
+  { path: '/awards/NLMVP', expect: { zh: 'Shohei Ohtani', en: 'Shohei Ohtani' } },
 ];
 
 const VIEWPORTS = [

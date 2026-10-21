@@ -27,7 +27,6 @@ import {
 
 import type { GameSchedule } from '../types/mlb';
 import type { TranslationKey } from '../i18n/translations';
-import { zhNameOf } from '../utils/players';
 
 type View = 'offense' | 'defense';
 
@@ -258,11 +257,10 @@ const GameLine: React.FC<{ column: Column }> = ({ column }) => {
 
 /** One starter: his name, and the line that row compares */
 const StarterCell: React.FC<{ column: Column; starter?: Starter; view: View }> = ({ column, starter, view }) => {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
   if (column.state === 'loading') return <span className="inline-block h-8 w-24 rounded bg-page animate-pulse" />;
   if (!starter) return <span className="text-muted">{column.state === 'ready' ? '—' : ''}</span>;
 
-  const zh = lang === 'zh' ? zhNameOf(starter.personId) : undefined;
   let line: string;
   if (view === 'offense') {
     line = [starter.position, starter.avg && `AVG ${starter.avg}`, starter.ops && `OPS ${starter.ops}`, starter.homeRuns !== undefined && `HR ${starter.homeRuns}`]
@@ -285,9 +283,6 @@ const StarterCell: React.FC<{ column: Column; starter?: Starter; view: View }> =
           {starter.fullName}
         </Link>
       </PlayerHoverCard>
-      {zh && (
-        <span className="text-xs font-semibold text-main/80">{zh}</span>
-      )}
       {line && <span className="text-[11px] font-mono text-muted whitespace-nowrap">{line}</span>}
     </div>
   );

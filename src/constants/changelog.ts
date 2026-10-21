@@ -15,6 +15,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '1.16.1',
+    date: '2026-10-21',
+    changes: {
+      zh: [
+        '球員名字在中文介面也一律顯示英文，不再一部分中文、一部分英文；中文名與暱稱仍可用來搜尋',
+      ],
+      en: [
+        'Player names show in English in the Chinese interface too, instead of some in Chinese and some in English; Chinese names and nicknames still find players in search',
+      ],
+    },
+  },
+  {
     version: '1.16.0',
     date: '2026-10-20',
     changes: {

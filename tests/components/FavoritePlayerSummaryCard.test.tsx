@@ -36,7 +36,7 @@ describe('FavoritePlayerSummaryCard component', () => {
         <MemoryRouter>
           <FavoritePlayerSummaryCard
             person={mockPerson}
-            zhMeta={{ nameZh: '大谷翔平', nameEn: 'Shohei Ohtani' }}
+            zhMeta={{ nameEn: 'Shohei Ohtani' }}
             todayDateStr="2026-08-27"
           />
         </MemoryRouter>

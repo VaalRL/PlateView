@@ -20,7 +20,6 @@ import {
 import type { Transaction, TransactionTeam } from '../types/transactions';
 import type { TranslationKey } from '../i18n/translations';
 import taiwanPlayers from '../data/taiwan-players.json';
-import { zhNameOf } from '../utils/players';
 
 const RANGES = [7, 14, 30] as const;
 /** Moves listed before "show more"; a month of "all" runs to thousands */
@@ -55,7 +54,6 @@ const MoveRow: React.FC<{ move: Transaction }> = ({ move }) => {
   const { fromTeam: from, toTeam: to, person } = move;
   const moved = from?.id !== undefined && to?.id !== undefined && from.id !== to.id;
   const team = to ?? from;
-  const zh = lang === 'zh' && person?.id ? zhNameOf(person.id) : undefined;
   return (
     <li className="px-4 py-3 space-y-1">
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs">
@@ -69,7 +67,7 @@ const MoveRow: React.FC<{ move: Transaction }> = ({ move }) => {
         {person?.id !== undefined && (
           <PlayerHoverCard personId={person.id}>
             <Link to={`/players/${person.id}`} className="font-bold text-main hover:text-team-primary">
-              {zh ? `${zh} ${person.fullName}` : person.fullName}
+              {person.fullName}
             </Link>
           </PlayerHoverCard>
         )}

@@ -217,10 +217,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
                 {localResults.players.map((pItem) => {
                   const itemIndex = currentIndexTracker++;
                   const isSelected = itemIndex === selectedIndex;
-                  // Primary is always English; the Chinese name stays visible so a
-                  // zh query still maps to what the user typed
+                  // Names show in English only; a Chinese name or nickname finds the
+                  // player but is not displayed
                   const primaryName = pItem.nameEn;
-                  const secondaryName = pItem.nameZh;
 
                   return (
                     <button
@@ -245,12 +244,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
                               'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="%2394a3b8" viewBox="0 0 16 16"%3E%3Cpath d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"%3E%3C/path%3E%3Cpath fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"%3E%3C/path%3E%3C/svg%3E';
                           }}
                         />
-                        <div>
-                          <div className="font-bold text-sm text-main">{primaryName}</div>
-                          <div className="text-xs text-muted">
-                            {secondaryName} {pItem.nicknames.length > 0 && `(${pItem.nicknames[0]})`}
-                          </div>
-                        </div>
+                        <div className="font-bold text-sm text-main">{primaryName}</div>
                       </div>
                       <span className="text-xs font-mono px-2 py-0.5 rounded bg-team-primary/15 text-team-primary font-bold">
                         {pItem.team}

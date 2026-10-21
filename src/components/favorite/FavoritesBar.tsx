@@ -55,11 +55,6 @@ export const FavoritesBar: React.FC<FavoritesBarProps> = ({ games = [], currentD
       return { id, nameEn: remote.fullName };
     }
 
-    // Chinese-only meta: show it until the batch API supplies the English name
-    if (cached?.nameZh) {
-      return { id, nameEn: cached.nameZh };
-    }
-
     return { id, nameEn: `Player #${id}` };
   });
 

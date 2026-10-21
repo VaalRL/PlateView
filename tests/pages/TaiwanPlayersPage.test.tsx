@@ -36,7 +36,7 @@ describe('TaiwanPlayersPage', () => {
     expect(headings).toHaveLength(levels.size);
   });
 
-  it('shows each player’s latest game, with his Chinese name under the English one', async () => {
+  it('shows each player’s latest game, under his English name only', async () => {
     // Hao-Yu Lee is in the list and the dictionary
     vi.stubGlobal(
       'fetch',
@@ -70,7 +70,7 @@ describe('TaiwanPlayersPage', () => {
     expect(await screen.findByText('2-4 | HR')).toBeInTheDocument();
     const mlb = screen.getByRole('region', { name: /大聯盟/ });
     expect(within(mlb).getByText('Hao-Yu Lee')).toBeInTheDocument();
-    expect(within(mlb).getByText('李灝宇')).toBeInTheDocument();
+    expect(within(mlb).queryByText('李灝宇')).not.toBeInTheDocument();
   });
 
   it('still lists a player the batch request did not return', async () => {
@@ -86,7 +86,7 @@ describe('TaiwanPlayersPage', () => {
     renderPage();
     const box = screen.getByRole('region', { name: '本週生日' });
     // Wei-En Lin, born November 4, 2005
-    const lin = within(box).getByRole('link', { name: '林維恩' }).closest('li')!;
+    const lin = within(box).getByRole('link', { name: 'Wei-En Lin' }).closest('li')!;
     expect(lin).toHaveTextContent('11 月 4 日 · 21 歲');
     vi.useRealTimers();
   });

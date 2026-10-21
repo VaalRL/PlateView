@@ -15,7 +15,7 @@ interface Props {
  * 大谷 or 李灝宇 work), then the MLB player search for everyone else.
  */
 export const ComparePlayerPicker: React.FC<Props> = ({ selected, full, onAdd }) => {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
   const { data: online } = usePeopleSearchQuery(query);
@@ -27,11 +27,11 @@ export const ComparePlayerPicker: React.FC<Props> = ({ selected, full, onAdd }) 
         (p) =>
           p.nameEn.toLowerCase().includes(q) || p.nameZh.includes(q) || p.nicknames.some((n) => n.toLowerCase().includes(q))
       )
-      .map((p) => ({ id: p.id, name: p.nameEn, nameZh: p.nameZh as string | undefined }));
+      .map((p) => ({ id: p.id, name: p.nameEn }));
     const seen = new Set(local.map((p) => p.id));
     const remote = ((online?.people ?? []) as { id: number; fullName: string }[])
       .filter((p) => !seen.has(p.id))
-      .map((p) => ({ id: p.id, name: p.fullName, nameZh: undefined }));
+      .map((p) => ({ id: p.id, name: p.fullName }));
     return [...local, ...remote].filter((p) => !selected.includes(p.id)).slice(0, 8);
   }, [q, online, selected]);
 
@@ -63,10 +63,7 @@ export const ComparePlayerPicker: React.FC<Props> = ({ selected, full, onAdd }) 
                 onClick={() => add(p.id)}
                 className="w-full flex items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-card-hover"
               >
-                <span className="truncate">
-                  <span className="font-semibold text-main">{p.name}</span>
-                  {lang === 'zh' && p.nameZh && <span className="ml-2 text-muted">{p.nameZh}</span>}
-                </span>
+                <span className="truncate font-semibold text-main">{p.name}</span>
                 <Plus className="w-4 h-4 text-team-primary shrink-0" />
               </button>
             </li>
