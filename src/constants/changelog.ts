@@ -20,11 +20,11 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     changes: {
       zh: [
         '球員名字在中文介面也一律顯示英文，不再一部分中文、一部分英文；中文名與暱稱仍可用來搜尋',
-        '年度獎項、球員異動與台灣旅外球員只放在頂端導覽列，以圖示呈現，滑鼠移上或鍵盤聚焦時顯示名稱；手機上也看得到',
+        '頂端導覽列的入口一律只顯示圖示（數據排行、季後賽、年度獎項、球員異動、台灣旅外球員、分區榜），滑鼠移上或鍵盤聚焦時顯示名稱；年度獎項、球員異動與台灣旅外球員只放在導覽列，手機上也看得到',
       ],
       en: [
         'Player names show in English in the Chinese interface too, instead of some in Chinese and some in English; Chinese names and nicknames still find players in search',
-        'Awards, Transactions and Players from Taiwan live in the top bar only, as icons whose names show on hover or keyboard focus; phones show them too',
+        'Every top bar entry is an icon whose name shows on hover or keyboard focus (Leaderboards, Postseason, Awards, Transactions, Players from Taiwan, Standings); Awards, Transactions and Players from Taiwan live in the top bar only, phones included',
       ],
     },
   },

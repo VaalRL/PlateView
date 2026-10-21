@@ -21,24 +21,50 @@ const NavTooltip: React.FC<{ label: string }> = ({ label }) => (
   </div>
 );
 
-/** A page link shown as its icon alone; its name is the tooltip and the accessible label */
-const IconNavLink: React.FC<{ to: string; label: string; icon: LucideIcon; active: boolean }> = ({
+interface IconNavItemProps {
+  label: string;
+  icon: LucideIcon;
+  /** The icon's colour */
+  tone?: string;
+  /** Extra classes on the wrapper, e.g. to hide the item at some widths */
+  className?: string;
+}
+
+const iconControlClass = (active = false) =>
+  `p-1.5 sm:p-2 rounded-lg transition-colors hover:bg-card-hover ${active ? 'bg-team-primary/10' : ''}`;
+
+/**
+ * Every navbar entry is its icon alone; its name is the tooltip and the
+ * accessible label. A page link marks the page it opens with aria-current.
+ */
+const IconNavLink: React.FC<IconNavItemProps & { to: string; active: boolean }> = ({
   to,
   label,
   icon: Icon,
   active,
+  tone = 'text-team-primary',
+  className = 'inline-flex',
 }) => (
-  <div className="relative group inline-flex">
-    <Link
-      to={to}
-      aria-label={label}
-      aria-current={active ? 'page' : undefined}
-      className={`p-1.5 sm:p-2 rounded-lg transition-colors hover:bg-card-hover ${
-        active ? 'text-team-primary bg-team-primary/10' : 'text-team-primary'
-      }`}
-    >
-      <Icon className="w-4 h-4" />
+  <div className={`relative group ${className}`}>
+    <Link to={to} aria-label={label} aria-current={active ? 'page' : undefined} className={iconControlClass(active)}>
+      <Icon className={`w-4 h-4 ${tone}`} />
     </Link>
+    <NavTooltip label={label} />
+  </div>
+);
+
+/** An icon-only action, with its name as tooltip and accessible label */
+const IconNavButton: React.FC<IconNavItemProps & { onClick: () => void }> = ({
+  label,
+  icon: Icon,
+  onClick,
+  tone = 'text-team-primary',
+  className = 'inline-flex',
+}) => (
+  <div className={`relative group ${className}`}>
+    <button type="button" onClick={onClick} aria-label={label} className={iconControlClass()}>
+      <Icon className={`w-4 h-4 ${tone}`} />
+    </button>
     <NavTooltip label={label} />
   </div>
 );
@@ -123,35 +149,21 @@ export const Navbar: React.FC = () => {
               <Search className="w-5 h-5" />
             </button>
 
-            {/* Leaderboards Page Link */}
-            <Link
+            {/* Pages and the standings shortcut, as icons named by their tooltips */}
+            <IconNavLink
               to="/leaders"
-              className={`flex items-center gap-1 text-sm font-medium transition-colors px-1.5 sm:px-2 py-1 rounded-lg hover:bg-card-hover ${
-                location.pathname === '/leaders'
-                  ? 'text-team-primary bg-team-primary/10 font-bold'
-                  : 'text-muted hover:text-main'
-              }`}
-              title={t('nav.leaders')}
-            >
-              <Trophy className="w-4 h-4 text-amber-500" />
-              <span className="hidden lg:inline">{t('nav.leaders')}</span>
-            </Link>
-
-            {/* Postseason Bracket Link */}
-            <Link
+              label={t('nav.leaders')}
+              icon={Trophy}
+              tone="text-amber-500"
+              active={location.pathname === '/leaders'}
+            />
+            <IconNavLink
               to="/postseason"
-              className={`flex items-center gap-1 text-sm font-medium transition-colors px-1.5 sm:px-2 py-1 rounded-lg hover:bg-card-hover ${
-                location.pathname.startsWith('/postseason')
-                  ? 'text-team-primary bg-team-primary/10 font-bold'
-                  : 'text-muted hover:text-main'
-              }`}
-              title={t('nav.postseason')}
-            >
-              <Medal className="w-4 h-4 text-amber-500" />
-              <span className="hidden lg:inline">{t('nav.postseason')}</span>
-            </Link>
-
-            {/* Awards, transactions and Players from Taiwan: their only entry, icons at every width */}
+              label={t('nav.postseason')}
+              icon={Medal}
+              tone="text-amber-500"
+              active={location.pathname.startsWith('/postseason')}
+            />
             <IconNavLink to="/awards" label={t('nav.awards')} icon={Award} active={location.pathname.startsWith('/awards')} />
             <IconNavLink
               to="/transactions"
@@ -160,15 +172,13 @@ export const Navbar: React.FC = () => {
               active={location.pathname === '/transactions'}
             />
             <IconNavLink to="/taiwan" label={t('nav.taiwan')} icon={MapPin} active={location.pathname === '/taiwan'} />
-
-            {/* Standings Quick Scroll Button */}
-            <button
+            {/* Not on a phone: the home page's standings are a short scroll away */}
+            <IconNavButton
+              label={t('nav.standings')}
+              icon={Compass}
               onClick={handleStandingsClick}
-              className="hidden sm:flex items-center gap-1 text-sm font-medium text-muted hover:text-main transition-colors px-2 py-1 rounded-lg hover:bg-card-hover"
-            >
-              <Compass className="w-4 h-4 text-team-primary" />
-              <span className="hidden lg:inline">{t('nav.standings')}</span>
-            </button>
+              className="hidden sm:inline-flex"
+            />
 
             {/* Sponsor Icon Button with Hover Tooltip */}
             <div className="relative group inline-flex items-center justify-center">
