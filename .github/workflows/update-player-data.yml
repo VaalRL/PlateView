@@ -28,7 +28,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          check-latest: true
 
       # Each file is rebuilt on its own: one failing must not hold back the
       # other's update. The run still fails at the end if either did
