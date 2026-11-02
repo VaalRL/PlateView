@@ -29,10 +29,10 @@
       "birthDate": "2001-07-26",
       "birthCity": "Pingtung County",
       "position": "SS",
-      "teamId": 111,
-      "teamName": "Boston Red Sox",
+      "teamId": 116,
+      "teamName": "Detroit Tigers",
       "level": "MLB",
-      "parentOrgId": 111
+      "parentOrgId": 116
     },
     {
       "id": 800018,
