@@ -7,6 +7,7 @@
  * stable; checks on the current season only test shape, never values.
  */
 import { describe, it, expect } from 'vitest';
+import type { PeopleResponse } from '../../src/types/favorites';
 import {
   getFavoritePlayersGameLog,
   getGameBoxscore,
@@ -226,13 +227,27 @@ describe('players', () => {
       console.info('Rochester has no active roster today; minor leaguer hover card not checked');
       return;
     }
-    const team = (await getPersonSummary(roster[0].person.id)).people[0].currentTeam;
-    expect(isMinorLeagueClub(team?.id)).toBe(true);
+    // Around the end of a season the roster lags behind moves: someone listed
+    // here can already have a currentTeam elsewhere (another affiliate, a
+    // rookie club, none). Take the first few until one is still at Rochester.
+    let team: PeopleResponse['people'][number]['currentTeam'];
+    for (const { person } of roster.slice(0, 5)) {
+      const current = (await getPersonSummary(person.id)).people[0].currentTeam;
+      if (current?.id === ROCHESTER) {
+        team = current;
+        break;
+      }
+    }
+    if (!team) {
+      console.info('No one on Rochester’s roster has it as currentTeam today; minor leaguer hover card not checked');
+      return;
+    }
+    expect(isMinorLeagueClub(team.id)).toBe(true);
     // Only the parent's id comes with it (no parentOrgName, no sport); the
     // card names the parent from that id and reads the level off the club
-    expect(team?.parentOrgId).toBe(NATIONALS);
-    expect(teamDisplayName(team?.parentOrgId, 'en')).toBe('Washington Nationals');
-    expect(levelAbbreviation((await getTeamDetail(team!.id!)).teams[0].sport.id)).toBe('AAA');
+    expect(team.parentOrgId).toBe(NATIONALS);
+    expect(teamDisplayName(team.parentOrgId, 'en')).toBe('Washington Nationals');
+    expect(levelAbbreviation((await getTeamDetail(team.id!)).teams[0].sport.id)).toBe('AAA');
   });
 
   it('finds players by name', async () => {
