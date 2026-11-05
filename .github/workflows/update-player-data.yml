@@ -23,13 +23,16 @@ jobs:
       DATA_FILES: src/data/taiwan-players.json src/data/venues.json
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           check-latest: true
+          # This job can push (contents: write) and installs nothing, so keep
+          # setup-node from turning on a dependency cache by itself
+          package-manager-cache: false
 
       # Each file is rebuilt on its own: one failing must not hold back the
       # other's update. The run still fails at the end if either did
