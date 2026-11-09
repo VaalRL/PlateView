@@ -29,10 +29,10 @@
       "birthDate": "2001-07-26",
       "birthCity": "Pingtung County",
       "position": "SS",
-      "teamId": 111,
-      "teamName": "Boston Red Sox",
+      "teamId": 116,
+      "teamName": "Detroit Tigers",
       "level": "MLB",
-      "parentOrgId": 111
+      "parentOrgId": 116
     },
     {
       "id": 800018,
@@ -145,6 +145,17 @@
       "parentOrgId": 137
     },
     {
+      "id": 828430,
+      "fullName": "Chia-Shi Shen",
+      "birthDate": "2003-12-03",
+      "birthCity": "Puli",
+      "position": "P",
+      "teamId": 401,
+      "teamName": "Inland Empire 66ers",
+      "level": "A",
+      "parentOrgId": 136
+    },
+    {
       "id": 828667,
       "fullName": "Ching-Hsien Ko",
       "birthDate": "2006-08-11",
@@ -198,6 +209,17 @@
       "teamName": "Daytona Tortugas",
       "level": "A",
       "parentOrgId": 113
+    },
+    {
+      "id": 835646,
+      "fullName": "Chang Tzu-Chun Lin",
+      "birthDate": "2005-10-06",
+      "birthCity": "New Taipei",
+      "position": "P",
+      "teamId": 406,
+      "teamName": "ACL Brewers",
+      "level": "ROK",
+      "parentOrgId": 158
     },
     {
       "id": 843397,
